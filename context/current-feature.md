@@ -20,4 +20,5 @@ Not Started
 
 <!-- Keep this updated. Earliest to latest -->
 
-- Project setup and boilerplate cleanup
+- Initial Next.js app scaffold created from Create Next App
+- Initial framework setup completed, including project context files and boilerplate cleanup
