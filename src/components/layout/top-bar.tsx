@@ -5,17 +5,23 @@ import { FolderPlus, LayoutPanelLeft, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-export function TopBar() {
+interface TopBarProps {
+  onOpenMobileSidebar: () => void;
+}
+
+export function TopBar({ onOpenMobileSidebar }: TopBarProps) {
   return (
     <div className="border-b border-border/70 bg-background/95 backdrop-blur">
       <div className="flex w-full items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
         <Button
+          type="button"
           variant="outline"
           size="icon"
-          className="shrink-0 rounded-xl border-border/80 bg-card text-muted-foreground"
+          className="shrink-0 rounded-xl border-border/80 bg-card text-muted-foreground lg:hidden"
+          onClick={onOpenMobileSidebar}
         >
           <LayoutPanelLeft className="size-4" />
-          <span className="sr-only">Toggle sidebar</span>
+          <span className="sr-only">Open sidebar</span>
         </Button>
 
         <div className="relative flex-1">
