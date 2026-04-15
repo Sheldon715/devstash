@@ -2,7 +2,7 @@
 
 <!-- Feature Name -->
 
-Dashboard UI Phase 3
+Prisma + Neon PostgreSQL Setup
 
 ## Status
 
@@ -14,29 +14,34 @@ Completed
 
 <!-- Goals & requirements -->
 
-- Implement Dashboard UI Phase 3 based on [dashboard-phase-3-spec.md](/c:/Users/lxd04/Desktop/WEB/WEB%20PROJECT/devstash/context/feature/dashboard-phase-3-spec.md)
-- Build the main dashboard area to the right of the sidebar
-- Add recent collections and pinned items sections
-- Show 10 recent items
-- Add 4 stats cards for item, collection, favorite item, and favorite collection counts
+- Implement Prisma ORM with Neon PostgreSQL based on [database-spec.md](/c:/Users/lxd04/Desktop/WEB%20PROJECT/devstash/context/feature/database-spec.md)
+- Set up Neon PostgreSQL as the serverless database
+- Create the initial Prisma schema from the project data model direction
+- Include NextAuth models: `Account`, `Session`, and `VerificationToken`
+- Add appropriate indexes and cascade deletes
+- Follow Prisma 7 requirements and migration-first workflow
 
 ## Todo List
 
 <!-- Feature-specific checklist -->
 
-- [x] Build the main dashboard content area
-- [x] Add recent collections section
-- [x] Add pinned items section
-- [x] Render 10 recent items from mock data
-- [x] Add 4 stats cards at the top
-- [x] Match the referenced phase 3 screenshot layout
+- [ ] Review the database spec and Prisma 7 upgrade requirements
+- [x] Review the database spec and Prisma 7 upgrade requirements
+- [x] Install and configure Prisma 7 with Neon PostgreSQL
+- [x] Create the initial Prisma schema from the project overview models
+- [x] Add NextAuth models and required relations
+- [x] Add indexes and cascade delete behavior
+- [x] Create migrations using the development database branch
+- [x] Verify the Prisma setup and migration workflow
 
 ## Notes
 
 <!-- Any extra notes -->
 
-- Active spec: `context/feature/dashboard-phase-3-spec.md`
-- Use the referenced screenshot and mock data file from the phase 3 spec
+- Active spec: `context/feature/database-spec.md`
+- Use Neon PostgreSQL and Prisma 7
+- Always create migrations and never push directly unless explicitly requested
+- Development and production database branches will use `DATABASE_URL`
 
 ## History
 
@@ -46,3 +51,5 @@ Completed
 - Dashboard UI Phase 2 completed with a collapsible desktop sidebar, mobile drawer trigger, type links, favorite and recent collections, and a fixed user area based on mock data
 - Dashboard UI Phase 3 set as the active feature and marked in progress
 - Dashboard UI Phase 3 completed with stats cards, recent collections, pinned items, and a 10-item recent activity view using the mock dashboard dataset
+- Prisma + Neon PostgreSQL setup set as the active feature and marked in progress
+- Prisma + Neon PostgreSQL setup completed with Prisma 7 config, initial schema, NextAuth models, generated client wiring, and an applied initial migration on Neon
