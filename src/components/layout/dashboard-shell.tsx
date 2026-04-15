@@ -56,8 +56,10 @@ export function DashboardShell({ children }: DashboardShellProps) {
         <div className="flex min-w-0 flex-1 flex-col">
           <TopBar onOpenMobileSidebar={handleSidebarOpen} />
 
-          <div className="flex-1 px-4 py-6 sm:px-6 lg:px-8">
-            <div className="mx-auto w-full max-w-7xl">{children}</div>
+          <div className="flex-1 px-4 py-6 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
+            <div className="mx-auto w-full max-w-[980px] xl:max-w-[1000px] 2xl:max-w-[1040px]">
+              {children}
+            </div>
           </div>
         </div>
       </div>

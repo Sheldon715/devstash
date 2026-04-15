@@ -54,6 +54,7 @@ Example v4 configuration:
 - Server Actions: `src/actions/[feature].ts`
 - Types: `src/types/[feature].ts`
 - Lib/Utils: `src/lib/[utility].ts`
+- Keep route files thin. If a page has multiple sections or cards, extract them into `src/components/[feature]/` instead of defining everything inside `page.tsx`.
 
 ## Naming
 

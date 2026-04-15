@@ -12,7 +12,7 @@ interface TopBarProps {
 export function TopBar({ onOpenMobileSidebar }: TopBarProps) {
   return (
     <div className="border-b border-border/70 bg-background/95 backdrop-blur">
-      <div className="flex w-full items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
+      <div className="mx-auto flex w-full max-w-[980px] items-center gap-3 px-4 py-3 sm:px-6 lg:px-8 xl:px-12 2xl:max-w-[1040px] 2xl:px-16">
         <Button
           type="button"
           variant="outline"
@@ -24,7 +24,7 @@ export function TopBar({ onOpenMobileSidebar }: TopBarProps) {
           <span className="sr-only">Open sidebar</span>
         </Button>
 
-        <div className="relative flex-1">
+        <div className="relative flex-1 xl:max-w-[560px] 2xl:max-w-[600px]">
           <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             aria-label="Search items"
