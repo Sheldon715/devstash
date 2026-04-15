@@ -34,6 +34,11 @@ We will create a new branch for every feature/fix. Name branch **feature/[featur
 
 - Ask before committing (don't auto-commit)
 - Use conventional commit messages (feat:, fix:, chore:, etc.)
+- Format commit messages with a subject line, a blank line, and dash bullets in the body when committing, for example:
+  `feat: add demo seed`
+  ``
+  `- add Prisma seed script`
+  `- add database verification`
 - Keep commits focused (one feature/fix per commit)
 - Never put "Generated With Codex" in the commit messages
 
