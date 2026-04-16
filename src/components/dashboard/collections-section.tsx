@@ -1,15 +1,15 @@
 import { CollectionCard } from "@/components/dashboard/collection-card";
-import { getRecentCollections } from "@/lib/dashboard-data";
+import { getRecentDashboardCollections } from "@/lib/db/collections";
 
-const recentCollections = getRecentCollections();
+export async function CollectionsSection() {
+  const recentCollections = await getRecentDashboardCollections();
 
-export function CollectionsSection() {
   return (
     <section className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="space-y-1">
           <h2 className="text-xl font-semibold tracking-tight text-zinc-50 sm:text-2xl">
-            Recent Collections
+            Collections
           </h2>
         </div>
 

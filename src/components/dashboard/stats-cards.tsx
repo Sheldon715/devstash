@@ -1,9 +1,7 @@
 import { Boxes, FolderOpen, Sparkles, Star, type LucideIcon } from "lucide-react";
 
-import {
-  getFavoriteCollectionsCount,
-  getFavoriteItemsCount,
-} from "@/lib/dashboard-data";
+import { getFavoriteItemsCount } from "@/lib/dashboard-data";
+import { getDashboardCollectionStats } from "@/lib/db/collections";
 import { dashboardMockData } from "@/lib/mock-data";
 
 interface StatCard {
@@ -14,7 +12,7 @@ interface StatCard {
   value: number;
 }
 
-const stats: StatCard[] = [
+const baseStats: StatCard[] = [
   {
     label: "Items",
     value: dashboardMockData.items.length,
@@ -23,29 +21,35 @@ const stats: StatCard[] = [
     icon: Boxes,
   },
   {
-    label: "Collections",
-    value: dashboardMockData.collections.length,
-    detail: "Organized knowledge groups",
-    accentClass: "from-[#10b981]/25 via-[#047857]/10 to-transparent",
-    icon: FolderOpen,
-  },
-  {
     label: "Favorite Items",
     value: getFavoriteItemsCount(),
     detail: "Quick-access references",
     accentClass: "from-[#f59e0b]/25 via-[#b45309]/10 to-transparent",
     icon: Star,
   },
-  {
-    label: "Favorite Collections",
-    value: getFavoriteCollectionsCount(),
-    detail: "Pinned collection shortcuts",
-    accentClass: "from-[#8b5cf6]/25 via-[#6d28d9]/10 to-transparent",
-    icon: Sparkles,
-  },
 ];
 
-export function StatsCards() {
+export async function StatsCards() {
+  const collectionStats = await getDashboardCollectionStats();
+  const stats: StatCard[] = [
+    baseStats[0],
+    {
+      label: "Collections",
+      value: collectionStats.totalCollections,
+      detail: "Organized knowledge groups",
+      accentClass: "from-[#10b981]/25 via-[#047857]/10 to-transparent",
+      icon: FolderOpen,
+    },
+    baseStats[1],
+    {
+      label: "Favorite Collections",
+      value: collectionStats.favoriteCollections,
+      detail: "Pinned collection shortcuts",
+      accentClass: "from-[#8b5cf6]/25 via-[#6d28d9]/10 to-transparent",
+      icon: Sparkles,
+    },
+  ];
+
   return (
     <section className="grid gap-3.5 sm:grid-cols-2 xl:grid-cols-4">
       {stats.map((stat) => {
