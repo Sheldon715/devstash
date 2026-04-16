@@ -4,6 +4,8 @@ import { RecentItems } from "@/components/dashboard/recent-items";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 
+export const dynamic = "force-dynamic";
+
 export default function DashboardPage() {
   return (
     <DashboardShell>

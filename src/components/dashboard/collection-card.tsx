@@ -4,22 +4,26 @@ import {
   getDashboardItemTypeColor,
   getDashboardItemTypeIcon,
 } from "@/lib/dashboard-icons";
-import {
-  getCollectionItems,
-  getUniqueItemTypes,
-  type DashboardCollectionRecord,
-} from "@/lib/dashboard-data";
+import type { DashboardCollectionCardRecord } from "@/lib/db/collections";
 
 interface CollectionCardProps {
-  collection: DashboardCollectionRecord;
+  collection: DashboardCollectionCardRecord;
 }
 
 export function CollectionCard({ collection }: CollectionCardProps) {
-  const items = getCollectionItems(collection.itemIds);
-  const itemTypes = getUniqueItemTypes(items);
-  const accentColor = itemTypes[0]
-    ? getDashboardItemTypeColor(itemTypes[0])
+  const accentColor = collection.dominantTypeKey
+    ? getDashboardItemTypeColor(collection.dominantTypeKey)
     : "text-muted-foreground";
+  const updatedLabel = collection.lastUpdatedAt
+    ? new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        day: "numeric",
+      }).format(collection.lastUpdatedAt)
+    : null;
+  const statsLabel =
+    collection.typeCount > 0
+      ? `${collection.itemCount} ${collection.itemCount === 1 ? "item" : "items"}, ${collection.typeCount} ${collection.typeCount === 1 ? "type" : "types"}`
+      : "No items yet";
 
   return (
     <article className="group relative overflow-hidden rounded-[24px] border border-white/10 bg-[#08090c] p-5 shadow-[0_18px_56px_rgba(0,0,0,0.22)] transition-transform duration-200 hover:-translate-y-0.5">
@@ -39,7 +43,7 @@ export function CollectionCard({ collection }: CollectionCardProps) {
               ) : null}
             </div>
             <p className="text-xs text-muted-foreground sm:text-sm">
-              {items.length} {items.length === 1 ? "item" : "items"}
+              {statsLabel}
             </p>
           </div>
 
@@ -56,19 +60,27 @@ export function CollectionCard({ collection }: CollectionCardProps) {
           {collection.description}
         </p>
 
-        <div className="mt-auto flex items-center gap-2 text-muted-foreground">
-          {itemTypes.map((typeKey) => {
-            const Icon = getDashboardItemTypeIcon(typeKey);
+        <div className="mt-auto flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            {collection.typeKeys.map((typeKey) => {
+              const Icon = getDashboardItemTypeIcon(typeKey);
 
-            return (
-              <div
-                key={typeKey}
-                className={`flex size-8 items-center justify-center rounded-lg bg-white/[0.03] ${getDashboardItemTypeColor(typeKey)}`}
-              >
-                <Icon className="size-3.5" />
-              </div>
-            );
-          })}
+              return (
+                <div
+                  key={typeKey}
+                  className={`flex size-8 items-center justify-center rounded-lg bg-white/[0.03] ${getDashboardItemTypeColor(typeKey)}`}
+                >
+                  <Icon className="size-3.5" />
+                </div>
+              );
+            })}
+          </div>
+
+          {updatedLabel ? (
+            <p className="shrink-0 text-xs text-muted-foreground sm:text-sm">
+              Updated {updatedLabel}
+            </p>
+          ) : null}
         </div>
       </div>
     </article>
