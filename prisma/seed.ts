@@ -20,6 +20,7 @@ type SeedItemDefinition = {
 type SeedCollectionDefinition = {
   name: string;
   description: string;
+  isFavorite?: boolean;
   items: SeedItemDefinition[];
 };
 
@@ -97,6 +98,7 @@ const collections: SeedCollectionDefinition[] = [
   {
     name: "React Patterns",
     description: "Reusable React patterns and hooks",
+    isFavorite: true,
     items: [
       {
         title: "Custom hooks starter pack",
@@ -209,6 +211,7 @@ export function pick<TObject extends object, TKey extends keyof TObject>(
   {
     name: "AI Workflows",
     description: "AI prompts and workflow automations",
+    isFavorite: true,
     items: [
       {
         title: "Code review prompt",
@@ -295,6 +298,7 @@ npm run start`,
   {
     name: "Terminal Commands",
     description: "Useful shell commands for everyday development",
+    isFavorite: true,
     items: [
       {
         title: "Git operations",
@@ -445,6 +449,7 @@ async function seed() {
         userId: user.id,
         name: collectionDefinition.name,
         description: collectionDefinition.description,
+        isFavorite: collectionDefinition.isFavorite ?? false,
       },
     });
 

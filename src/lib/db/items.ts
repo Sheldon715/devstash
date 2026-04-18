@@ -34,10 +34,28 @@ export interface DashboardItemStats {
   favoriteItems: number;
 }
 
+export interface DashboardSidebarItemTypeRecord {
+  id: string;
+  key: string;
+  name: string;
+  icon: string | null;
+  totalItems: number;
+  typeKey: DashboardItemTypeKey;
+}
+
+export interface DashboardItemTypePageRecord {
+  key: string;
+  name: string;
+  icon: string | null;
+  totalItems: number;
+  typeKey: DashboardItemTypeKey;
+}
+
 async function getDashboardItems(
   options?: {
     isPinned?: boolean;
     limit?: number;
+    typeKey?: string;
   },
 ) {
   return prisma.item.findMany({
@@ -46,6 +64,7 @@ async function getDashboardItems(
         email: DASHBOARD_DEMO_EMAIL,
       },
       ...(options?.isPinned === undefined ? {} : { isPinned: options.isPinned }),
+      ...(options?.typeKey ? { type: { key: options.typeKey } } : {}),
     },
     orderBy: [{ updatedAt: "desc" }, { title: "asc" }],
     take: options?.limit,
@@ -123,6 +142,80 @@ export async function getDashboardItemStats(): Promise<DashboardItemStats> {
   return {
     totalItems,
     favoriteItems,
+  };
+}
+
+export async function getDashboardSidebarItemTypes() {
+  const itemTypes = await prisma.itemType.findMany({
+    where: {
+      isSystem: true,
+    },
+    select: {
+      id: true,
+      key: true,
+      name: true,
+      icon: true,
+      items: {
+        where: {
+          user: {
+            email: DASHBOARD_DEMO_EMAIL,
+          },
+        },
+        select: {
+          id: true,
+        },
+      },
+    },
+  });
+
+  return itemTypes
+    .map(
+      (itemType): DashboardSidebarItemTypeRecord => ({
+        id: itemType.id,
+        key: itemType.key,
+        name: formatItemTypeLabel(itemType.name),
+        icon: itemType.icon,
+        totalItems: itemType.items.length,
+        typeKey: normalizeDashboardItemTypeKey(itemType.key),
+      }),
+    )
+    .sort(
+      (left, right) =>
+        DASHBOARD_ITEM_TYPE_KEYS.indexOf(left.typeKey) -
+        DASHBOARD_ITEM_TYPE_KEYS.indexOf(right.typeKey),
+    );
+}
+
+export async function getDashboardItemTypePage(typeKey: string) {
+  const itemType = await prisma.itemType.findFirst({
+    where: {
+      isSystem: true,
+      key: typeKey,
+    },
+    select: {
+      key: true,
+      name: true,
+      icon: true,
+    },
+  });
+
+  if (!itemType) {
+    return null;
+  }
+
+  const items = await getDashboardItems({
+    typeKey: itemType.key,
+  });
+
+  return {
+    itemType: {
+      key: itemType.key,
+      name: formatItemTypeLabel(itemType.name),
+      icon: itemType.icon,
+      totalItems: items.length,
+      typeKey: normalizeDashboardItemTypeKey(itemType.key),
+    } satisfies DashboardItemTypePageRecord,
+    items: items.map(mapItemToDashboardRecord),
   };
 }
 

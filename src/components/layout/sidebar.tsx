@@ -13,38 +13,37 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import type { DashboardCollectionCardRecord } from "@/lib/db/collections";
+import type { DashboardSidebarItemTypeRecord } from "@/lib/db/items";
 import {
   getDashboardIconByName,
   getDashboardItemTypeColor,
 } from "@/lib/dashboard-icons";
-import { dashboardMockData } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
+const SIDEBAR_USER = {
+  name: "Demo User",
+  email: "demo@devstash.io",
+};
+
 interface SidebarProps {
+  favoriteCollections: DashboardCollectionCardRecord[];
   isCollapsed: boolean;
   isMobileOpen: boolean;
   onCloseMobile: () => void;
   onToggleCollapsed: () => void;
+  recentCollections: DashboardCollectionCardRecord[];
+  sidebarItemTypes: DashboardSidebarItemTypeRecord[];
 }
 
-const favoriteCollections = dashboardMockData.collections.filter(
-  (collection) => collection.isFavorite
-);
-
-const recentCollections = [...dashboardMockData.collections]
-  .sort((left, right) => {
-    const leftLatest = getLatestCollectionUpdate(left.itemIds);
-    const rightLatest = getLatestCollectionUpdate(right.itemIds);
-
-    return rightLatest.localeCompare(leftLatest);
-  })
-  .slice(0, 4);
-
 export function Sidebar({
+  favoriteCollections,
   isCollapsed,
   isMobileOpen,
   onCloseMobile,
   onToggleCollapsed,
+  recentCollections,
+  sidebarItemTypes,
 }: SidebarProps) {
   const [isCollectionsOpen, setIsCollectionsOpen] = useState(true);
 
@@ -141,9 +140,9 @@ export function Sidebar({
             isCollapsed={isCollapsed}
             className="border-b border-white/6 px-3.5 py-[clamp(10px,1.6vh,20px)]"
           >
-            {dashboardMockData.itemTypes.map((itemType) => {
+            {sidebarItemTypes.map((itemType) => {
               const Icon = getDashboardIconByName(itemType.icon);
-              const iconColor = getDashboardItemTypeColor(itemType.key);
+              const iconColor = getDashboardItemTypeColor(itemType.typeKey);
 
               return (
                 <Link
@@ -201,8 +200,8 @@ export function Sidebar({
                   {favoriteCollections.map((collection) => (
                     <CollectionLink
                       key={collection.id}
+                      itemCount={collection.itemCount}
                       name={collection.name}
-                      meta={String(collection.itemIds.length)}
                       isCollapsed={isCollapsed}
                       showStar
                     />
@@ -219,11 +218,22 @@ export function Sidebar({
                   {recentCollections.map((collection) => (
                     <CollectionLink
                       key={collection.id}
+                      dominantTypeKey={collection.dominantTypeKey}
+                      itemCount={collection.itemCount}
                       name={collection.name}
-                      meta={String(collection.itemIds.length)}
                       isCollapsed={isCollapsed}
                     />
                   ))}
+
+                  <div className={cn("px-2 pt-2", isCollapsed && "hidden")}>
+                    <Link
+                      href="/collections"
+                      className="text-[clamp(10px,1.3vh,12px)] font-medium text-muted-foreground transition-colors hover:text-zinc-50"
+                      onClick={onCloseMobile}
+                    >
+                      View all collections
+                    </Link>
+                  </div>
                 </div>
               </>
             ) : null}
@@ -238,7 +248,7 @@ export function Sidebar({
             )}
           >
             <div className="flex size-[clamp(30px,3.6vh,40px)] shrink-0 items-center justify-center rounded-full bg-[#dedede] text-[clamp(9px,1.1vh,10px)] font-semibold text-black">
-              {dashboardMockData.user.name
+              {SIDEBAR_USER.name
                 .split(" ")
                 .map((part) => part[0])
                 .join("")
@@ -247,10 +257,10 @@ export function Sidebar({
 
             <div className={cn("min-w-0 flex-1", isCollapsed && "hidden")}>
               <p className="truncate text-[clamp(11px,1.45vh,13px)] font-semibold text-zinc-50">
-                {dashboardMockData.user.name}
+                {SIDEBAR_USER.name}
               </p>
               <p className="truncate text-[clamp(10px,1.2vh,11px)] text-muted-foreground">
-                {dashboardMockData.user.email}
+                {SIDEBAR_USER.email}
               </p>
             </div>
 
@@ -332,15 +342,17 @@ function SidebarSection({
 }
 
 interface CollectionLinkProps {
+  dominantTypeKey?: DashboardCollectionCardRecord["dominantTypeKey"];
   isCollapsed: boolean;
-  meta: string;
+  itemCount: number;
   name: string;
   showStar?: boolean;
 }
 
 function CollectionLink({
+  dominantTypeKey,
   isCollapsed,
-  meta,
+  itemCount,
   name,
   showStar = false,
 }: CollectionLinkProps) {
@@ -351,11 +363,20 @@ function CollectionLink({
         isCollapsed && "justify-center"
       )}
     >
-      {!isCollapsed ? (
-        <div className="flex size-[clamp(22px,2.8vh,28px)] shrink-0 items-center justify-center text-muted-foreground">
+      <div className="flex size-[clamp(22px,2.8vh,28px)] shrink-0 items-center justify-center text-muted-foreground">
+        {showStar ? (
           <FolderOpen className="size-[clamp(12px,1.8vh,16px)]" />
-        </div>
-      ) : null}
+        ) : (
+          <span
+            className={cn(
+              "size-2.5 rounded-full bg-current",
+              dominantTypeKey
+                ? getDashboardItemTypeColor(dominantTypeKey)
+                : "text-muted-foreground/60"
+            )}
+          />
+        )}
+      </div>
 
       <div
         className={cn(
@@ -370,16 +391,10 @@ function CollectionLink({
           <Star className="size-3.5 fill-[#facc15] text-[#facc15]" />
         ) : (
           <span className="text-[clamp(10px,1.3vh,12px)] text-muted-foreground">
-            {meta}
+            {itemCount}
           </span>
         )}
       </div>
     </div>
   );
-}
-
-function getLatestCollectionUpdate(itemIds: string[]) {
-  return itemIds
-    .map((itemId) => dashboardMockData.items.find((item) => item.id === itemId)?.updatedAt ?? "")
-    .sort((left, right) => right.localeCompare(left))[0];
 }

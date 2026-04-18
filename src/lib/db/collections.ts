@@ -22,6 +22,11 @@ export interface DashboardCollectionStats {
   favoriteCollections: number;
 }
 
+export interface DashboardSidebarCollections {
+  favoriteCollections: DashboardCollectionCardRecord[];
+  recentCollections: DashboardCollectionCardRecord[];
+}
+
 async function getCollectionsForDashboard() {
   return prisma.collection.findMany({
     where: {
@@ -53,18 +58,27 @@ async function getCollectionsForDashboard() {
   });
 }
 
-export async function getRecentDashboardCollections(limit = 6) {
+export async function getAllDashboardCollections() {
   const collections = await getCollectionsForDashboard();
 
-  return collections
-    .map(mapCollectionToCardRecord)
-    .sort((left, right) => {
-      const rightTimestamp = right.lastUpdatedAt?.getTime() ?? 0;
-      const leftTimestamp = left.lastUpdatedAt?.getTime() ?? 0;
+  return collections.map(mapCollectionToCardRecord).sort(sortCollectionsByUpdatedAt);
+}
 
-      return rightTimestamp - leftTimestamp;
-    })
-    .slice(0, limit);
+export async function getRecentDashboardCollections(limit = 6) {
+  const collections = await getAllDashboardCollections();
+
+  return collections.slice(0, limit);
+}
+
+export async function getDashboardSidebarCollections(
+  limit = 4,
+): Promise<DashboardSidebarCollections> {
+  const collections = await getAllDashboardCollections();
+
+  return {
+    favoriteCollections: collections.filter((collection) => collection.isFavorite).slice(0, limit),
+    recentCollections: collections.slice(0, limit),
+  };
 }
 
 export async function getDashboardCollectionStats(): Promise<DashboardCollectionStats> {
@@ -130,4 +144,14 @@ function mapCollectionToCardRecord(
     typeKeys: sortedTypes.map(([typeKey]) => typeKey),
     lastUpdatedAt,
   };
+}
+
+function sortCollectionsByUpdatedAt(
+  left: DashboardCollectionCardRecord,
+  right: DashboardCollectionCardRecord,
+) {
+  const rightTimestamp = right.lastUpdatedAt?.getTime() ?? 0;
+  const leftTimestamp = left.lastUpdatedAt?.getTime() ?? 0;
+
+  return rightTimestamp - leftTimestamp;
 }
