@@ -5,12 +5,22 @@ import { useEffect, useState } from "react";
 
 import { Sidebar } from "@/components/layout/sidebar";
 import { TopBar } from "@/components/layout/top-bar";
+import type { DashboardCollectionCardRecord } from "@/lib/db/collections";
+import type { DashboardSidebarItemTypeRecord } from "@/lib/db/items";
 
 interface DashboardShellProps {
   children: ReactNode;
+  favoriteCollections: DashboardCollectionCardRecord[];
+  recentCollections: DashboardCollectionCardRecord[];
+  sidebarItemTypes: DashboardSidebarItemTypeRecord[];
 }
 
-export function DashboardShell({ children }: DashboardShellProps) {
+export function DashboardShell({
+  children,
+  favoriteCollections,
+  recentCollections,
+  sidebarItemTypes,
+}: DashboardShellProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
@@ -47,10 +57,13 @@ export function DashboardShell({ children }: DashboardShellProps) {
     <main className="min-h-screen bg-background text-foreground">
       <div className="flex min-h-screen">
         <Sidebar
+          favoriteCollections={favoriteCollections}
           isCollapsed={isSidebarCollapsed}
           isMobileOpen={isSidebarOpen}
           onCloseMobile={handleSidebarClose}
           onToggleCollapsed={handleSidebarCollapse}
+          recentCollections={recentCollections}
+          sidebarItemTypes={sidebarItemTypes}
         />
 
         <div className="flex min-w-0 flex-1 flex-col">

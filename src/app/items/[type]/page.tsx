@@ -2,8 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 
-import { getDashboardItemTypeIcon } from "@/lib/dashboard-icons";
-import { dashboardMockData } from "@/lib/mock-data";
+import { getDashboardIconByName, getDashboardItemTypeColor } from "@/lib/dashboard-icons";
+import { getDashboardItemTypePage } from "@/lib/db/items";
 
 interface ItemTypePageProps {
   params: Promise<{
@@ -13,14 +13,14 @@ interface ItemTypePageProps {
 
 export default async function ItemTypePage({ params }: ItemTypePageProps) {
   const { type } = await params;
-  const itemType = dashboardMockData.itemTypes.find((entry) => entry.key === type);
+  const itemTypePage = await getDashboardItemTypePage(type);
 
-  if (!itemType) {
+  if (!itemTypePage) {
     notFound();
   }
 
-  const Icon = getDashboardItemTypeIcon(itemType.key);
-  const items = dashboardMockData.items.filter((item) => item.typeKey === itemType.key);
+  const { itemType, items } = itemTypePage;
+  const Icon = getDashboardIconByName(itemType.icon);
 
   return (
     <main className="min-h-screen bg-background px-4 py-8 text-foreground sm:px-6 lg:px-8">
@@ -36,7 +36,7 @@ export default async function ItemTypePage({ params }: ItemTypePageProps) {
         <header className="rounded-[28px] border border-border/70 bg-[#0b0b0d] p-8 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
           <div className="flex items-center gap-4">
             <div className="flex size-14 items-center justify-center rounded-2xl border border-white/6 bg-card">
-              <Icon className="size-6 text-foreground" />
+              <Icon className={`size-6 ${getDashboardItemTypeColor(itemType.typeKey)}`} />
             </div>
             <div>
               <p className="text-sm uppercase tracking-[0.22em] text-muted-foreground">
@@ -65,10 +65,20 @@ export default async function ItemTypePage({ params }: ItemTypePageProps) {
                     {item.description}
                   </p>
                 </div>
-                <p className="shrink-0 text-sm text-muted-foreground">{item.updatedAt}</p>
+                <p className="shrink-0 text-sm text-muted-foreground">
+                  {new Intl.DateTimeFormat("en-US", {
+                    month: "short",
+                    day: "numeric",
+                  }).format(item.updatedAt)}
+                </p>
               </div>
 
               <div className="mt-4 flex flex-wrap gap-2">
+                <span
+                  className={`rounded-full border border-border/70 bg-card px-3 py-1 text-xs font-medium ${getDashboardItemTypeColor(item.typeKey)}`}
+                >
+                  {item.typeLabel}
+                </span>
                 {item.tags.map((tag) => (
                   <span
                     key={tag}

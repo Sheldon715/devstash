@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { CollectionCard } from "@/components/dashboard/collection-card";
 import { getRecentDashboardCollections } from "@/lib/db/collections";
 
@@ -13,12 +15,12 @@ export async function CollectionsSection() {
           </h2>
         </div>
 
-        <button
-          type="button"
+        <Link
+          href="/collections"
           className="text-xs font-medium text-muted-foreground transition-colors hover:text-zinc-50 sm:text-sm"
         >
           View all
-        </button>
+        </Link>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
