@@ -3,10 +3,19 @@ import { PinnedItems } from "@/components/dashboard/pinned-items";
 import { RecentItems } from "@/components/dashboard/recent-items";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
+import {
+  getPinnedDashboardItems,
+  getRecentDashboardItems,
+} from "@/lib/db/items";
 
 export const dynamic = "force-dynamic";
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const [pinnedItems, recentItems] = await Promise.all([
+    getPinnedDashboardItems(),
+    getRecentDashboardItems(),
+  ]);
+
   return (
     <DashboardShell>
       <div className="mx-auto w-full space-y-8 xl:space-y-9">
@@ -21,8 +30,8 @@ export default function DashboardPage() {
 
         <StatsCards />
         <CollectionsSection />
-        <PinnedItems />
-        <RecentItems />
+        <PinnedItems items={pinnedItems} />
+        <RecentItems items={recentItems} />
       </div>
     </DashboardShell>
   );

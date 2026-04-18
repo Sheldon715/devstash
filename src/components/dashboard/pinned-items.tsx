@@ -1,9 +1,15 @@
 import { ItemCard } from "@/components/dashboard/item-card";
-import { getPinnedItems } from "@/lib/dashboard-data";
+import type { DashboardItemRecord } from "@/lib/db/items";
 
-const pinnedItems = getPinnedItems();
+interface PinnedItemsProps {
+  items: DashboardItemRecord[];
+}
 
-export function PinnedItems() {
+export function PinnedItems({ items }: PinnedItemsProps) {
+  if (items.length === 0) {
+    return null;
+  }
+
   return (
     <section className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -15,7 +21,7 @@ export function PinnedItems() {
       </div>
 
       <div className="space-y-4">
-        {pinnedItems.map((item) => (
+        {items.map((item) => (
           <ItemCard key={item.id} item={item} variant="featured" />
         ))}
       </div>
