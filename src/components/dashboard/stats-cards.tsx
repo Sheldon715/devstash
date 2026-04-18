@@ -1,8 +1,7 @@
 import { Boxes, FolderOpen, Sparkles, Star, type LucideIcon } from "lucide-react";
 
-import { getFavoriteItemsCount } from "@/lib/dashboard-data";
 import { getDashboardCollectionStats } from "@/lib/db/collections";
-import { dashboardMockData } from "@/lib/mock-data";
+import { getDashboardItemStats } from "@/lib/db/items";
 
 interface StatCard {
   accentClass: string;
@@ -12,27 +11,19 @@ interface StatCard {
   value: number;
 }
 
-const baseStats: StatCard[] = [
-  {
-    label: "Items",
-    value: dashboardMockData.items.length,
-    detail: "Saved across every type",
-    accentClass: "from-[#2563eb]/25 via-[#1d4ed8]/10 to-transparent",
-    icon: Boxes,
-  },
-  {
-    label: "Favorite Items",
-    value: getFavoriteItemsCount(),
-    detail: "Quick-access references",
-    accentClass: "from-[#f59e0b]/25 via-[#b45309]/10 to-transparent",
-    icon: Star,
-  },
-];
-
 export async function StatsCards() {
-  const collectionStats = await getDashboardCollectionStats();
+  const [itemStats, collectionStats] = await Promise.all([
+    getDashboardItemStats(),
+    getDashboardCollectionStats(),
+  ]);
   const stats: StatCard[] = [
-    baseStats[0],
+    {
+      label: "Items",
+      value: itemStats.totalItems,
+      detail: "Saved across every type",
+      accentClass: "from-[#2563eb]/25 via-[#1d4ed8]/10 to-transparent",
+      icon: Boxes,
+    },
     {
       label: "Collections",
       value: collectionStats.totalCollections,
@@ -40,7 +31,13 @@ export async function StatsCards() {
       accentClass: "from-[#10b981]/25 via-[#047857]/10 to-transparent",
       icon: FolderOpen,
     },
-    baseStats[1],
+    {
+      label: "Favorite Items",
+      value: itemStats.favoriteItems,
+      detail: "Quick-access references",
+      accentClass: "from-[#f59e0b]/25 via-[#b45309]/10 to-transparent",
+      icon: Star,
+    },
     {
       label: "Favorite Collections",
       value: collectionStats.favoriteCollections,

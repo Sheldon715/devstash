@@ -1,9 +1,11 @@
 import { ItemCard } from "@/components/dashboard/item-card";
-import { getRecentItems } from "@/lib/dashboard-data";
+import type { DashboardItemRecord } from "@/lib/db/items";
 
-const recentItems = getRecentItems();
+interface RecentItemsProps {
+  items: DashboardItemRecord[];
+}
 
-export function RecentItems() {
+export function RecentItems({ items }: RecentItemsProps) {
   return (
     <section className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -18,7 +20,7 @@ export function RecentItems() {
       </div>
 
       <div className="space-y-3">
-        {recentItems.map((item) => (
+        {items.map((item) => (
           <ItemCard key={item.id} item={item} variant="compact" />
         ))}
       </div>

@@ -1,14 +1,10 @@
 import { Pin, Star } from "lucide-react";
 
 import {
-  formatShortDate,
-  getCollectionNames,
-  type DashboardItemRecord,
-} from "@/lib/dashboard-data";
-import {
   getDashboardItemTypeColor,
   getDashboardItemTypeIcon,
 } from "@/lib/dashboard-icons";
+import type { DashboardItemRecord } from "@/lib/db/items";
 
 interface ItemCardProps {
   item: DashboardItemRecord;
@@ -17,8 +13,11 @@ interface ItemCardProps {
 
 export function ItemCard({ item, variant }: ItemCardProps) {
   const ItemTypeIcon = getDashboardItemTypeIcon(item.typeKey);
-  const collectionNames = getCollectionNames(item.collectionIds);
   const isFeatured = variant === "featured";
+  const updatedLabel = new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+  }).format(item.updatedAt);
 
   return (
     <article className="relative overflow-hidden rounded-[24px] border border-white/10 bg-[#08090c] p-4 shadow-[0_16px_48px_rgba(0,0,0,0.2)]">
@@ -72,6 +71,11 @@ export function ItemCard({ item, variant }: ItemCardProps) {
             </div>
 
             <div className="flex flex-wrap gap-1.5">
+              <span
+                className={`rounded-full bg-white/[0.05] px-2.5 py-1 text-xs font-medium sm:text-sm ${getDashboardItemTypeColor(item.typeKey)}`}
+              >
+                {item.typeLabel}
+              </span>
               {item.tags.map((tag) => (
                 <span
                   key={tag}
@@ -82,16 +86,16 @@ export function ItemCard({ item, variant }: ItemCardProps) {
               ))}
             </div>
 
-            {collectionNames.length ? (
+            {item.collectionNames.length ? (
               <p className="text-xs text-muted-foreground sm:text-sm">
-                In {collectionNames.join(", ")}
+                In {item.collectionNames.join(", ")}
               </p>
             ) : null}
           </div>
         </div>
 
         <p className="shrink-0 pt-1 text-xs text-muted-foreground sm:text-sm">
-          {formatShortDate(item.updatedAt)}
+          {updatedLabel}
         </p>
       </div>
     </article>
