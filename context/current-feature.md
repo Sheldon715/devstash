@@ -2,7 +2,7 @@
 
 <!-- Feature Name -->
 
-Dashboard Stats & Sidebar Data
+Add Pro Badge to Sidebar
 
 ## Status
 
@@ -14,40 +14,29 @@ Completed
 
 <!-- Goals & requirements -->
 
-- Replace the remaining mock dashboard stats with live data from the Neon database via Prisma while keeping the current layout and design
-- Display system item types in the sidebar with their icons and counts from the database, linking each type to `/items/[typename]`
-- Display actual collection data in the sidebar from the database
-- Add a `View all collections` link under the sidebar collections list that goes to `/collections`
-- Keep star icons for favorite collections in the sidebar
-- Show a colored circle for recent collections based on the most-used item type in each collection
-- Reuse and extend the existing database helper pattern, using `src/lib/db/collections.ts` as a reference where needed
+- Add a subtle `PRO` badge to the `Files` item type in the sidebar
+- Add a subtle `PRO` badge to the `Images` item type in the sidebar
+- Use the shadcn/ui `Badge` component for the sidebar badges
+- Keep the existing sidebar layout and styling clean, with `PRO` rendered in uppercase
 
 ## Todo List
 
 <!-- Feature-specific checklist -->
 
-- [x] Document the dashboard stats and sidebar feature in the current feature file
-- [x] Review the current dashboard stats, sidebar UI, and related Prisma queries
-- [x] Add or extend database helpers for live stats, sidebar item types, and sidebar collections
-- [x] Replace sidebar mock item types with Prisma-backed system item types and counts
-- [x] Replace sidebar mock collections with database-backed favorite and recent collections
-- [x] Add the `/collections` link under the sidebar collections list
-- [x] Keep favorite collection stars and add dominant-type colored circles for recent collections
-- [x] Ensure the main dashboard stats display live database data
+- [x] Document the pro badge sidebar feature in the current feature file
+- [x] Review the current sidebar item type UI and badge component usage
+- [x] Add `PRO` badges to the `Files` and `Images` sidebar item types
+- [x] Keep the badge styling subtle and aligned with the current sidebar design
 - [x] Run `npm run build` and fix any issues
-- [x] Verify the updated stats and sidebar in the browser against the seeded data
 
 ## Notes
 
 <!-- Any extra notes -->
 
-- Use Prisma/Neon data instead of `@src/lib/mock-data.ts` for the main dashboard stats and the sidebar item type and collection sections
-- Keep the current dashboard and sidebar layout/design unless small data-driven adjustments are needed
-- Item type links in the sidebar should go to `/items/[typename]`
-- Add a `View all collections` link beneath the sidebar collection groups that routes to `/collections`
-- Favorite collections keep their star treatment; recent collections should use a colored dot based on the collection's dominant item type
-- Reference `@src/lib/db/collections.ts` when shaping new helper logic
-- Create or extend `@src/lib/db/items.ts` as needed for the live item type and stats queries
+- Source spec: `context/feature/add-pro-badge-sidebar.md`
+- Scope is limited to the sidebar item type entries for `Files` and `Images`
+- Preserve existing patterns and avoid unrelated sidebar refactors
+- Use a clean, subtle badge treatment rather than a loud accent
 
 ## History
 

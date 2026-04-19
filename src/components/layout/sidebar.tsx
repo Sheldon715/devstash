@@ -12,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { DashboardCollectionCardRecord } from "@/lib/db/collections";
 import type { DashboardSidebarItemTypeRecord } from "@/lib/db/items";
@@ -143,6 +144,7 @@ export function Sidebar({
             {sidebarItemTypes.map((itemType) => {
               const Icon = getDashboardIconByName(itemType.icon);
               const iconColor = getDashboardItemTypeColor(itemType.typeKey);
+              const isProType = itemType.key === "file" || itemType.key === "image";
 
               return (
                 <Link
@@ -169,9 +171,19 @@ export function Sidebar({
                       isCollapsed && "hidden"
                     )}
                   >
-                    <span className="truncate text-[clamp(11px,1.45vh,13px)] font-medium text-zinc-100">
-                      {itemType.name}
-                    </span>
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span className="truncate text-[clamp(11px,1.45vh,13px)] font-medium text-zinc-100">
+                        {itemType.name}
+                      </span>
+                      {isProType ? (
+                        <Badge
+                          variant="outline"
+                          className="border-white/10 bg-white/[0.04] text-[8px] text-zinc-300"
+                        >
+                          PRO
+                        </Badge>
+                      ) : null}
+                    </div>
                     <span className="text-[clamp(10px,1.3vh,12px)] text-muted-foreground">
                       {itemType.totalItems}
                     </span>
