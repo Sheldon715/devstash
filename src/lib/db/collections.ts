@@ -1,9 +1,11 @@
+import { Prisma } from "../../../generated/prisma/client";
+
 import { prisma } from "@/lib/prisma";
+import { normalizeDashboardQueryLimit } from "@/lib/dashboard-query";
+import { normalizeDashboardItemTypeKey } from "@/lib/item-types";
 import type { DashboardItemTypeKey } from "@/lib/mock-data";
 
 const DASHBOARD_DEMO_EMAIL = "demo@devstash.io";
-
-type CollectionWithItems = Awaited<ReturnType<typeof getCollectionsForDashboard>>[number];
 
 export interface DashboardCollectionCardRecord {
   id: string;
@@ -27,57 +29,110 @@ export interface DashboardSidebarCollections {
   recentCollections: DashboardCollectionCardRecord[];
 }
 
+interface DashboardCollectionSummaryRow {
+  id: string;
+  name: string;
+  description: string | null;
+  isFavorite: boolean;
+  itemCount: number;
+  lastUpdatedAt: Date | null;
+  typeStats: unknown;
+}
+
+interface DashboardCollectionTypeStat {
+  itemCount: number;
+  typeKey: DashboardItemTypeKey;
+}
+
 async function getCollectionsForDashboard() {
-  return prisma.collection.findMany({
-    where: {
-      user: {
-        email: DASHBOARD_DEMO_EMAIL,
-      },
-    },
-    select: {
-      id: true,
-      name: true,
-      description: true,
-      isFavorite: true,
-      updatedAt: true,
-      items: {
-        select: {
-          item: {
-            select: {
-              updatedAt: true,
-              type: {
-                select: {
-                  key: true,
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  });
+  return prisma.$queryRaw<DashboardCollectionSummaryRow[]>(Prisma.sql`
+    WITH filtered_collections AS (
+      SELECT
+        c.id,
+        c.name,
+        c.description,
+        c."isFavorite",
+        c."updatedAt"
+      FROM "Collection" c
+      INNER JOIN "User" u ON u.id = c."userId"
+      WHERE u.email = ${DASHBOARD_DEMO_EMAIL}
+    ),
+    collection_type_stats AS (
+      SELECT
+        ci."collectionId" AS "collectionId",
+        CASE
+          WHEN it.key = 'url' THEN 'link'
+          WHEN it.key IN ('snippet', 'prompt', 'command', 'note', 'file', 'image', 'link') THEN it.key
+          ELSE 'note'
+        END AS "typeKey",
+        COUNT(*)::int AS "typeItemCount",
+        MAX(i."updatedAt") AS "lastItemUpdatedAt"
+      FROM "CollectionItem" ci
+      INNER JOIN "Item" i ON i.id = ci."itemId"
+      INNER JOIN "ItemType" it ON it.id = i."typeId"
+      GROUP BY
+        ci."collectionId",
+        CASE
+          WHEN it.key = 'url' THEN 'link'
+          WHEN it.key IN ('snippet', 'prompt', 'command', 'note', 'file', 'image', 'link') THEN it.key
+          ELSE 'note'
+        END
+    )
+    SELECT
+      fc.id,
+      fc.name,
+      fc.description,
+      fc."isFavorite" AS "isFavorite",
+      COALESCE(SUM(cts."typeItemCount"), 0)::int AS "itemCount",
+      GREATEST(
+        fc."updatedAt",
+        COALESCE(MAX(cts."lastItemUpdatedAt"), fc."updatedAt")
+      ) AS "lastUpdatedAt",
+      COALESCE(
+        json_agg(
+          json_build_object(
+            'typeKey', cts."typeKey",
+            'itemCount', cts."typeItemCount"
+          )
+          ORDER BY cts."typeItemCount" DESC, cts."typeKey" ASC
+        ) FILTER (WHERE cts."typeKey" IS NOT NULL),
+        '[]'::json
+      ) AS "typeStats"
+    FROM filtered_collections fc
+    LEFT JOIN collection_type_stats cts ON cts."collectionId" = fc.id
+    GROUP BY
+      fc.id,
+      fc.name,
+      fc.description,
+      fc."isFavorite",
+      fc."updatedAt"
+    ORDER BY "lastUpdatedAt" DESC, fc.name ASC
+  `);
 }
 
 export async function getAllDashboardCollections() {
   const collections = await getCollectionsForDashboard();
 
-  return collections.map(mapCollectionToCardRecord).sort(sortCollectionsByUpdatedAt);
+  return collections.map(mapCollectionToCardRecord);
 }
 
 export async function getRecentDashboardCollections(limit = 6) {
   const collections = await getAllDashboardCollections();
 
-  return collections.slice(0, limit);
+  return collections.slice(0, normalizeDashboardQueryLimit(limit));
 }
 
 export async function getDashboardSidebarCollections(
   limit = 4,
 ): Promise<DashboardSidebarCollections> {
   const collections = await getAllDashboardCollections();
+  const normalizedLimit = normalizeDashboardQueryLimit(limit);
 
   return {
-    favoriteCollections: collections.filter((collection) => collection.isFavorite).slice(0, limit),
-    recentCollections: collections.slice(0, limit),
+    favoriteCollections: collections
+      .filter((collection) => collection.isFavorite)
+      .slice(0, normalizedLimit),
+    recentCollections: collections.slice(0, normalizedLimit),
   };
 }
 
@@ -107,51 +162,49 @@ export async function getDashboardCollectionStats(): Promise<DashboardCollection
 }
 
 function mapCollectionToCardRecord(
-  collection: CollectionWithItems,
+  collection: DashboardCollectionSummaryRow,
 ): DashboardCollectionCardRecord {
-  const typeCounts = new Map<DashboardItemTypeKey, number>();
-  let lastUpdatedAt: Date | null = collection.updatedAt;
-
-  for (const collectionItem of collection.items) {
-    const typeKey = collectionItem.item.type.key as DashboardItemTypeKey;
-    const nextCount = (typeCounts.get(typeKey) ?? 0) + 1;
-
-    typeCounts.set(typeKey, nextCount);
-
-    const itemUpdatedAt = collectionItem.item.updatedAt;
-
-    if (!lastUpdatedAt || itemUpdatedAt > lastUpdatedAt) {
-      lastUpdatedAt = itemUpdatedAt;
-    }
-  }
-
-  const sortedTypes = [...typeCounts.entries()].sort((left, right) => {
-    if (right[1] !== left[1]) {
-      return right[1] - left[1];
-    }
-
-    return left[0].localeCompare(right[0]);
-  });
+  const typeStats = parseCollectionTypeStats(collection.typeStats);
 
   return {
     id: collection.id,
     name: collection.name,
     description: collection.description ?? "No description yet.",
     isFavorite: collection.isFavorite,
-    itemCount: collection.items.length,
-    typeCount: typeCounts.size,
-    dominantTypeKey: sortedTypes[0]?.[0] ?? null,
-    typeKeys: sortedTypes.map(([typeKey]) => typeKey),
-    lastUpdatedAt,
+    itemCount: collection.itemCount,
+    typeCount: typeStats.length,
+    dominantTypeKey: typeStats[0]?.typeKey ?? null,
+    typeKeys: typeStats.map(({ typeKey }) => typeKey),
+    lastUpdatedAt: collection.lastUpdatedAt,
   };
 }
 
-function sortCollectionsByUpdatedAt(
-  left: DashboardCollectionCardRecord,
-  right: DashboardCollectionCardRecord,
-) {
-  const rightTimestamp = right.lastUpdatedAt?.getTime() ?? 0;
-  const leftTimestamp = left.lastUpdatedAt?.getTime() ?? 0;
+function parseCollectionTypeStats(value: unknown): DashboardCollectionTypeStat[] {
+  const rawStats = Array.isArray(value)
+    ? value
+    : typeof value === "string"
+      ? (JSON.parse(value) as unknown)
+      : [];
 
-  return rightTimestamp - leftTimestamp;
+  if (!Array.isArray(rawStats)) {
+    return [];
+  }
+
+  return rawStats
+    .map((stat): DashboardCollectionTypeStat | null => {
+      if (!stat || typeof stat !== "object") {
+        return null;
+      }
+
+      const typeKey = normalizeDashboardItemTypeKey(
+        String(Reflect.get(stat, "typeKey") ?? "note"),
+      );
+      const itemCount = Number(Reflect.get(stat, "itemCount") ?? 0);
+
+      return {
+        itemCount: Number.isFinite(itemCount) ? itemCount : 0,
+        typeKey,
+      };
+    })
+    .filter((stat): stat is DashboardCollectionTypeStat => stat !== null);
 }

@@ -1,10 +1,13 @@
 import Link from "next/link";
 
 import { CollectionCard } from "@/components/dashboard/collection-card";
-import { getRecentDashboardCollections } from "@/lib/db/collections";
+import type { DashboardCollectionCardRecord } from "@/lib/db/collections";
 
-export async function CollectionsSection() {
-  const recentCollections = await getRecentDashboardCollections();
+interface CollectionsSectionProps {
+  collections: DashboardCollectionCardRecord[];
+}
+
+export function CollectionsSection({ collections }: CollectionsSectionProps) {
 
   return (
     <section className="space-y-4">
@@ -24,7 +27,7 @@ export async function CollectionsSection() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
-        {recentCollections.map((collection) => (
+        {collections.map((collection) => (
           <CollectionCard key={collection.id} collection={collection} />
         ))}
       </div>

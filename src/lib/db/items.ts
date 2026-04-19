@@ -1,16 +1,9 @@
 import { prisma } from "@/lib/prisma";
+import { normalizeDashboardQueryLimit } from "@/lib/dashboard-query";
+import { normalizeDashboardItemTypeKey, getDashboardItemTypeKeys } from "@/lib/item-types";
 import type { DashboardItemTypeKey } from "@/lib/mock-data";
 
 const DASHBOARD_DEMO_EMAIL = "demo@devstash.io";
-const DASHBOARD_ITEM_TYPE_KEYS = [
-  "snippet",
-  "prompt",
-  "command",
-  "note",
-  "file",
-  "image",
-  "link",
-] as const satisfies readonly DashboardItemTypeKey[];
 
 type DashboardItemWithRelations = Awaited<
   ReturnType<typeof getDashboardItems>
@@ -67,7 +60,7 @@ async function getDashboardItems(
       ...(options?.typeKey ? { type: { key: options.typeKey } } : {}),
     },
     orderBy: [{ updatedAt: "desc" }, { title: "asc" }],
-    take: options?.limit,
+    take: normalizeDashboardQueryLimit(options?.limit),
     select: {
       id: true,
       title: true,
@@ -155,14 +148,15 @@ export async function getDashboardSidebarItemTypes() {
       key: true,
       name: true,
       icon: true,
-      items: {
-        where: {
-          user: {
-            email: DASHBOARD_DEMO_EMAIL,
-          },
-        },
+      _count: {
         select: {
-          id: true,
+          items: {
+            where: {
+              user: {
+                email: DASHBOARD_DEMO_EMAIL,
+              },
+            },
+          },
         },
       },
     },
@@ -175,14 +169,14 @@ export async function getDashboardSidebarItemTypes() {
         key: itemType.key,
         name: formatItemTypeLabel(itemType.name),
         icon: itemType.icon,
-        totalItems: itemType.items.length,
+        totalItems: itemType._count.items,
         typeKey: normalizeDashboardItemTypeKey(itemType.key),
       }),
     )
     .sort(
       (left, right) =>
-        DASHBOARD_ITEM_TYPE_KEYS.indexOf(left.typeKey) -
-        DASHBOARD_ITEM_TYPE_KEYS.indexOf(right.typeKey),
+        getDashboardItemTypeKeys().indexOf(left.typeKey) -
+        getDashboardItemTypeKeys().indexOf(right.typeKey),
     );
 }
 
@@ -235,18 +229,6 @@ function mapItemToDashboardRecord(item: DashboardItemWithRelations): DashboardIt
     isFavorite: item.isFavorite,
     updatedAt: item.updatedAt,
   };
-}
-
-function normalizeDashboardItemTypeKey(key: string): DashboardItemTypeKey {
-  if (key === "url") {
-    return "link";
-  }
-
-  if (DASHBOARD_ITEM_TYPE_KEYS.includes(key as DashboardItemTypeKey)) {
-    return key as DashboardItemTypeKey;
-  }
-
-  return "note";
 }
 
 function formatItemTypeLabel(typeName: string) {

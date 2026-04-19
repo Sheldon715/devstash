@@ -5,6 +5,7 @@ import {
   getDashboardItemTypeColor,
 } from "@/lib/dashboard-icons";
 import type { DashboardCollectionCardRecord } from "@/lib/db/collections";
+import { formatDashboardDate } from "@/lib/date";
 
 interface CollectionCardProps {
   collection: DashboardCollectionCardRecord;
@@ -15,10 +16,7 @@ export function CollectionCard({ collection }: CollectionCardProps) {
     ? getDashboardItemTypeColor(collection.dominantTypeKey)
     : "text-muted-foreground";
   const updatedLabel = collection.lastUpdatedAt
-    ? new Intl.DateTimeFormat("en-US", {
-        month: "short",
-        day: "numeric",
-      }).format(collection.lastUpdatedAt)
+    ? formatDashboardDate(collection.lastUpdatedAt)
     : null;
   const statsLabel =
     collection.typeCount > 0

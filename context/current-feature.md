@@ -1,26 +1,41 @@
-# Current Feature
-
-<!-- Feature Name -->
+# Dashboard quick wins and low-risk hardening
 
 ## Status
 
 <!-- Not Started|In Progress|Completed -->
 
-Not Started
+In Progress
 
 ## Goals
 
 <!-- Goals & requirements -->
+
+- Address quick-win review findings with little to no behavioral risk
+- Exclude auth-related work and unfinished navigation/click-handler work from this pass
+- Improve dashboard resilience and maintainability without broad refactors
 
 
 ## Todo List
 
 <!-- Feature-specific checklist -->
 
+- [x] Add route-level loading state for dashboard-related pages
+- [x] Add route-level error boundary with retry support for dashboard-related pages
+- [x] Extract shared date formatting utility for dashboard item and collection dates
+- [x] Harden dashboard item type/icon handling to avoid unsafe key assumptions
+- [x] Add defensive limit validation/capping to dashboard query helpers
+- [x] Remove duplicate collection fetching on the dashboard request path
+- [x] Run `npm run lint`
+- [x] Run `npm run build`
+
 
 ## Notes
 
 <!-- Any extra notes -->
+
+- This pass intentionally excludes authentication/user scoping changes
+- This pass intentionally excludes unfinished navigation and missing click handlers
+- Avoid schema changes and other higher-risk refactors unless required by one of the quick wins above
 
 
 ## History

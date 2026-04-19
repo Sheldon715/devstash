@@ -5,6 +5,7 @@ import {
   getDashboardItemTypeColor,
 } from "@/lib/dashboard-icons";
 import type { DashboardItemRecord } from "@/lib/db/items";
+import { formatDashboardDate } from "@/lib/date";
 
 interface ItemCardProps {
   item: DashboardItemRecord;
@@ -13,10 +14,7 @@ interface ItemCardProps {
 
 export function ItemCard({ item, variant }: ItemCardProps) {
   const isFeatured = variant === "featured";
-  const updatedLabel = new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-  }).format(item.updatedAt);
+  const updatedLabel = formatDashboardDate(item.updatedAt);
 
   return (
     <article className="relative overflow-hidden rounded-[24px] border border-white/10 bg-[#08090c] p-4 shadow-[0_16px_48px_rgba(0,0,0,0.2)]">

@@ -7,6 +7,7 @@ import {
   getDashboardItemTypeColor,
 } from "@/lib/dashboard-icons";
 import { getDashboardItemTypePage } from "@/lib/db/items";
+import { formatDashboardDate } from "@/lib/date";
 
 interface ItemTypePageProps {
   params: Promise<{
@@ -71,10 +72,7 @@ export default async function ItemTypePage({ params }: ItemTypePageProps) {
                   </p>
                 </div>
                 <p className="shrink-0 text-sm text-muted-foreground">
-                  {new Intl.DateTimeFormat("en-US", {
-                    month: "short",
-                    day: "numeric",
-                  }).format(item.updatedAt)}
+                  {formatDashboardDate(item.updatedAt)}
                 </p>
               </div>
 
