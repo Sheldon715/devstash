@@ -19,5 +19,5 @@ This is phase 1 of 3 for the dashboard UI layout. Use the screenshot referenced 
 - @context/screenshots/dashboard-ui-main.png
 - @context/project-overview.md
 - @src/lib/mock-data.ts
-- @context/features/dashboard-phase-2-spec.md
-- @context/features/dashboard-phase-3-spec.md
+- @context/feature/dashboard-phase-2-spec.md
+- @context/feature/dashboard-phase-3-spec.md

@@ -1,3 +1,4 @@
+import { createElement, type ComponentProps } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
   Code2,
@@ -51,12 +52,20 @@ const ITEM_TYPE_COLOR_BY_KEY: Record<DashboardItemTypeKey, string> = {
   link: "text-[#14b8a6]",
 };
 
-export function getDashboardItemTypeIcon(typeKey: DashboardItemTypeKey) {
-  return ITEM_TYPE_ICON_BY_KEY[typeKey];
+type DashboardIconProps = Omit<ComponentProps<LucideIcon>, "ref">;
+
+export function DashboardItemTypeIcon({
+  typeKey,
+  ...props
+}: DashboardIconProps & { typeKey: DashboardItemTypeKey }) {
+  return createElement(ITEM_TYPE_ICON_BY_KEY[typeKey], props);
 }
 
-export function getDashboardIconByName(iconName?: string | null) {
-  return ITEM_TYPE_ICON_BY_NAME[iconName ?? ""] ?? FileText;
+export function DashboardNamedIcon({
+  iconName,
+  ...props
+}: DashboardIconProps & { iconName?: string | null }) {
+  return createElement(ITEM_TYPE_ICON_BY_NAME[iconName ?? ""] ?? FileText, props);
 }
 
 export function getDashboardItemTypeColor(typeKey: DashboardItemTypeKey) {

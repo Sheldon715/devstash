@@ -2,41 +2,26 @@
 
 <!-- Feature Name -->
 
-Add Pro Badge to Sidebar
-
 ## Status
 
 <!-- Not Started|In Progress|Completed -->
 
-Completed
+Not Started
 
 ## Goals
 
 <!-- Goals & requirements -->
 
-- Add a subtle `PRO` badge to the `Files` item type in the sidebar
-- Add a subtle `PRO` badge to the `Images` item type in the sidebar
-- Use the shadcn/ui `Badge` component for the sidebar badges
-- Keep the existing sidebar layout and styling clean, with `PRO` rendered in uppercase
 
 ## Todo List
 
 <!-- Feature-specific checklist -->
 
-- [x] Document the pro badge sidebar feature in the current feature file
-- [x] Review the current sidebar item type UI and badge component usage
-- [x] Add `PRO` badges to the `Files` and `Images` sidebar item types
-- [x] Keep the badge styling subtle and aligned with the current sidebar design
-- [x] Run `npm run build` and fix any issues
 
 ## Notes
 
 <!-- Any extra notes -->
 
-- Source spec: `context/feature/add-pro-badge-sidebar.md`
-- Scope is limited to the sidebar item type entries for `Files` and `Images`
-- Preserve existing patterns and avoid unrelated sidebar refactors
-- Use a clean, subtle badge treatment rather than a loud accent
 
 ## History
 
@@ -51,3 +36,4 @@ Completed
 - Dashboard collections data feature completed with Prisma-backed recent collections, live collection stats, dominant type styling, and dynamic dashboard rendering
 - Dashboard items data feature completed with Prisma-backed pinned and recent items, live dashboard item stats, and server-render verification against seeded data
 - Dashboard stats and sidebar data feature completed with Prisma-backed sidebar item types, live favorite/recent collections, collection navigation links, and updated seeded favorite collection data
+- Add Pro Badge to Sidebar feature completed with subtle `PRO` badges for the Files and Images sidebar item types using a shared badge component

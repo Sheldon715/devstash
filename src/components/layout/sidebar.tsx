@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import type { DashboardCollectionCardRecord } from "@/lib/db/collections";
 import type { DashboardSidebarItemTypeRecord } from "@/lib/db/items";
 import {
-  getDashboardIconByName,
+  DashboardNamedIcon,
   getDashboardItemTypeColor,
 } from "@/lib/dashboard-icons";
 import { cn } from "@/lib/utils";
@@ -142,7 +142,6 @@ export function Sidebar({
             className="border-b border-white/6 px-3.5 py-[clamp(10px,1.6vh,20px)]"
           >
             {sidebarItemTypes.map((itemType) => {
-              const Icon = getDashboardIconByName(itemType.icon);
               const iconColor = getDashboardItemTypeColor(itemType.typeKey);
               const isProType = itemType.key === "file" || itemType.key === "image";
 
@@ -162,7 +161,10 @@ export function Sidebar({
                       iconColor
                     )}
                   >
-                    <Icon className="size-[clamp(12px,1.8vh,16px)]" />
+                    <DashboardNamedIcon
+                      iconName={itemType.icon}
+                      className="size-[clamp(12px,1.8vh,16px)]"
+                    />
                   </div>
 
                   <div

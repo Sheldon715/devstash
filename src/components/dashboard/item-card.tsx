@@ -1,8 +1,8 @@
 import { Pin, Star } from "lucide-react";
 
 import {
+  DashboardItemTypeIcon,
   getDashboardItemTypeColor,
-  getDashboardItemTypeIcon,
 } from "@/lib/dashboard-icons";
 import type { DashboardItemRecord } from "@/lib/db/items";
 
@@ -12,7 +12,6 @@ interface ItemCardProps {
 }
 
 export function ItemCard({ item, variant }: ItemCardProps) {
-  const ItemTypeIcon = getDashboardItemTypeIcon(item.typeKey);
   const isFeatured = variant === "featured";
   const updatedLabel = new Intl.DateTimeFormat("en-US", {
     month: "short",
@@ -38,7 +37,8 @@ export function ItemCard({ item, variant }: ItemCardProps) {
               isFeatured ? "size-14" : "size-11"
             }`}
           >
-            <ItemTypeIcon
+            <DashboardItemTypeIcon
+              typeKey={item.typeKey}
               className={`${isFeatured ? "size-6" : "size-4.5"} ${getDashboardItemTypeColor(item.typeKey)}`}
             />
           </div>

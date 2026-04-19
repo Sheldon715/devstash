@@ -1,8 +1,8 @@
 import { MoreHorizontal, Star } from "lucide-react";
 
 import {
+  DashboardItemTypeIcon,
   getDashboardItemTypeColor,
-  getDashboardItemTypeIcon,
 } from "@/lib/dashboard-icons";
 import type { DashboardCollectionCardRecord } from "@/lib/db/collections";
 
@@ -63,14 +63,12 @@ export function CollectionCard({ collection }: CollectionCardProps) {
         <div className="mt-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-muted-foreground">
             {collection.typeKeys.map((typeKey) => {
-              const Icon = getDashboardItemTypeIcon(typeKey);
-
               return (
                 <div
                   key={typeKey}
                   className={`flex size-8 items-center justify-center rounded-lg bg-white/[0.03] ${getDashboardItemTypeColor(typeKey)}`}
                 >
-                  <Icon className="size-3.5" />
+                  <DashboardItemTypeIcon typeKey={typeKey} className="size-3.5" />
                 </div>
               );
             })}
