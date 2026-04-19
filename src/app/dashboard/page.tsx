@@ -3,7 +3,7 @@ import { PinnedItems } from "@/components/dashboard/pinned-items";
 import { RecentItems } from "@/components/dashboard/recent-items";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
-import { getDashboardSidebarCollections } from "@/lib/db/collections";
+import { getAllDashboardCollections } from "@/lib/db/collections";
 import {
   getPinnedDashboardItems,
   getRecentDashboardItems,
@@ -13,17 +13,19 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const [sidebarCollections, sidebarItemTypes, pinnedItems, recentItems] = await Promise.all([
-    getDashboardSidebarCollections(),
+  const [collections, sidebarItemTypes, pinnedItems, recentItems] = await Promise.all([
+    getAllDashboardCollections(),
     getDashboardSidebarItemTypes(),
     getPinnedDashboardItems(),
     getRecentDashboardItems(),
   ]);
+  const favoriteCollections = collections.filter((collection) => collection.isFavorite).slice(0, 4);
+  const recentCollections = collections.slice(0, 4);
 
   return (
     <DashboardShell
-      favoriteCollections={sidebarCollections.favoriteCollections}
-      recentCollections={sidebarCollections.recentCollections}
+      favoriteCollections={favoriteCollections}
+      recentCollections={recentCollections}
       sidebarItemTypes={sidebarItemTypes}
     >
       <div className="mx-auto w-full space-y-8 xl:space-y-9">
@@ -37,7 +39,7 @@ export default async function DashboardPage() {
         </header>
 
         <StatsCards />
-        <CollectionsSection />
+        <CollectionsSection collections={collections.slice(0, 6)} />
         <PinnedItems items={pinnedItems} />
         <RecentItems items={recentItems} />
       </div>
