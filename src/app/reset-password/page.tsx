@@ -1,7 +1,5 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
-import { auth } from "@/auth";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { ResetPasswordForm } from "@/components/auth/reset-password-form";
 import { getPasswordResetTokenStatus } from "@/lib/password-reset";
@@ -29,11 +27,6 @@ function getInvalidResetCopy(status: "expired" | "invalid") {
 
 export default async function ResetPasswordPage({ searchParams }: ResetPasswordPageProps) {
   const params = await searchParams;
-  const session = await auth();
-
-  if (session?.user) {
-    redirect("/dashboard");
-  }
 
   const email = typeof params.email === "string" ? params.email.trim().toLowerCase() : "";
   const token = typeof params.token === "string" ? params.token.trim() : "";

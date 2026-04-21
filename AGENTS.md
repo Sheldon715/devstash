@@ -19,10 +19,6 @@ Read the following to get the full context of the project:
 
 Use `npm install` when dependencies change. Commit the updated `package-lock.json` with any dependency edits.
 
-## Feature Completion Preference
-
-Do not reset, commit, or push `context/current-feature.md` at the end of a feature workflow unless I explicitly ask for that cleanup.
-
 ## Neon MCP Safety Rule
 
 When using the Neon MCP for this repo, always default to the `devstash` project and the `development` branch.

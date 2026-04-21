@@ -10,7 +10,12 @@ import { Input } from "@/components/ui/input";
 import { SuccessToast } from "@/components/ui/success-toast";
 import { PASSWORD_RESET_MIN_PASSWORD_LENGTH } from "@/lib/password-rules";
 
-const INITIAL_CHANGE_PASSWORD_STATE = {
+type ChangePasswordFormState = {
+  error: string | null;
+  success: string | null;
+};
+
+const INITIAL_CHANGE_PASSWORD_STATE: ChangePasswordFormState = {
   error: null,
   success: null,
 };
@@ -62,7 +67,7 @@ function ChangePasswordModal({
   onSuccess: (message: string) => void;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
-  const [state, setState] = useState(INITIAL_CHANGE_PASSWORD_STATE);
+  const [state, setState] = useState<ChangePasswordFormState>(INITIAL_CHANGE_PASSWORD_STATE);
   const [isPending, setIsPending] = useState(false);
 
   useEffect(() => {

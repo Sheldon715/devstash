@@ -1,6 +1,3 @@
-import { redirect } from "next/navigation";
-
-import { auth } from "@/auth";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
 
@@ -12,11 +9,6 @@ interface ForgotPasswordPageProps {
 
 export default async function ForgotPasswordPage({ searchParams }: ForgotPasswordPageProps) {
   const params = await searchParams;
-  const session = await auth();
-
-  if (session?.user) {
-    redirect("/dashboard");
-  }
 
   return (
     <AuthShell
