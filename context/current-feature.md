@@ -1,33 +1,22 @@
-# Current Feature: Forgot Password Flow
+# Current Feature
 
 ## Status
 
 <!-- Not Started|In Progress|Completed -->
 
-In Progress
+Not Started
 
 ## Goals
 
-- Add a "Forgot password?" entry point from the existing sign-in experience.
-- Let users request a password reset email for email/password accounts.
-- Use the existing `VerificationToken` Prisma model for password reset tokens instead of adding a new token table.
-- Add a reset-password flow that validates the token and securely updates the stored password hash.
-- Keep the UX aligned with the current DevStash auth pages, messaging, and email delivery patterns.
+<!-- Goals & requirements -->
 
 ## Todo List
 
-- [x] Add forgot-password and reset-password routes/forms to the auth flow.
-- [x] Create password reset token helpers using the existing `VerificationToken` model.
-- [x] Add server-side request/reset handling with input validation and secure password hashing.
-- [x] Update the sign-in page with a forgot-password link and reset success/error messaging.
-- [x] Run `npm run build`.
-- [ ] Manually verify the full forgot-password flow in the browser.
+<!-- Feature-specific checklist -->
 
 ## Notes
 
-- Follow the existing auth patterns already used for credentials sign-in, registration, and email verification.
-- Reuse the current email-sending approach where possible so reset emails stay consistent with the rest of the auth system.
-- Keep changes minimal and focused on password reset only; avoid unrelated auth refactors.
+<!-- Any extra notes -->
 
 ## History
 
@@ -49,3 +38,4 @@ In Progress
 - Auth UI - Sign In, Register & Sign Out completed with custom auth pages, reusable avatar-driven profile/sidebar UI, working sign-out and redirect flow, polished registration success toast behavior, and a passing production build
 - Email verification on register completed with Resend-powered verification emails, credentials sign-in gating until `emailVerified`, a verification callback route, and a dedicated `/verify-email` confirmation page with DevStash styling
 - Email verification toggle completed with a shared `AUTH_REQUIRE_EMAIL_VERIFICATION` env flag, auto-verification when disabled, and auth UI messaging that stays aligned with the active mode
+- Forgot password flow completed with request/reset pages, `VerificationToken`-backed password reset tokens, minimum password validation, sign-in recovery entry points, and passing build/lint verification; manual browser verification still pending
