@@ -10,6 +10,7 @@ interface SignInPageProps {
     callbackUrl?: string;
     email?: string;
     error?: string;
+    reset?: string;
     registered?: string;
     verificationRequired?: string;
     verificationError?: string;
@@ -55,7 +56,11 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
   const emailVerificationRequired =
     parseVerificationRequiredParam(params.verificationRequired) ?? isEmailVerificationRequired();
   const successMessage =
-    params.verified === "1"
+    params.reset === "1"
+      ? params.email
+        ? `Your password was reset for ${params.email}. Sign in with your new password.`
+        : "Your password was reset. Sign in with your new password."
+      : params.verified === "1"
       ? "Your email is verified. You can sign in now."
       : params.registered === "1"
         ? emailVerificationRequired
@@ -67,7 +72,9 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
             : "Your account is ready. Sign in with your email and password."
         : null;
   const successTitle =
-    params.verified === "1"
+    params.reset === "1"
+      ? "Password updated"
+      : params.verified === "1"
       ? "Email verified"
       : params.registered === "1"
         ? emailVerificationRequired
