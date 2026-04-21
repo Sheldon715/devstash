@@ -10,10 +10,21 @@ interface SignInPageProps {
     email?: string;
     error?: string;
     registered?: string;
+    verificationError?: string;
+    verified?: string;
   }>;
 }
 
-function getAuthErrorMessage(error?: string) {
+function getAuthErrorMessage(error?: string, verificationError?: string) {
+  switch (verificationError) {
+    case "expired":
+      return "That verification link has expired. Register again to get a fresh email.";
+    case "invalid":
+      return "That verification link is invalid or has already been used.";
+    default:
+      break;
+  }
+
   switch (error) {
     case "AccessDenied":
       return "Access denied for this account.";
@@ -28,6 +39,15 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
   const params = await searchParams;
   const session = await auth();
   const callbackUrl = params.callbackUrl || "/dashboard";
+  const successMessage =
+    params.verified === "1"
+      ? "Your email is verified. You can sign in now."
+      : params.registered === "1"
+        ? params.email
+          ? `We sent a verification link to ${params.email}. Open it before signing in.`
+          : "Check your inbox for your verification link before signing in."
+        : null;
+  const successTitle = params.verified === "1" ? "Email verified" : "Check your email";
 
   if (session?.user) {
     redirect(callbackUrl);
@@ -42,12 +62,9 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
       <SignInForm
         callbackUrl={callbackUrl}
         defaultEmail={params.email}
-        initialError={getAuthErrorMessage(params.error)}
-        successMessage={
-          params.registered === "1"
-            ? "You can sign in now."
-            : null
-        }
+        initialError={getAuthErrorMessage(params.error, params.verificationError)}
+        successMessage={successMessage}
+        successTitle={successMessage ? successTitle : null}
       />
     </AuthShell>
   );

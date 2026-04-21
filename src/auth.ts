@@ -1,10 +1,14 @@
 import { compare } from "bcryptjs";
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import NextAuth, { type User } from "next-auth";
+import NextAuth, { CredentialsSignin, type User } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 
 import authConfig, { credentialsInputConfig } from "@/auth.config";
 import { prisma } from "@/lib/prisma";
+
+class EmailNotVerifiedError extends CredentialsSignin {
+  code = "email_not_verified";
+}
 
 function parseCredentials(
   credentials: Partial<Record<keyof typeof credentialsInputConfig, unknown>>,
@@ -42,6 +46,10 @@ async function authorizeCredentials(
 
   if (!passwordsMatch) {
     return null;
+  }
+
+  if (!user.emailVerified) {
+    throw new EmailNotVerifiedError();
   }
 
   return {

@@ -1,6 +1,6 @@
 "use server";
 
-import { AuthError } from "next-auth";
+import { AuthError, CredentialsSignin } from "next-auth";
 
 import { signIn, signOut } from "@/auth";
 import type { SignInActionState } from "@/actions/auth-state";
@@ -37,6 +37,13 @@ export async function signInWithCredentialsAction(
       redirectTo,
     });
   } catch (error) {
+    if (error instanceof CredentialsSignin && error.code === "email_not_verified") {
+      return {
+        email,
+        error: "Verify your email before signing in. Check your inbox for the verification link.",
+      };
+    }
+
     if (error instanceof AuthError) {
       if (error.type === "CredentialsSignin") {
         return {

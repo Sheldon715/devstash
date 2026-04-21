@@ -30,6 +30,7 @@ interface SignInFormProps {
   defaultEmail?: string;
   initialError?: string | null;
   successMessage?: string | null;
+  successTitle?: string | null;
 }
 
 export function SignInForm({
@@ -37,6 +38,7 @@ export function SignInForm({
   defaultEmail = "",
   initialError = null,
   successMessage = null,
+  successTitle = null,
 }: SignInFormProps) {
   const [toastMessage, setToastMessage] = useState(successMessage);
   const [isToastVisible, setIsToastVisible] = useState(false);
@@ -98,7 +100,7 @@ export function SignInForm({
                   Account
                 </p>
                 <p className="mt-1 text-sm font-semibold text-zinc-50">
-                  Registration successful
+                  {successTitle ?? "Success"}
                 </p>
                 <p className="mt-1 text-sm leading-5 text-zinc-300">{toastMessage}</p>
               </div>
