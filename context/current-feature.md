@@ -1,44 +1,22 @@
-# Current Feature: Profile Page
+# Current Feature
 
 ## Status
 
 <!-- Not Started|In Progress|Completed -->
 
-In Progress
+Not Started
 
 ## Goals
 
-- Create the profile page at `/profile`.
-- Display user info including email, name, avatar, and account creation date.
-- Show usage stats including total items, total collections, and item-type breakdown.
-- Add account actions for change password and delete account with confirmation.
-- Animate the user section menu so the Profile and Sign out actions reveal smoothly instead of appearing suddenly when clicked.
-- Keep the dashboard sidebar visible on the profile page.
-- Make the sidebar collapse interaction feel smoother, including the top sidebar icon treatment.
-- Follow existing codebase patterns for auth protection, data fetching, and component structure.
+<!-- Goals & requirements -->
 
 ## Todo List
 
-- [x] Build the protected `/profile` page.
-- [x] Render user info with GitHub avatar or generated initials fallback.
-- [x] Add usage stats for items, collections, and item-type counts.
-- [x] Add change-password action for email/password users only.
-- [x] Add delete-account flow with confirmation protection.
-- [x] Update the user section interaction so Profile and Sign out animate into view on toggle.
-- [x] Keep the sidebar visible on `/profile` and smooth the collapse animation.
-- [x] Refresh the two top sidebar icons to match the updated interaction.
-- [x] Run `npm run build`.
-- [ ] Manually verify the profile page and user-menu behavior in the browser.
+<!-- Feature-specific checklist -->
 
 ## Notes
 
-- Avatar logic should prefer the GitHub avatar when available and otherwise fall back to initials from the user name or email.
-- The change-password action should only appear for credentials users, not GitHub-only accounts.
-- Delete account should require confirmation to prevent accidental removal.
-- The item type breakdown should cover snippets, prompts, notes, commands, links, files, and images.
-- The profile route must remain protected behind authentication.
-- The user-section animation should feel intentional and polished, not just a visibility toggle.
-- The profile page should live inside the existing dashboard shell so the sidebar remains available there.
+<!-- Any extra notes -->
 
 ## History
 
@@ -61,3 +39,4 @@ In Progress
 - Email verification on register completed with Resend-powered verification emails, credentials sign-in gating until `emailVerified`, a verification callback route, and a dedicated `/verify-email` confirmation page with DevStash styling
 - Email verification toggle completed with a shared `AUTH_REQUIRE_EMAIL_VERIFICATION` env flag, auto-verification when disabled, and auth UI messaging that stays aligned with the active mode
 - Forgot password flow completed with request/reset pages, `VerificationToken`-backed password reset tokens, minimum password validation, sign-in recovery entry points, and passing build/lint verification; manual browser verification still pending
+- Profile page completed with a protected `/profile` route, live account details and usage stats, inline password change and delete-account flows, animated sidebar and user-menu interactions, and shared success toast feedback; manual browser verification still pending
