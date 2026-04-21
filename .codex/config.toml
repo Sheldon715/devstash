@@ -1,0 +1,13 @@
+[mcp_servers.neon]
+type = "http"
+url = "https://mcp.neon.tech/mcp"
+bearer_token_env_var = "NEON_API_KEY"
+
+[mcp_servers.context7]
+type = "http"
+url = "https://mcp.context7.com/mcp"
+bearer_token_env_var = "CONTEXT7_API_KEY"
+
+[mcp_servers.playwright]
+command = "npx"
+args = ["@playwright/mcp@latest"]

@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "eslint",
     "db:test": "tsx scripts/test-db.ts",
+    "db:delete-non-demo-users": "tsx scripts/delete-non-demo-users.ts",
     "db:seed": "prisma db seed",
     "prisma:generate": "prisma generate",
     "prisma:migrate:dev": "prisma migrate dev",
