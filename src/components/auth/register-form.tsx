@@ -13,7 +13,12 @@ interface RegisterResponseBody {
   success?: boolean;
   data?: {
     email: string;
+    requiresEmailVerification: boolean;
   };
+}
+
+interface RegisterFormProps {
+  requiresEmailVerification: boolean;
 }
 
 interface RegisterFormState {
@@ -38,7 +43,7 @@ function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-export function RegisterForm() {
+export function RegisterForm({ requiresEmailVerification }: RegisterFormProps) {
   const router = useRouter();
   const [formState, setFormState] = useState(INITIAL_FORM_STATE);
 
@@ -104,7 +109,12 @@ export function RegisterForm() {
 
       const responseBody = (await response.json()) as RegisterResponseBody;
 
-      if (!response.ok || !responseBody.success || !responseBody.data?.email) {
+      if (
+        !response.ok ||
+        !responseBody.success ||
+        !responseBody.data?.email ||
+        typeof responseBody.data.requiresEmailVerification !== "boolean"
+      ) {
         setFormState((current) => ({
           ...current,
           error: responseBody.error ?? "We couldn't create your account. Please try again.",
@@ -114,10 +124,13 @@ export function RegisterForm() {
       }
 
       const registeredEmail = responseBody.data.email;
+      const verificationRequired = responseBody.data.requiresEmailVerification;
 
       startTransition(() => {
         router.push(
-          `/verify-email?email=${encodeURIComponent(registeredEmail)}`,
+          verificationRequired
+            ? `/verify-email?email=${encodeURIComponent(registeredEmail)}`
+            : `/sign-in?registered=1&email=${encodeURIComponent(registeredEmail)}&verificationRequired=0`,
         );
       });
     } catch {
@@ -221,7 +234,9 @@ export function RegisterForm() {
         </Button>
 
         <p className="text-xs leading-5 text-zinc-500">
-          We&apos;ll send you an email verification link before your first sign-in.
+          {requiresEmailVerification
+            ? "We'll send you an email verification link before your first sign-in."
+            : "Email verification is currently off, so you can sign in right after creating your account."}
         </p>
       </form>
 

@@ -1,31 +1,29 @@
-# Current Feature: Auth UI - Sign In, Register & Sign Out
+# Current Feature: Email Verification Toggle
 
 ## Status
 
-In Progress
+Completed
 
 ## Goals
 
-- Replace the default Auth.js pages with a custom `/sign-in` page that supports email/password login, GitHub sign-in, validation, and friendly error states.
-- Add a custom `/register` page with name, email, password, and confirm-password fields that submits to `/api/auth/register` and redirects to `/sign-in` on success.
-- Update the sidebar user area to show the signed-in user's avatar, name, and a click target that links to `/profile`.
-- Add a user menu on avatar interaction that exposes a working sign-out action and redirect flow.
+- Add a single flag that can quickly enable or disable email verification for email/password accounts.
+- Keep registration, credentials sign-in gating, and auth UI messaging in sync with the flag value.
+- Default to the current secure behavior so email verification stays enabled unless we explicitly turn it off.
 
 ## Todo List
 
-- [x] Build the custom `/sign-in` page with credentials form, GitHub sign-in action, validation, and error feedback.
-- [x] Build the custom `/register` page with confirm-password validation and successful redirect to `/sign-in`.
-- [x] Create a reusable avatar component that renders a GitHub image when available and falls back to user initials.
-- [x] Update the sidebar user area to show the avatar, user name, `/profile` navigation, and sign-out menu behavior.
-- [ ] Verify GitHub sign-in, credentials sign-in, registration redirect, avatar fallback, and sign-out behavior locally.
+- [x] Document the feature goals, notes, and implementation checklist.
+- [x] Add a shared email verification config helper backed by an environment variable.
+- [x] Update registration and credentials sign-in to respect the shared toggle.
+- [x] Update auth UI messaging so registration redirects and helper copy match the toggle.
+- [x] Run `npm run build` and record the result.
 
 ## Notes
 
-- Source spec: `context/feature/auth-phase-3-spec.md`
-- Avatar behavior: use the GitHub `image` when present; otherwise derive initials from the user's name, such as `Brad Traversy` -> `BT`.
-- The avatar component should be reusable so the same image-or-initials logic stays consistent anywhere user identity is shown.
-- Manual verification for this phase should cover `/sign-in`, `/register`, GitHub auth, credentials auth, avatar rendering, `/profile` navigation, and sign-out redirect behavior.
-- `npm run build` passed after wiring the custom auth routes, pages, sidebar session UI, and profile route.
+- Requested as an easy way to disable verification while Resend is limited to the default sender/domain.
+- Implemented with `AUTH_REQUIRE_EMAIL_VERIFICATION`, which defaults to `true` and accepts common boolean-style values such as `true`/`false`, `1`/`0`, `yes`/`no`, and `on`/`off`.
+- Default behavior should remain verification enabled to preserve the existing auth flow.
+- `npm run build` passed after wiring the shared toggle through registration, credentials sign-in, and auth page messaging.
 
 ## History
 
@@ -44,3 +42,6 @@ In Progress
 - Dashboard quick wins and low-risk hardening completed with dashboard loading and error boundaries, shared date and item-type utilities, defensive dashboard query limits, and database-side collection aggregation
 - Auth Setup - NextAuth + GitHub Provider completed with Auth.js v5 GitHub auth scaffolding, Prisma adapter wiring, dashboard proxy protection, and session user ID typing; local sign-in redirect verified and live GitHub callback roundtrip still pending manual verification
 - Auth Credentials - Email/Password Provider completed with Auth.js credentials login, a registration API for email/password sign-up, protected root access, and verified local registration and credentials sign-in
+- Auth UI - Sign In, Register & Sign Out completed with custom auth pages, reusable avatar-driven profile/sidebar UI, working sign-out and redirect flow, polished registration success toast behavior, and a passing production build
+- Email verification on register completed with Resend-powered verification emails, credentials sign-in gating until `emailVerified`, a verification callback route, and a dedicated `/verify-email` confirmation page with DevStash styling
+- Email verification toggle completed with a shared `AUTH_REQUIRE_EMAIL_VERIFICATION` env flag, auto-verification when disabled, and auth UI messaging that stays aligned with the active mode

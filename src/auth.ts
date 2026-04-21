@@ -4,6 +4,7 @@ import NextAuth, { CredentialsSignin, type User } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 
 import authConfig, { credentialsInputConfig } from "@/auth.config";
+import { isEmailVerificationRequired } from "@/lib/email-verification-settings";
 import { prisma } from "@/lib/prisma";
 
 class EmailNotVerifiedError extends CredentialsSignin {
@@ -48,7 +49,7 @@ async function authorizeCredentials(
     return null;
   }
 
-  if (!user.emailVerified) {
+  if (isEmailVerificationRequired() && !user.emailVerified) {
     throw new EmailNotVerifiedError();
   }
 

@@ -6,6 +6,7 @@ import {
   createEmailVerificationToken,
   sendEmailVerificationEmail,
 } from "@/lib/email-verification";
+import { isEmailVerificationRequired } from "@/lib/email-verification-settings";
 import { prisma } from "@/lib/prisma";
 
 type RegisterRequestBody = {
@@ -76,6 +77,7 @@ export async function POST(request: Request) {
 
   const parsedBody = parseRegisterRequestBody(body);
   const origin = new URL(request.url).origin;
+  const emailVerificationRequired = isEmailVerificationRequired();
 
   if ("error" in parsedBody) {
     return NextResponse.json(
@@ -109,13 +111,25 @@ export async function POST(request: Request) {
       );
     }
 
-    await sendVerificationEmail(existingUser.email, origin);
+    if (emailVerificationRequired) {
+      await sendVerificationEmail(existingUser.email, origin);
+    } else {
+      await prisma.user.update({
+        where: {
+          id: existingUser.id,
+        },
+        data: {
+          emailVerified: new Date(),
+        },
+      });
+    }
 
     return NextResponse.json(
       {
         success: true,
         data: {
           email: existingUser.email,
+          requiresEmailVerification: emailVerificationRequired,
         },
       },
       { status: 200 },
@@ -128,6 +142,7 @@ export async function POST(request: Request) {
     data: {
       name: parsedBody.data.name,
       email: parsedBody.data.email,
+      emailVerified: emailVerificationRequired ? null : new Date(),
       passwordHash,
     },
     select: {
@@ -135,12 +150,17 @@ export async function POST(request: Request) {
     },
   });
 
-  await sendVerificationEmail(user.email, origin);
+  if (emailVerificationRequired) {
+    await sendVerificationEmail(user.email, origin);
+  }
 
   return NextResponse.json(
     {
       success: true,
-      data: user,
+      data: {
+        ...user,
+        requiresEmailVerification: emailVerificationRequired,
+      },
     },
     { status: 201 },
   );
