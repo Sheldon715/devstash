@@ -11,6 +11,7 @@ import {
 } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SuccessToast } from "@/components/ui/success-toast";
 
 function GitHubMark() {
   return (
@@ -28,6 +29,7 @@ interface SignInFormProps {
   callbackUrl: string;
   defaultEmail?: string;
   initialError?: string | null;
+  successAsToast?: boolean;
   successMessage?: string | null;
   successTitle?: string | null;
 }
@@ -36,6 +38,7 @@ export function SignInForm({
   callbackUrl,
   defaultEmail = "",
   initialError = null,
+  successAsToast = false,
   successMessage = null,
   successTitle = null,
 }: SignInFormProps) {
@@ -45,11 +48,22 @@ export function SignInForm({
     error: initialError,
   });
   const [emailValue, setEmailValue] = useState(state.email);
+  const [isToastVisible, setIsToastVisible] = useState(
+    successAsToast && Boolean(successMessage),
+  );
   const forgotPasswordEmail = emailValue.trim();
 
   return (
     <div className="space-y-6">
-      {successMessage ? (
+      {successAsToast && successMessage ? (
+        isToastVisible ? (
+          <SuccessToast
+            message={successMessage}
+            onDone={() => setIsToastVisible(false)}
+            title={successTitle ?? "Success"}
+          />
+        ) : null
+      ) : successMessage ? (
         <div className="rounded-[22px] border border-emerald-300/12 bg-[#111317] px-4 py-4 shadow-[0_20px_50px_rgba(0,0,0,0.38)]">
           <div className="flex items-start gap-3">
             <div className="flex size-10 shrink-0 items-center justify-center rounded-[16px] bg-emerald-400/12 text-emerald-300 ring-1 ring-emerald-300/14">

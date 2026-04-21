@@ -66,11 +66,19 @@ export function SidebarUserMenu({ currentUser, isCollapsed }: SidebarUserMenuPro
         <UserAvatar
           image={currentUser.image}
           name={currentUser.name}
+          fallbackLabel={currentUser.email}
           className="size-[clamp(30px,3.6vh,40px)] shrink-0 ring-1 ring-white/10 transition-transform group-hover:scale-[1.02]"
           textClassName="text-[clamp(9px,1.1vh,10px)]"
         />
 
-        <div className={cn("min-w-0 flex-1", isCollapsed && "hidden")}>
+        <div
+          className={cn(
+            "min-w-0 flex-1 overflow-hidden transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)]",
+            isCollapsed
+              ? "pointer-events-none w-0 max-w-0 -translate-x-2 opacity-0"
+              : "w-auto max-w-[160px] translate-x-0 opacity-100",
+          )}
+        >
           <p className="truncate text-[clamp(11px,1.45vh,13px)] font-semibold text-zinc-50">
             {currentUser.name || "DevStash User"}
           </p>
@@ -80,13 +88,18 @@ export function SidebarUserMenu({ currentUser, isCollapsed }: SidebarUserMenuPro
         </div>
       </Button>
 
-      {isOpen ? (
-        <div
-          className={cn(
-            "absolute z-20 min-w-[196px] rounded-2xl border border-white/10 bg-[#0d0d11] p-2 shadow-[0_18px_40px_rgba(0,0,0,0.42)]",
-            isCollapsed ? "bottom-0 left-[calc(100%+12px)]" : "right-0 bottom-[calc(100%+12px)]",
-          )}
-        >
+      <div
+        aria-hidden={!isOpen}
+        className={cn(
+          "absolute z-20 min-w-[196px] rounded-2xl border border-white/10 bg-[#0d0d11] p-2 shadow-[0_18px_40px_rgba(0,0,0,0.42)] transition-all duration-200 ease-out",
+          isCollapsed
+            ? "bottom-0 left-[calc(100%+12px)] origin-left"
+            : "right-0 bottom-[calc(100%+12px)] origin-bottom-right",
+          isOpen
+            ? "pointer-events-auto translate-y-0 scale-100 opacity-100"
+            : "pointer-events-none translate-y-2 scale-[0.98] opacity-0",
+        )}
+      >
           <div className="border-b border-white/8 px-3 py-2.5">
             <p className="truncate text-sm font-medium text-white">
               {currentUser.name || "DevStash User"}
@@ -98,10 +111,13 @@ export function SidebarUserMenu({ currentUser, isCollapsed }: SidebarUserMenuPro
             <Link
               href="/profile"
               onClick={() => setIsOpen(false)}
+              tabIndex={isOpen ? 0 : -1}
               className={cn(
                 buttonVariants({ variant: "outline" }),
-                "h-10 w-full justify-start rounded-xl border-transparent bg-transparent px-3 text-sm text-zinc-200 hover:bg-white/[0.05] hover:text-white",
+                "h-10 w-full justify-start rounded-xl border-transparent bg-transparent px-3 text-sm text-zinc-200 transition-all duration-200 hover:bg-white/[0.05] hover:text-white",
+                isOpen ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0",
               )}
+              style={{ transitionDelay: isOpen ? "40ms" : "0ms" }}
             >
               <UserCircle2 className="size-4" />
               Profile
@@ -111,15 +127,19 @@ export function SidebarUserMenu({ currentUser, isCollapsed }: SidebarUserMenuPro
               <Button
                 type="submit"
                 variant="outline"
-                className="h-10 w-full justify-start rounded-xl border-transparent bg-transparent px-3 text-sm text-zinc-200 hover:bg-white/[0.05] hover:text-white"
+                tabIndex={isOpen ? 0 : -1}
+                className={cn(
+                  "h-10 w-full justify-start rounded-xl border-transparent bg-transparent px-3 text-sm text-zinc-200 transition-all duration-200 hover:bg-white/[0.05] hover:text-white",
+                  isOpen ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0",
+                )}
+                style={{ transitionDelay: isOpen ? "80ms" : "0ms" }}
               >
                 <LogOut className="size-4" />
                 Sign out
               </Button>
             </form>
           </div>
-        </div>
-      ) : null}
+      </div>
     </div>
   );
 }

@@ -2,17 +2,21 @@ import { cn } from "@/lib/utils";
 
 interface UserAvatarProps {
   className?: string;
+  fallbackLabel?: string | null;
   image?: string | null;
   name?: string | null;
   textClassName?: string;
 }
 
-function getInitials(name?: string | null) {
-  if (!name) {
+function getInitials(name?: string | null, fallbackLabel?: string | null) {
+  const label = name?.trim() || fallbackLabel?.trim();
+
+  if (!label) {
     return "DS";
   }
 
-  const initials = name
+  const initials = label
+    .replace(/@.*/, "")
     .split(" ")
     .map((part) => part.trim()[0])
     .filter(Boolean)
@@ -23,7 +27,13 @@ function getInitials(name?: string | null) {
   return initials || "DS";
 }
 
-export function UserAvatar({ className, image, name, textClassName }: UserAvatarProps) {
+export function UserAvatar({
+  className,
+  fallbackLabel,
+  image,
+  name,
+  textClassName,
+}: UserAvatarProps) {
   if (image) {
     return (
       <img
@@ -41,7 +51,9 @@ export function UserAvatar({ className, image, name, textClassName }: UserAvatar
         className,
       )}
     >
-      <span className={cn("text-xs tracking-[0.16em]", textClassName)}>{getInitials(name)}</span>
+      <span className={cn("text-xs tracking-[0.16em]", textClassName)}>
+        {getInitials(name, fallbackLabel)}
+      </span>
     </div>
   );
 }
