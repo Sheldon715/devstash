@@ -1,22 +1,33 @@
-# Current Feature
+# Current Feature: Forgot Password Flow
 
 ## Status
 
 <!-- Not Started|In Progress|Completed -->
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Add a "Forgot password?" entry point from the existing sign-in experience.
+- Let users request a password reset email for email/password accounts.
+- Use the existing `VerificationToken` Prisma model for password reset tokens instead of adding a new token table.
+- Add a reset-password flow that validates the token and securely updates the stored password hash.
+- Keep the UX aligned with the current DevStash auth pages, messaging, and email delivery patterns.
 
 ## Todo List
 
-<!-- Feature-specific checklist -->
+- [x] Add forgot-password and reset-password routes/forms to the auth flow.
+- [x] Create password reset token helpers using the existing `VerificationToken` model.
+- [x] Add server-side request/reset handling with input validation and secure password hashing.
+- [x] Update the sign-in page with a forgot-password link and reset success/error messaging.
+- [x] Run `npm run build`.
+- [ ] Manually verify the full forgot-password flow in the browser.
 
 ## Notes
 
-<!-- Any extra notes -->
+- Follow the existing auth patterns already used for credentials sign-in, registration, and email verification.
+- Reuse the current email-sending approach where possible so reset emails stay consistent with the rest of the auth system.
+- Keep changes minimal and focused on password reset only; avoid unrelated auth refactors.
 
 ## History
 

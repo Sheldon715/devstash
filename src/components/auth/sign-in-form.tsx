@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useState } from "react";
 import { CheckCircle2, LoaderCircle } from "lucide-react";
 
 import { INITIAL_SIGN_IN_STATE } from "@/actions/auth-state";
@@ -11,7 +11,6 @@ import {
 } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
 
 function GitHubMark() {
   return (
@@ -40,70 +39,31 @@ export function SignInForm({
   successMessage = null,
   successTitle = null,
 }: SignInFormProps) {
-  const [toastMessage, setToastMessage] = useState(successMessage);
-  const [isToastVisible, setIsToastVisible] = useState(false);
   const [state, formAction, isPending] = useActionState(signInWithCredentialsAction, {
     ...INITIAL_SIGN_IN_STATE,
     email: defaultEmail,
     error: initialError,
   });
-
-  useEffect(() => {
-    if (!successMessage) {
-      setToastMessage(null);
-      setIsToastVisible(false);
-      return;
-    }
-
-    setToastMessage(successMessage);
-    setIsToastVisible(false);
-
-    const showFrame = window.requestAnimationFrame(() => {
-      setIsToastVisible(true);
-    });
-
-    const hideTimeout = window.setTimeout(() => {
-      setIsToastVisible(false);
-    }, 3000);
-
-    const clearTimeoutId = window.setTimeout(() => {
-      setToastMessage(null);
-    }, 3360);
-
-    return () => {
-      window.cancelAnimationFrame(showFrame);
-      window.clearTimeout(hideTimeout);
-      window.clearTimeout(clearTimeoutId);
-    };
-  }, [successMessage]);
+  const [emailValue, setEmailValue] = useState(state.email);
+  const forgotPasswordEmail = emailValue.trim();
 
   return (
     <div className="space-y-6">
-      {toastMessage ? (
-        <div className="pointer-events-none fixed inset-x-4 top-20 z-50 flex justify-center sm:inset-x-6 sm:top-24">
-          <div
-            aria-hidden={!isToastVisible}
-            className={cn(
-              "w-full max-w-md rounded-[22px] border border-emerald-300/12 bg-[#111317] px-4 py-4 shadow-[0_20px_50px_rgba(0,0,0,0.38)] transition-all duration-300 ease-out",
-              isToastVisible
-                ? "translate-y-0 scale-100 opacity-100"
-                : "-translate-y-5 scale-[0.98] opacity-0",
-            )}
-          >
-            <div className="flex items-start gap-3">
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-[16px] bg-emerald-400/12 text-emerald-300 ring-1 ring-emerald-300/14">
-                <CheckCircle2 className="size-5" />
-              </div>
+      {successMessage ? (
+        <div className="rounded-[22px] border border-emerald-300/12 bg-[#111317] px-4 py-4 shadow-[0_20px_50px_rgba(0,0,0,0.38)]">
+          <div className="flex items-start gap-3">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-[16px] bg-emerald-400/12 text-emerald-300 ring-1 ring-emerald-300/14">
+              <CheckCircle2 className="size-5" />
+            </div>
 
-              <div className="min-w-0">
-                <p className="text-[10px] font-medium tracking-[0.22em] text-emerald-300/65 uppercase">
-                  Account
-                </p>
-                <p className="mt-1 text-sm font-semibold text-zinc-50">
-                  {successTitle ?? "Success"}
-                </p>
-                <p className="mt-1 text-sm leading-5 text-zinc-300">{toastMessage}</p>
-              </div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-medium tracking-[0.22em] text-emerald-300/65 uppercase">
+                Account
+              </p>
+              <p className="mt-1 text-sm font-semibold text-zinc-50">
+                {successTitle ?? "Success"}
+              </p>
+              <p className="mt-1 text-sm leading-5 text-zinc-300">{successMessage}</p>
             </div>
           </div>
         </div>
@@ -156,23 +116,36 @@ export function SignInForm({
             type="email"
             autoComplete="email"
             required
-            defaultValue={state.email}
+            value={emailValue}
+            onChange={(event) => setEmailValue(event.target.value)}
             placeholder="you@example.com"
             className="h-12 rounded-2xl border-white/12 bg-white/[0.03] text-white placeholder:text-zinc-500"
           />
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="password" className="text-sm font-medium text-zinc-200">
-            Password
-          </label>
+          <div className="flex items-center justify-between gap-3">
+            <label htmlFor="password" className="text-sm font-medium text-zinc-200">
+              Password
+            </label>
+            <Link
+              href={
+                forgotPasswordEmail
+                  ? `/forgot-password?email=${encodeURIComponent(forgotPasswordEmail)}`
+                  : "/forgot-password"
+              }
+              className="text-xs font-medium tracking-[0.18em] text-sky-200/80 uppercase transition-colors hover:text-sky-100"
+            >
+              Forgot password?
+            </Link>
+          </div>
           <Input
             id="password"
             name="password"
             type="password"
             autoComplete="current-password"
             required
-            placeholder="••••••••"
+            placeholder="Enter your password"
             className="h-12 rounded-2xl border-white/12 bg-white/[0.03] text-white placeholder:text-zinc-500"
           />
         </div>
