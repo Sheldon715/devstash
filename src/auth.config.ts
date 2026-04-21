@@ -15,6 +15,9 @@ export const credentialsInputConfig = {
 } as const;
 
 const authConfig = {
+  pages: {
+    signIn: "/sign-in",
+  },
   providers: [
     GitHub({}),
     Credentials({

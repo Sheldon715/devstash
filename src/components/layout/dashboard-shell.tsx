@@ -4,12 +4,14 @@ import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 
 import { Sidebar } from "@/components/layout/sidebar";
+import type { SidebarCurrentUser } from "@/components/layout/sidebar-user-menu";
 import { TopBar } from "@/components/layout/top-bar";
 import type { DashboardCollectionCardRecord } from "@/lib/db/collections";
 import type { DashboardSidebarItemTypeRecord } from "@/lib/db/items";
 
 interface DashboardShellProps {
   children: ReactNode;
+  currentUser: SidebarCurrentUser;
   favoriteCollections: DashboardCollectionCardRecord[];
   recentCollections: DashboardCollectionCardRecord[];
   sidebarItemTypes: DashboardSidebarItemTypeRecord[];
@@ -17,6 +19,7 @@ interface DashboardShellProps {
 
 export function DashboardShell({
   children,
+  currentUser,
   favoriteCollections,
   recentCollections,
   sidebarItemTypes,
@@ -57,6 +60,7 @@ export function DashboardShell({
     <main className="min-h-screen bg-background text-foreground">
       <div className="flex min-h-screen">
         <Sidebar
+          currentUser={currentUser}
           favoriteCollections={favoriteCollections}
           isCollapsed={isSidebarCollapsed}
           isMobileOpen={isSidebarOpen}
