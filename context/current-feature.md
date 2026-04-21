@@ -1,29 +1,22 @@
-# Current Feature: Email Verification Toggle
+# Current Feature
 
 ## Status
 
-Completed
+<!-- Not Started|In Progress|Completed -->
+
+Not Started
 
 ## Goals
 
-- Add a single flag that can quickly enable or disable email verification for email/password accounts.
-- Keep registration, credentials sign-in gating, and auth UI messaging in sync with the flag value.
-- Default to the current secure behavior so email verification stays enabled unless we explicitly turn it off.
+<!-- Goals & requirements -->
 
 ## Todo List
 
-- [x] Document the feature goals, notes, and implementation checklist.
-- [x] Add a shared email verification config helper backed by an environment variable.
-- [x] Update registration and credentials sign-in to respect the shared toggle.
-- [x] Update auth UI messaging so registration redirects and helper copy match the toggle.
-- [x] Run `npm run build` and record the result.
+<!-- Feature-specific checklist -->
 
 ## Notes
 
-- Requested as an easy way to disable verification while Resend is limited to the default sender/domain.
-- Implemented with `AUTH_REQUIRE_EMAIL_VERIFICATION`, which defaults to `true` and accepts common boolean-style values such as `true`/`false`, `1`/`0`, `yes`/`no`, and `on`/`off`.
-- Default behavior should remain verification enabled to preserve the existing auth flow.
-- `npm run build` passed after wiring the shared toggle through registration, credentials sign-in, and auth page messaging.
+<!-- Any extra notes -->
 
 ## History
 
