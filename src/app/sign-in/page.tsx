@@ -8,6 +8,7 @@ import { isEmailVerificationRequired } from "@/lib/email-verification-settings";
 interface SignInPageProps {
   searchParams: Promise<{
     callbackUrl?: string;
+    deleted?: string;
     email?: string;
     error?: string;
     reset?: string;
@@ -56,7 +57,9 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
   const emailVerificationRequired =
     parseVerificationRequiredParam(params.verificationRequired) ?? isEmailVerificationRequired();
   const successMessage =
-    params.reset === "1"
+    params.deleted === "1"
+      ? "Your account has been deleted."
+      : params.reset === "1"
       ? params.email
         ? `Your password was reset for ${params.email}. Sign in with your new password.`
         : "Your password was reset. Sign in with your new password."
@@ -72,7 +75,9 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
             : "Your account is ready. Sign in with your email and password."
         : null;
   const successTitle =
-    params.reset === "1"
+    params.deleted === "1"
+      ? "Account deleted"
+      : params.reset === "1"
       ? "Password updated"
       : params.verified === "1"
       ? "Email verified"
@@ -96,6 +101,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
         callbackUrl={callbackUrl}
         defaultEmail={params.email}
         initialError={getAuthErrorMessage(params.error, params.verificationError)}
+        successAsToast={params.deleted === "1"}
         successMessage={successMessage}
         successTitle={successTitle}
       />

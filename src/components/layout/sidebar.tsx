@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import { useState } from "react";
 import Link from "next/link";
-import { ChevronDown, FolderOpen, LayoutPanelLeft, Star, X } from "lucide-react";
+import { ChevronDown, ChevronsLeft, ChevronsRight, FolderOpen, Star, X } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,12 @@ import {
   getDashboardItemTypeColor,
 } from "@/lib/dashboard-icons";
 import { cn } from "@/lib/utils";
+
+function getSidebarContentVisibilityClass(isCollapsed: boolean) {
+  return isCollapsed
+    ? "pointer-events-none w-0 max-w-0 -translate-x-2 opacity-0"
+    : "w-auto max-w-[220px] translate-x-0 opacity-100";
+}
 
 interface SidebarProps {
   currentUser: SidebarCurrentUser;
@@ -55,7 +61,7 @@ export function Sidebar({
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex h-screen flex-col overflow-hidden border-r border-border/70 bg-[#050507] transition-[width,transform] duration-300 lg:sticky lg:top-0 lg:z-10 lg:h-screen lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-40 flex h-screen flex-col overflow-hidden border-r border-border/70 bg-[#050507] transition-[width,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:sticky lg:top-0 lg:z-10 lg:h-screen lg:translate-x-0",
           isCollapsed ? "w-[84px]" : "w-[248px]",
           isMobileOpen ? "translate-x-0" : "-translate-x-full"
         )}
@@ -68,21 +74,24 @@ export function Sidebar({
         >
           <div
             className={cn(
-              "flex items-center gap-2.5 overflow-hidden",
+              "flex items-center gap-2.5 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
               isCollapsed && "justify-center"
             )}
           >
             {!isCollapsed ? (
               <>
-                <div className="flex size-[clamp(32px,4vh,40px)] shrink-0 items-center justify-center rounded-[14px] bg-gradient-to-br from-[#5f7cff] via-[#6c52ff] to-[#8c4bff] text-white shadow-[0_10px_24px_rgba(99,102,241,0.28)]">
-                  <div className="relative size-5">
-                    <span className="absolute top-[1px] left-1/2 h-[6px] w-[14px] -translate-x-1/2 rounded-[2px] border border-white/90 bg-transparent" />
-                    <span className="absolute top-[6px] left-1/2 h-[6px] w-[14px] -translate-x-1/2 rounded-[2px] border border-white/70 bg-transparent" />
-                    <span className="absolute top-[11px] left-1/2 h-[6px] w-[14px] -translate-x-1/2 rounded-[2px] border border-white/50 bg-transparent" />
-                  </div>
+                <div className="flex size-[clamp(32px,4vh,40px)] shrink-0 items-center justify-center rounded-[14px] border border-white/8 bg-gradient-to-br from-[#24193f] via-[#19122d] to-[#120d20] text-white shadow-[0_10px_24px_rgba(18,13,32,0.34)]">
+                  <span className="text-[15px] font-semibold tracking-[-0.04em] text-[#ddd4ff]">
+                    D
+                  </span>
                 </div>
 
-                <div className="min-w-0">
+                <div
+                  className={cn(
+                    "min-w-0 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                    getSidebarContentVisibilityClass(isCollapsed),
+                  )}
+                >
                   <p className="text-[clamp(13px,1.65vh,15px)] font-semibold tracking-tight text-zinc-50">
                     DevStash
                   </p>
@@ -96,10 +105,10 @@ export function Sidebar({
               type="button"
               variant="outline"
               size="icon"
-              className="hidden rounded-xl border-white/8 bg-white/[0.03] text-muted-foreground lg:inline-flex"
+              className="hidden rounded-xl border-white/8 bg-white/[0.03] text-muted-foreground transition-all duration-300 hover:border-sky-300/20 hover:bg-white/[0.06] hover:text-zinc-50 lg:inline-flex"
               onClick={onToggleCollapsed}
             >
-              <LayoutPanelLeft className="size-4" />
+              <ChevronsRight className="size-4" />
               <span className="sr-only">Expand sidebar</span>
             </Button>
           ) : (
@@ -108,10 +117,10 @@ export function Sidebar({
                 type="button"
                 variant="outline"
                 size="icon"
-                className="hidden rounded-xl border-white/8 bg-white/[0.03] text-muted-foreground lg:inline-flex"
+                className="hidden rounded-xl border-white/8 bg-white/[0.03] text-muted-foreground transition-all duration-300 hover:border-sky-300/20 hover:bg-white/[0.06] hover:text-zinc-50 lg:inline-flex"
                 onClick={onToggleCollapsed}
               >
-                <LayoutPanelLeft className="size-4" />
+                <ChevronsLeft className="size-4" />
                 <span className="sr-only">Collapse sidebar</span>
               </Button>
 
@@ -157,14 +166,14 @@ export function Sidebar({
                   >
                     <DashboardNamedIcon
                       iconName={itemType.icon}
-                      className="size-[clamp(12px,1.8vh,16px)]"
+                      className="size-[clamp(12px,1.8vh,16px)] transition-transform duration-300 group-hover:scale-105"
                     />
                   </div>
 
                   <div
                     className={cn(
-                      "flex min-w-0 flex-1 items-center justify-between gap-2",
-                      isCollapsed && "hidden"
+                      "flex min-w-0 flex-1 items-center justify-between gap-2 overflow-hidden transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                      getSidebarContentVisibilityClass(isCollapsed),
                     )}
                   >
                     <div className="flex min-w-0 items-center gap-2">
@@ -199,7 +208,12 @@ export function Sidebar({
             {isCollectionsOpen ? (
               <>
                 <div className="space-y-[clamp(4px,0.6vh,8px)]">
-                  <div className={cn("px-2", isCollapsed && "hidden")}>
+                  <div
+                    className={cn(
+                      "overflow-hidden px-2 transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                      getSidebarContentVisibilityClass(isCollapsed),
+                    )}
+                  >
                     <p className="text-[clamp(9px,1.1vh,10px)] font-medium uppercase tracking-[0.16em] text-muted-foreground/75">
                       Favorites
                     </p>
@@ -217,7 +231,12 @@ export function Sidebar({
                 </div>
 
                 <div className="mt-[clamp(10px,1.5vh,20px)] space-y-[clamp(4px,0.6vh,8px)]">
-                  <div className={cn("px-2", isCollapsed && "hidden")}>
+                  <div
+                    className={cn(
+                      "overflow-hidden px-2 transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                      getSidebarContentVisibilityClass(isCollapsed),
+                    )}
+                  >
                     <p className="text-[clamp(9px,1.1vh,10px)] font-medium uppercase tracking-[0.16em] text-muted-foreground/75">
                       Recent
                     </p>
@@ -233,7 +252,12 @@ export function Sidebar({
                     />
                   ))}
 
-                  <div className={cn("px-2 pt-2", isCollapsed && "hidden")}>
+                  <div
+                    className={cn(
+                      "overflow-hidden px-2 pt-2 transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                      getSidebarContentVisibilityClass(isCollapsed),
+                    )}
+                  >
                     <Link
                       href="/collections"
                       className="text-[clamp(10px,1.3vh,12px)] font-medium text-muted-foreground transition-colors hover:text-zinc-50"
@@ -277,14 +301,14 @@ function SidebarSection({
     <section className={cn("space-y-[clamp(6px,0.9vh,12px)]", className)}>
       <div
         className={cn(
-          "flex items-center justify-between px-2",
+          "flex items-center justify-between px-2 transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)]",
           isCollapsed && "justify-center"
         )}
       >
         <span
           className={cn(
-            "text-[clamp(10px,1.3vh,12px)] font-medium text-muted-foreground",
-            isCollapsed && "hidden"
+            "overflow-hidden text-[clamp(10px,1.3vh,12px)] font-medium text-muted-foreground transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)]",
+            getSidebarContentVisibilityClass(isCollapsed),
           )}
         >
           {title}
@@ -293,8 +317,8 @@ function SidebarSection({
           <button
             type="button"
             className={cn(
-              "text-muted-foreground transition-colors hover:text-foreground",
-              isCollapsed && "hidden"
+              "text-muted-foreground transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)] hover:text-foreground",
+              getSidebarContentVisibilityClass(isCollapsed),
             )}
             onClick={onToggle}
           >
@@ -353,8 +377,8 @@ function CollectionLink({
 
       <div
         className={cn(
-          "flex min-w-0 flex-1 items-center justify-between gap-2",
-          isCollapsed && "hidden"
+          "flex min-w-0 flex-1 items-center justify-between gap-2 overflow-hidden transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          getSidebarContentVisibilityClass(isCollapsed),
         )}
       >
         <p className="truncate text-[clamp(11px,1.45vh,13px)] font-medium text-zinc-100">

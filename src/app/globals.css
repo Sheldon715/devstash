@@ -65,3 +65,35 @@
       linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 30%);
   }
 }
+
+@keyframes profile-toast-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.98);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes profile-toast-out {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+}
+
+.profile-toast-enter {
+  animation: profile-toast-in 180ms ease-out forwards;
+}
+
+.profile-toast-exit {
+  animation: profile-toast-out 180ms ease-in forwards;
+}
