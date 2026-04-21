@@ -117,7 +117,7 @@ export function RegisterForm() {
 
       startTransition(() => {
         router.push(
-          `/sign-in?registered=1&email=${encodeURIComponent(registeredEmail)}`,
+          `/verify-email?email=${encodeURIComponent(registeredEmail)}`,
         );
       });
     } catch {
@@ -219,6 +219,10 @@ export function RegisterForm() {
           {formState.isPending ? <LoaderCircle className="size-4 animate-spin" /> : null}
           Create account
         </Button>
+
+        <p className="text-xs leading-5 text-zinc-500">
+          We&apos;ll send you an email verification link before your first sign-in.
+        </p>
       </form>
 
       <p className="text-sm text-zinc-400">
