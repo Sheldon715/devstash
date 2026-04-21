@@ -3,31 +3,24 @@
 import type { ReactNode } from "react";
 import { useState } from "react";
 import Link from "next/link";
-import {
-  ChevronDown,
-  FolderOpen,
-  LayoutPanelLeft,
-  Settings,
-  Star,
-  X,
-} from "lucide-react";
+import { ChevronDown, FolderOpen, LayoutPanelLeft, Star, X } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { DashboardCollectionCardRecord } from "@/lib/db/collections";
 import type { DashboardSidebarItemTypeRecord } from "@/lib/db/items";
 import {
+  SidebarUserMenu,
+  type SidebarCurrentUser,
+} from "@/components/layout/sidebar-user-menu";
+import {
   DashboardNamedIcon,
   getDashboardItemTypeColor,
 } from "@/lib/dashboard-icons";
 import { cn } from "@/lib/utils";
 
-const SIDEBAR_USER = {
-  name: "Demo User",
-  email: "demo@devstash.io",
-};
-
 interface SidebarProps {
+  currentUser: SidebarCurrentUser;
   favoriteCollections: DashboardCollectionCardRecord[];
   isCollapsed: boolean;
   isMobileOpen: boolean;
@@ -38,6 +31,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({
+  currentUser,
   favoriteCollections,
   isCollapsed,
   isMobileOpen,
@@ -255,42 +249,7 @@ export function Sidebar({
         </div>
 
         <div className="shrink-0 border-t border-white/6 px-3.5 py-[clamp(10px,1.4vh,14px)]">
-          <div
-            className={cn(
-              "flex items-center gap-[clamp(6px,0.9vh,10px)]",
-              isCollapsed && "justify-center"
-            )}
-          >
-            <div className="flex size-[clamp(30px,3.6vh,40px)] shrink-0 items-center justify-center rounded-full bg-[#dedede] text-[clamp(9px,1.1vh,10px)] font-semibold text-black">
-              {SIDEBAR_USER.name
-                .split(" ")
-                .map((part) => part[0])
-                .join("")
-                .slice(0, 2)}
-            </div>
-
-            <div className={cn("min-w-0 flex-1", isCollapsed && "hidden")}>
-              <p className="truncate text-[clamp(11px,1.45vh,13px)] font-semibold text-zinc-50">
-                {SIDEBAR_USER.name}
-              </p>
-              <p className="truncate text-[clamp(10px,1.2vh,11px)] text-muted-foreground">
-                {SIDEBAR_USER.email}
-              </p>
-            </div>
-
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              className={cn(
-                "rounded-2xl border-transparent bg-transparent text-muted-foreground hover:bg-white/[0.04]",
-                isCollapsed && "hidden"
-              )}
-            >
-              <Settings className="size-4" />
-              <span className="sr-only">Open settings</span>
-            </Button>
-          </div>
+          <SidebarUserMenu currentUser={currentUser} isCollapsed={isCollapsed} />
         </div>
       </aside>
     </>

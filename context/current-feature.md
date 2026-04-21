@@ -1,47 +1,31 @@
-# Current Feature: Auth Credentials - Email/Password Provider
+# Current Feature: Auth UI - Sign In, Register & Sign Out
 
 ## Status
-
-<!-- Not Started|In Progress|Completed -->
 
 In Progress
 
 ## Goals
 
-- Add email/password authentication using the Auth.js Credentials provider.
-- Use `bcryptjs` for password hashing and password verification.
-- Add a persisted password field to the `User` model if the schema does not already support it.
-- Add the Credentials provider placeholder in `auth.config.ts` and implement real bcrypt validation in `auth.ts`.
-- Create a registration endpoint at `POST /api/auth/register` for new user sign-up.
+- Replace the default Auth.js pages with a custom `/sign-in` page that supports email/password login, GitHub sign-in, validation, and friendly error states.
+- Add a custom `/register` page with name, email, password, and confirm-password fields that submits to `/api/auth/register` and redirects to `/sign-in` on success.
+- Update the sidebar user area to show the signed-in user's avatar, name, and a click target that links to `/profile`.
+- Add a user menu on avatar interaction that exposes a working sign-out action and redirect flow.
 
 ## Todo List
 
-- [x] Confirm the current auth setup, Prisma schema, and whether the `User` model already has a password field.
-- [x] Add and apply a Prisma migration for password-based auth if the schema still needs it.
-- [x] Add the Credentials provider placeholder to `auth.config.ts`.
-- [x] Override the Credentials provider in `auth.ts` with bcrypt-based email/password validation.
-- [x] Implement `POST /api/auth/register` with request validation, duplicate-user protection, and hashed password storage.
-- [x] Verify sign-up and email/password sign-in flow locally.
-- [x] Run `npm run build` and fix any issues before considering the feature ready for review.
+- [x] Build the custom `/sign-in` page with credentials form, GitHub sign-in action, validation, and error feedback.
+- [x] Build the custom `/register` page with confirm-password validation and successful redirect to `/sign-in`.
+- [x] Create a reusable avatar component that renders a GitHub image when available and falls back to user initials.
+- [x] Update the sidebar user area to show the avatar, user name, `/profile` navigation, and sign-out menu behavior.
+- [ ] Verify GitHub sign-in, credentials sign-in, registration redirect, avatar fallback, and sign-out behavior locally.
 
 ## Notes
 
-### Source Spec
-- Loaded from [auth-phase-2-spec.md](feature/auth-phase-2-spec.md)
-
-### Implementation Notes
-- Use the split Auth.js pattern described in the spec:
-  - `auth.config.ts` should include the Credentials provider with `authorize: () => null`.
-  - `auth.ts` should override that provider with the real bcrypt-backed `authorize` implementation.
-- The Prisma schema already includes `User.passwordHash`, so no new phase 2 schema migration was needed.
-- The registration route should accept `name`, `email`, `password`, and `confirmPassword`.
-- The route must validate matching passwords, reject duplicate emails, hash the password with `bcryptjs`, and return a success or error response.
-
-### Verification Targets
-- Test registration against `POST /api/auth/register`.
-- Verify email/password sign-in through `/api/auth/signin`.
-- Confirm successful redirect to `/dashboard`.
-- Re-check that GitHub OAuth still works after the Credentials provider is added.
+- Source spec: `context/feature/auth-phase-3-spec.md`
+- Avatar behavior: use the GitHub `image` when present; otherwise derive initials from the user's name, such as `Brad Traversy` -> `BT`.
+- The avatar component should be reusable so the same image-or-initials logic stays consistent anywhere user identity is shown.
+- Manual verification for this phase should cover `/sign-in`, `/register`, GitHub auth, credentials auth, avatar rendering, `/profile` navigation, and sign-out redirect behavior.
+- `npm run build` passed after wiring the custom auth routes, pages, sidebar session UI, and profile route.
 
 ## History
 
@@ -59,3 +43,4 @@ In Progress
 - Add Pro Badge to Sidebar feature completed with subtle `PRO` badges for the Files and Images sidebar item types using a shared badge component
 - Dashboard quick wins and low-risk hardening completed with dashboard loading and error boundaries, shared date and item-type utilities, defensive dashboard query limits, and database-side collection aggregation
 - Auth Setup - NextAuth + GitHub Provider completed with Auth.js v5 GitHub auth scaffolding, Prisma adapter wiring, dashboard proxy protection, and session user ID typing; local sign-in redirect verified and live GitHub callback roundtrip still pending manual verification
+- Auth Credentials - Email/Password Provider completed with Auth.js credentials login, a registration API for email/password sign-up, protected root access, and verified local registration and credentials sign-in

@@ -1,3 +1,6 @@
+import { redirect } from "next/navigation";
+
+import { auth } from "@/auth";
 import { CollectionsSection } from "@/components/dashboard/collections-section";
 import { PinnedItems } from "@/components/dashboard/pinned-items";
 import { RecentItems } from "@/components/dashboard/recent-items";
@@ -13,6 +16,12 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
+  const session = await auth();
+
+  if (!session?.user?.email) {
+    redirect("/sign-in");
+  }
+
   const [collections, sidebarItemTypes, pinnedItems, recentItems] = await Promise.all([
     getAllDashboardCollections(),
     getDashboardSidebarItemTypes(),
@@ -24,6 +33,11 @@ export default async function DashboardPage() {
 
   return (
     <DashboardShell
+      currentUser={{
+        email: session.user.email,
+        image: session.user.image,
+        name: session.user.name,
+      }}
       favoriteCollections={favoriteCollections}
       recentCollections={recentCollections}
       sidebarItemTypes={sidebarItemTypes}
