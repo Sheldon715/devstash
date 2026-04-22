@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { MailCheck, ShieldCheck, Sparkles } from "lucide-react";
 
 import { auth } from "@/auth";
+import { ResendVerificationForm } from "@/components/auth/resend-verification-form";
 
 interface VerifyEmailPageProps {
   searchParams: Promise<{
@@ -74,6 +75,8 @@ export default async function VerifyEmailPage({ searchParams }: VerifyEmailPageP
                   </p>
                 </div>
               </div>
+
+              <ResendVerificationForm email={params.email} />
 
               <div className="mt-8 flex w-full flex-col gap-3 sm:flex-row">
                 <Link

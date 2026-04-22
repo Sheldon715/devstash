@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { requestPasswordReset } from "@/lib/password-reset";
+import { checkAuthRateLimit, createRateLimitResponse } from "@/lib/rate-limit";
 
 type ForgotPasswordRequestBody = {
   email?: unknown;
@@ -57,6 +58,14 @@ export async function POST(request: Request) {
       },
       { status: 400 },
     );
+  }
+
+  const rateLimitResult = await checkAuthRateLimit("forgotPassword", {
+    request,
+  });
+
+  if (!rateLimitResult.success) {
+    return createRateLimitResponse(rateLimitResult);
   }
 
   try {

@@ -2,12 +2,11 @@ import { hash } from "bcryptjs";
 import { NextResponse } from "next/server";
 
 import {
-  buildEmailVerificationUrl,
-  createEmailVerificationToken,
-  sendEmailVerificationEmail,
+  sendVerificationEmailForAddress,
 } from "@/lib/email-verification";
 import { isEmailVerificationRequired } from "@/lib/email-verification-settings";
 import { prisma } from "@/lib/prisma";
+import { checkAuthRateLimit, createRateLimitResponse } from "@/lib/rate-limit";
 
 type RegisterRequestBody = {
   name?: unknown;
@@ -18,13 +17,6 @@ type RegisterRequestBody = {
 
 function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-async function sendVerificationEmail(email: string, origin: string) {
-  const { token } = await createEmailVerificationToken(email);
-  const verificationUrl = buildEmailVerificationUrl(email, token, origin);
-
-  await sendEmailVerificationEmail(email, verificationUrl);
 }
 
 function parseRegisterRequestBody(body: RegisterRequestBody) {
@@ -89,6 +81,14 @@ export async function POST(request: Request) {
     );
   }
 
+  const rateLimitResult = await checkAuthRateLimit("register", {
+    request,
+  });
+
+  if (!rateLimitResult.success) {
+    return createRateLimitResponse(rateLimitResult);
+  }
+
   const existingUser = await prisma.user.findUnique({
     where: {
       email: parsedBody.data.email,
@@ -112,7 +112,7 @@ export async function POST(request: Request) {
     }
 
     if (emailVerificationRequired) {
-      await sendVerificationEmail(existingUser.email, origin);
+      await sendVerificationEmailForAddress(existingUser.email, origin);
     } else {
       await prisma.user.update({
         where: {
@@ -151,7 +151,7 @@ export async function POST(request: Request) {
   });
 
   if (emailVerificationRequired) {
-    await sendVerificationEmail(user.email, origin);
+    await sendVerificationEmailForAddress(user.email, origin);
   }
 
   return NextResponse.json(

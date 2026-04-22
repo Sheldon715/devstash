@@ -92,7 +92,15 @@ export function SignInForm({
 
       {state.error ? (
         <div className="rounded-2xl border border-rose-400/25 bg-rose-400/10 px-4 py-3 text-sm text-rose-100">
-          {state.error}
+          <p>{state.error}</p>
+          {state.resendVerificationEmail ? (
+            <Link
+              href={`/verify-email?email=${encodeURIComponent(state.resendVerificationEmail)}`}
+              className="mt-2 inline-flex text-xs font-medium tracking-[0.18em] text-sky-100 uppercase transition-colors hover:text-white"
+            >
+              Resend verification email
+            </Link>
+          ) : null}
         </div>
       ) : null}
 

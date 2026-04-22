@@ -1,30 +1,39 @@
-# Current Feature
+# Current Feature: Auth Rate Limiting
 
 ## Status
 
 <!-- Not Started|In Progress|Completed -->
 
-Completed
+In Progress
 
 ## Goals
 
 <!-- Goals & requirements -->
-- Fix only the high-severity auth audit issue
-- Ensure protected dashboard/profile routes load data for the signed-in user instead of the hardcoded demo user
-- Leave the medium and low auth audit findings unchanged for now
+- Add reusable auth rate limiting with Upstash Redis and `@upstash/ratelimit`
+- Protect the login, register, forgot-password, reset-password, and resend-verification endpoints with the spec limits
+- Return consistent `429 Too Many Requests` responses with a `Retry-After` header and user-friendly JSON errors
+- Surface rate limit errors in the frontend through existing toast/error handling patterns
+- Fail open if Upstash is unavailable so auth flows keep working during Redis outages
 
 ## Todo List
 
 <!-- Feature-specific checklist -->
-- [x] Trace every dashboard/profile query helper that still scopes data to the demo user
-- [x] Update the affected loaders to accept the authenticated user ID
-- [x] Update protected route call sites to pass the signed-in user into those loaders
+- [x] Add Upstash Redis environment variables and a shared `src/lib/rate-limit.ts` helper with sliding-window configs per auth flow
+- [x] Apply rate limiting to the login, register, forgot-password, reset-password, and resend-verification endpoints using IP and email keys where required
+- [x] Return `429` JSON responses with `Retry-After` metadata and frontend-safe error messages for throttled requests
+- [x] Update auth UI/server-action error handling so users see clear toast feedback when they hit a limit
+- [ ] Run `npm run build` and verify the affected auth flows still behave correctly
 
 ## Notes
 
 <!-- Any extra notes -->
-- The high-severity issue came from shared dashboard/profile data helpers in `src/lib/db/collections.ts` and `src/lib/db/items.ts` using `demo@devstash.io` instead of the authenticated user.
-- The fix scopes those helpers by `userId` and updates the protected dashboard, profile, collections, and item-type routes to pass the current session user.
+- Target endpoints and limits come from `context/feature/rate-limiting-spec.md`.
+- Login should be limited by `IP + email`, resend verification by `IP + email`, and the other listed auth routes by `IP`.
+- The shared helper should return `{ success, remaining, reset }` and fail open if Upstash is unavailable.
+- `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are required for live limiting.
+- The Upstash Redis env vars were already present in the local env files, so this feature reused the existing values instead of adding new placeholders.
+- A new `/api/auth/resend-verification` route and verify-email resend UI were added because the spec referenced that endpoint but it did not exist yet.
+- `npm run build` passes after the rate-limiting changes; browser-level verification of the auth flows is still pending.
 
 ## History
 

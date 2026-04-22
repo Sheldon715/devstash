@@ -5,6 +5,7 @@ import {
   isValidPasswordResetPassword,
   PASSWORD_RESET_MIN_PASSWORD_LENGTH,
 } from "@/lib/password-rules";
+import { checkAuthRateLimit, createRateLimitResponse } from "@/lib/rate-limit";
 
 type ResetPasswordRequestBody = {
   confirmPassword?: unknown;
@@ -81,6 +82,14 @@ export async function POST(request: Request) {
       },
       { status: 400 },
     );
+  }
+
+  const rateLimitResult = await checkAuthRateLimit("resetPassword", {
+    request,
+  });
+
+  if (!rateLimitResult.success) {
+    return createRateLimitResponse(rateLimitResult);
   }
 
   const result = await resetPassword(
