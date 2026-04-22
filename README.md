@@ -36,6 +36,7 @@ npm install
 ```
 
 2. Create `.env` with a valid `DATABASE_URL`.
+   For Neon deployments, also add a non-pooled `DIRECT_URL` for Prisma CLI commands like `prisma migrate deploy`.
 
 3. Generate the Prisma client:
 
@@ -62,3 +63,8 @@ The development server runs at `http://localhost:3000`.
 - The dashboard UI is backed by Prisma queries against the demo user data.
 - System item types are seeded and used for dashboard filters and item-type pages.
 - Project context and workflow notes live under `context/` and `AGENTS.md`.
+
+## Prisma + Neon
+
+- `DATABASE_URL` is used at runtime by Prisma Client through the `@prisma/adapter-pg` adapter.
+- `DIRECT_URL` is used by Prisma CLI commands when present, which is recommended for Neon migrations and deploy-time Prisma commands.
