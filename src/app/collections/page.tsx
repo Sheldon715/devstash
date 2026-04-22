@@ -1,13 +1,21 @@
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 
+import { auth } from "@/auth";
 import { CollectionCard } from "@/components/dashboard/collection-card";
 import { getAllDashboardCollections } from "@/lib/db/collections";
 
 export const dynamic = "force-dynamic";
 
 export default async function CollectionsPage() {
-  const collections = await getAllDashboardCollections();
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    redirect("/sign-in");
+  }
+
+  const collections = await getAllDashboardCollections(session.user.id);
 
   return (
     <main className="min-h-screen bg-background px-4 py-8 text-foreground sm:px-6 lg:px-8">

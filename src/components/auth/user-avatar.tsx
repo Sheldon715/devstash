@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 import { cn } from "@/lib/utils";
 
 interface UserAvatarProps {
@@ -36,9 +38,12 @@ export function UserAvatar({
 }: UserAvatarProps) {
   if (image) {
     return (
-      <img
+      <Image
         src={image}
         alt={name ? `${name} avatar` : "User avatar"}
+        width={40}
+        height={40}
+        sizes="40px"
         className={cn("size-10 rounded-full object-cover", className)}
       />
     );

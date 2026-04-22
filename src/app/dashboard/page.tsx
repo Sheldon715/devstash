@@ -18,15 +18,15 @@ export const dynamic = "force-dynamic";
 export default async function DashboardPage() {
   const session = await auth();
 
-  if (!session?.user?.email) {
+  if (!session?.user?.id || !session.user.email) {
     redirect("/sign-in");
   }
 
   const [collections, sidebarItemTypes, pinnedItems, recentItems] = await Promise.all([
-    getAllDashboardCollections(),
-    getDashboardSidebarItemTypes(),
-    getPinnedDashboardItems(),
-    getRecentDashboardItems(),
+    getAllDashboardCollections(session.user.id),
+    getDashboardSidebarItemTypes(session.user.id),
+    getPinnedDashboardItems(session.user.id),
+    getRecentDashboardItems(session.user.id),
   ]);
   const favoriteCollections = collections.filter((collection) => collection.isFavorite).slice(0, 4);
   const recentCollections = collections.slice(0, 4);
@@ -52,7 +52,7 @@ export default async function DashboardPage() {
           </p>
         </header>
 
-        <StatsCards />
+        <StatsCards userId={session.user.id} />
         <CollectionsSection collections={collections.slice(0, 6)} />
         <PinnedItems items={pinnedItems} />
         <RecentItems items={recentItems} />

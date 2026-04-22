@@ -4,19 +4,27 @@
 
 <!-- Not Started|In Progress|Completed -->
 
-Not Started
+Completed
 
 ## Goals
 
 <!-- Goals & requirements -->
+- Fix only the high-severity auth audit issue
+- Ensure protected dashboard/profile routes load data for the signed-in user instead of the hardcoded demo user
+- Leave the medium and low auth audit findings unchanged for now
 
 ## Todo List
 
 <!-- Feature-specific checklist -->
+- [x] Trace every dashboard/profile query helper that still scopes data to the demo user
+- [x] Update the affected loaders to accept the authenticated user ID
+- [x] Update protected route call sites to pass the signed-in user into those loaders
 
 ## Notes
 
 <!-- Any extra notes -->
+- The high-severity issue came from shared dashboard/profile data helpers in `src/lib/db/collections.ts` and `src/lib/db/items.ts` using `demo@devstash.io` instead of the authenticated user.
+- The fix scopes those helpers by `userId` and updates the protected dashboard, profile, collections, and item-type routes to pass the current session user.
 
 ## History
 
@@ -40,3 +48,5 @@ Not Started
 - Email verification toggle completed with a shared `AUTH_REQUIRE_EMAIL_VERIFICATION` env flag, auto-verification when disabled, and auth UI messaging that stays aligned with the active mode
 - Forgot password flow completed with request/reset pages, `VerificationToken`-backed password reset tokens, minimum password validation, sign-in recovery entry points, and passing build/lint verification; manual browser verification still pending
 - Profile page completed with a protected `/profile` route, live account details and usage stats, inline password change and delete-account flows, animated sidebar and user-menu interactions, and shared success toast feedback; manual browser verification still pending
+- Auth security auditor agent completed with a repo-specific Codex subagent at `.codex/agents/auth-auditor.toml`, scoped to real auth issues, report rewriting, passed checks, and NextAuth-aware false-positive guardrails
+- High auth data-exposure fix completed by removing hardcoded demo-user scoping from dashboard/profile data loaders and wiring protected routes to the authenticated user's `id`

@@ -3,8 +3,6 @@ import { normalizeDashboardQueryLimit } from "@/lib/dashboard-query";
 import { normalizeDashboardItemTypeKey, getDashboardItemTypeKeys } from "@/lib/item-types";
 import type { DashboardItemTypeKey } from "@/lib/mock-data";
 
-const DASHBOARD_DEMO_EMAIL = "demo@devstash.io";
-
 type DashboardItemWithRelations = Awaited<
   ReturnType<typeof getDashboardItems>
 >[number];
@@ -45,6 +43,7 @@ export interface DashboardItemTypePageRecord {
 }
 
 async function getDashboardItems(
+  userId: string,
   options?: {
     isPinned?: boolean;
     limit?: number;
@@ -53,9 +52,7 @@ async function getDashboardItems(
 ) {
   return prisma.item.findMany({
     where: {
-      user: {
-        email: DASHBOARD_DEMO_EMAIL,
-      },
+      userId,
       ...(options?.isPinned === undefined ? {} : { isPinned: options.isPinned }),
       ...(options?.typeKey ? { type: { key: options.typeKey } } : {}),
     },
@@ -96,8 +93,8 @@ async function getDashboardItems(
   });
 }
 
-export async function getPinnedDashboardItems(limit = 4) {
-  const items = await getDashboardItems({
+export async function getPinnedDashboardItems(userId: string, limit = 4) {
+  const items = await getDashboardItems(userId, {
     isPinned: true,
     limit,
   });
@@ -105,28 +102,24 @@ export async function getPinnedDashboardItems(limit = 4) {
   return items.map(mapItemToDashboardRecord);
 }
 
-export async function getRecentDashboardItems(limit = 10) {
-  const items = await getDashboardItems({
+export async function getRecentDashboardItems(userId: string, limit = 10) {
+  const items = await getDashboardItems(userId, {
     limit,
   });
 
   return items.map(mapItemToDashboardRecord);
 }
 
-export async function getDashboardItemStats(): Promise<DashboardItemStats> {
+export async function getDashboardItemStats(userId: string): Promise<DashboardItemStats> {
   const [totalItems, favoriteItems] = await Promise.all([
     prisma.item.count({
       where: {
-        user: {
-          email: DASHBOARD_DEMO_EMAIL,
-        },
+        userId,
       },
     }),
     prisma.item.count({
       where: {
-        user: {
-          email: DASHBOARD_DEMO_EMAIL,
-        },
+        userId,
         isFavorite: true,
       },
     }),
@@ -138,7 +131,7 @@ export async function getDashboardItemStats(): Promise<DashboardItemStats> {
   };
 }
 
-export async function getDashboardSidebarItemTypes() {
+export async function getDashboardSidebarItemTypes(userId: string) {
   const itemTypes = await prisma.itemType.findMany({
     where: {
       isSystem: true,
@@ -152,9 +145,7 @@ export async function getDashboardSidebarItemTypes() {
         select: {
           items: {
             where: {
-              user: {
-                email: DASHBOARD_DEMO_EMAIL,
-              },
+              userId,
             },
           },
         },
@@ -180,7 +171,7 @@ export async function getDashboardSidebarItemTypes() {
     );
 }
 
-export async function getDashboardItemTypePage(typeKey: string) {
+export async function getDashboardItemTypePage(userId: string, typeKey: string) {
   const itemType = await prisma.itemType.findFirst({
     where: {
       isSystem: true,
@@ -197,7 +188,7 @@ export async function getDashboardItemTypePage(typeKey: string) {
     return null;
   }
 
-  const items = await getDashboardItems({
+  const items = await getDashboardItems(userId, {
     typeKey: itemType.key,
   });
 

@@ -5,8 +5,6 @@ import { normalizeDashboardQueryLimit } from "@/lib/dashboard-query";
 import { normalizeDashboardItemTypeKey } from "@/lib/item-types";
 import type { DashboardItemTypeKey } from "@/lib/mock-data";
 
-const DASHBOARD_DEMO_EMAIL = "demo@devstash.io";
-
 export interface DashboardCollectionCardRecord {
   id: string;
   name: string;
@@ -44,7 +42,7 @@ interface DashboardCollectionTypeStat {
   typeKey: DashboardItemTypeKey;
 }
 
-async function getCollectionsForDashboard() {
+async function getCollectionsForDashboard(userId: string) {
   return prisma.$queryRaw<DashboardCollectionSummaryRow[]>(Prisma.sql`
     WITH filtered_collections AS (
       SELECT
@@ -54,8 +52,7 @@ async function getCollectionsForDashboard() {
         c."isFavorite",
         c."updatedAt"
       FROM "Collection" c
-      INNER JOIN "User" u ON u.id = c."userId"
-      WHERE u.email = ${DASHBOARD_DEMO_EMAIL}
+      WHERE c."userId" = ${userId}
     ),
     collection_type_stats AS (
       SELECT
@@ -110,22 +107,23 @@ async function getCollectionsForDashboard() {
   `);
 }
 
-export async function getAllDashboardCollections() {
-  const collections = await getCollectionsForDashboard();
+export async function getAllDashboardCollections(userId: string) {
+  const collections = await getCollectionsForDashboard(userId);
 
   return collections.map(mapCollectionToCardRecord);
 }
 
-export async function getRecentDashboardCollections(limit = 6) {
-  const collections = await getAllDashboardCollections();
+export async function getRecentDashboardCollections(userId: string, limit = 6) {
+  const collections = await getAllDashboardCollections(userId);
 
   return collections.slice(0, normalizeDashboardQueryLimit(limit));
 }
 
 export async function getDashboardSidebarCollections(
+  userId: string,
   limit = 4,
 ): Promise<DashboardSidebarCollections> {
-  const collections = await getAllDashboardCollections();
+  const collections = await getAllDashboardCollections(userId);
   const normalizedLimit = normalizeDashboardQueryLimit(limit);
 
   return {
@@ -136,20 +134,16 @@ export async function getDashboardSidebarCollections(
   };
 }
 
-export async function getDashboardCollectionStats(): Promise<DashboardCollectionStats> {
+export async function getDashboardCollectionStats(userId: string): Promise<DashboardCollectionStats> {
   const [totalCollections, favoriteCollections] = await Promise.all([
     prisma.collection.count({
       where: {
-        user: {
-          email: DASHBOARD_DEMO_EMAIL,
-        },
+        userId,
       },
     }),
     prisma.collection.count({
       where: {
-        user: {
-          email: DASHBOARD_DEMO_EMAIL,
-        },
+        userId,
         isFavorite: true,
       },
     }),

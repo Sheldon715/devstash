@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 
+import { auth } from "@/auth";
 import {
   DashboardNamedIcon,
   getDashboardItemTypeColor,
@@ -16,8 +17,14 @@ interface ItemTypePageProps {
 }
 
 export default async function ItemTypePage({ params }: ItemTypePageProps) {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    redirect("/sign-in");
+  }
+
   const { type } = await params;
-  const itemTypePage = await getDashboardItemTypePage(type);
+  const itemTypePage = await getDashboardItemTypePage(session.user.id, type);
 
   if (!itemTypePage) {
     notFound();

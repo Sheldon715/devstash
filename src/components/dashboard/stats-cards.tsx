@@ -11,10 +11,14 @@ interface StatCard {
   value: number;
 }
 
-export async function StatsCards() {
+interface StatsCardsProps {
+  userId: string;
+}
+
+export async function StatsCards({ userId }: StatsCardsProps) {
   const [itemStats, collectionStats] = await Promise.all([
-    getDashboardItemStats(),
-    getDashboardCollectionStats(),
+    getDashboardItemStats(userId),
+    getDashboardCollectionStats(userId),
   ]);
   const stats: StatCard[] = [
     {
