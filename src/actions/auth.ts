@@ -1,9 +1,11 @@
 "use server";
 
+import { headers } from "next/headers";
 import { AuthError, CredentialsSignin } from "next-auth";
 
 import { signIn, signOut } from "@/auth";
 import type { SignInActionState } from "@/actions/auth-state";
+import { checkAuthRateLimit, getRateLimitErrorMessage } from "@/lib/rate-limit";
 
 function getRedirectTarget(value: FormDataEntryValue | null) {
   if (typeof value !== "string" || !value.trim()) {
@@ -19,7 +21,7 @@ export async function signInWithCredentialsAction(
 ): Promise<SignInActionState> {
   const emailValue = formData.get("email");
   const passwordValue = formData.get("password");
-  const email = typeof emailValue === "string" ? emailValue.trim() : "";
+  const email = typeof emailValue === "string" ? emailValue.trim().toLowerCase() : "";
   const password = typeof passwordValue === "string" ? passwordValue : "";
   const redirectTo = getRedirectTarget(formData.get("callbackUrl"));
 
@@ -27,6 +29,20 @@ export async function signInWithCredentialsAction(
     return {
       email,
       error: "Enter both your email and password.",
+      resendVerificationEmail: null,
+    };
+  }
+
+  const rateLimitResult = await checkAuthRateLimit("login", {
+    email,
+    request: new Headers(await headers()),
+  });
+
+  if (!rateLimitResult.success) {
+    return {
+      email,
+      error: getRateLimitErrorMessage(rateLimitResult.reset),
+      resendVerificationEmail: null,
     };
   }
 
@@ -41,6 +57,7 @@ export async function signInWithCredentialsAction(
       return {
         email,
         error: "Verify your email before signing in. Check your inbox for the verification link.",
+        resendVerificationEmail: email,
       };
     }
 
@@ -49,12 +66,14 @@ export async function signInWithCredentialsAction(
         return {
           email,
           error: "Invalid email or password.",
+          resendVerificationEmail: null,
         };
       }
 
       return {
         email,
         error: "We couldn't sign you in right now. Please try again.",
+        resendVerificationEmail: null,
       };
     }
 
@@ -64,6 +83,7 @@ export async function signInWithCredentialsAction(
   return {
     email,
     error: null,
+    resendVerificationEmail: null,
   };
 }
 

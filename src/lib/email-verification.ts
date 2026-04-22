@@ -27,6 +27,14 @@ export function buildEmailVerificationUrl(email: string, token: string, origin: 
   return verificationUrl.toString();
 }
 
+export async function sendVerificationEmailForAddress(email: string, origin: string) {
+  const normalizedEmail = normalizeEmail(email);
+  const { token } = await createEmailVerificationToken(normalizedEmail);
+  const verificationUrl = buildEmailVerificationUrl(normalizedEmail, token, origin);
+
+  await sendEmailVerificationEmail(normalizedEmail, verificationUrl);
+}
+
 export async function createEmailVerificationToken(email: string) {
   const identifier = normalizeEmail(email);
   const token = randomBytes(32).toString("hex");
