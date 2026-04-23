@@ -1,38 +1,21 @@
-# Current Feature: Item Drawer
+# Current Feature
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 
 ## Goals
 
-- Add a right-side item detail drawer using the shadcn `Sheet` component.
-- Open the drawer when an `ItemCard` is clicked on both the dashboard and items list pages.
-- Fetch full item details on click via `/api/items/[id]` without page navigation.
-- Show a loading skeleton while full item detail data is being fetched.
-- Render the drawer action bar with Favorite, Pin, Copy, Edit, and right-aligned Delete actions.
-- Keep the first iteration focused on drawer detail display only, leaving editor and type-specific extras for later.
+<!-- Goals & requirements -->
 
 ## Todo List
 
-- [x] Review existing `ItemCard`, dashboard, and items list interactions to identify the shared drawer entry point.
-- [x] Add item detail query support in `src/lib/db/items.ts` and expose it through an authenticated `/api/items/[id]` route.
-- [x] Build a client-side drawer controller that manages open state, fetch lifecycle, and loading UI for server-rendered pages.
-- [x] Implement the right-side item drawer UI and action bar layout for full item details.
-- [x] Wire the drawer trigger into both dashboard and items list item cards.
-- [ ] Verify behavior with automated checks and manual browser testing for drawer open, loading, and detail display.
+<!-- Feature-specific checklist -->
 
 ## Notes
 
-- Spec source: [item-drawer-spec.md](</c:/Users/lxd04/Desktop/WEB/WEB PROJECT/devstash/context/feature/item-drawer-spec.md>)
-- The drawer is the item detail view; there is no separate item page for this flow.
-- Existing card data stays server-rendered; full detail is fetched lazily on click for a snappy feel.
-- The drawer should support both dashboard and `/items/[type]` pages through a shared client wrapper.
-- Full detail includes fields like content, collections, and language in addition to the card summary fields.
-- Visual reference: `context/screenshots/dashboard-ui-drawer.png`
-- Automated verification completed with `npm run test`, `npm run lint`, and `npm run build`.
-- Manual browser verification was partially attempted, but a clean authenticated browser walkthrough for the drawer is still pending.
+<!-- Any extra notes -->
 
 ## History
 
@@ -62,3 +45,4 @@ In Progress
 - Items list view completed with a responsive `/items/[type]` grid that reuses `ItemCard`, plural type route support, improved sidebar and card hover states, bundled feature research/spec docs, and a passing production build
 - Vitest unit testing setup completed with Node-based Vitest config, unit test scripts, scoped tests for server actions and utilities only, representative action/utility coverage, and updated workflow documentation
 - Vitest testing workflow and responsive items layout update completed with Vitest scripts/config plus initial action and utility tests, updated testing docs, and a `/items/[type]` grid that expands to three columns on large screens
+- Item drawer completed with a shared right-side lazy-loaded detail drawer on dashboard and item type pages, an authenticated `/api/items/[id]` route, utility and API route test coverage, and passing lint/test/build verification; full manual browser walkthrough is still pending
