@@ -9,6 +9,6 @@ Dynamic items listing page at `/items/[type]` that displays type-filtered items.
 - Create dynamic route `/items/[type]` (e.g., /items/snippets, /items/notes)
 - Fetch and display items filtered by type
 - Responsive grid of ItemCard components
-- Two columns on medium and up
+- One column on small screens, two columns on medium screens, and three columns on large screens
 - Each card has left border colored by item type
 - Follow existing codebase patterns
