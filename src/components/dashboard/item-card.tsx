@@ -1,5 +1,8 @@
+"use client";
+
 import { Pin, Star } from "lucide-react";
 
+import { useItemDrawer } from "@/components/items/item-drawer-provider";
 import {
   DashboardItemTypeIcon,
   getDashboardItemTypeColor,
@@ -13,12 +16,15 @@ interface ItemCardProps {
 }
 
 export function ItemCard({ item, variant }: ItemCardProps) {
+  const { openItem } = useItemDrawer();
   const isFeatured = variant === "featured";
   const updatedLabel = formatDashboardDate(item.updatedAt);
 
   return (
-    <article
-      className="group relative overflow-hidden rounded-[24px] border border-white/10 bg-[#08090c] p-4 shadow-[0_16px_48px_rgba(0,0,0,0.2)] transition-all duration-300 hover:-translate-y-1 hover:border-white/15 hover:bg-[#0b0d12] hover:shadow-[0_20px_56px_rgba(0,0,0,0.28)]"
+    <button
+      type="button"
+      onClick={() => openItem(item.id)}
+      className="group relative block w-full overflow-hidden rounded-[24px] border border-white/10 bg-[#08090c] p-4 text-left shadow-[0_16px_48px_rgba(0,0,0,0.2)] transition-all duration-300 hover:-translate-y-1 hover:border-white/15 hover:bg-[#0b0d12] hover:shadow-[0_20px_56px_rgba(0,0,0,0.28)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
     >
       <div
         className={`absolute inset-y-0 left-0 w-1 rounded-l-[24px] bg-current transition-all duration-300 group-hover:w-1.5 ${getDashboardItemTypeColor(item.typeKey)}`}
@@ -98,6 +104,6 @@ export function ItemCard({ item, variant }: ItemCardProps) {
           {updatedLabel}
         </p>
       </div>
-    </article>
+    </button>
   );
 }

@@ -6,9 +6,12 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    include: ["src/actions/**/*.test.ts", "src/lib/**/*.test.ts"],
+    include: [
+      "src/actions/**/*.test.ts",
+      "src/lib/**/*.test.ts",
+      "src/app/api/**/*.test.ts",
+    ],
     exclude: [
-      "src/app/**",
       "src/components/**",
       "src/**/*.test.tsx",
       "node_modules/**",

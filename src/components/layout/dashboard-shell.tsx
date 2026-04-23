@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 
+import { ItemDrawerProvider } from "@/components/items/item-drawer-provider";
 import { Sidebar } from "@/components/layout/sidebar";
 import type { SidebarCurrentUser } from "@/components/layout/sidebar-user-menu";
 import { TopBar } from "@/components/layout/top-bar";
@@ -75,7 +76,7 @@ export function DashboardShell({
 
           <div className="flex-1 px-4 py-6 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
             <div className="mx-auto w-full max-w-[980px] xl:max-w-[1000px] 2xl:max-w-[1040px]">
-              {children}
+              <ItemDrawerProvider>{children}</ItemDrawerProvider>
             </div>
           </div>
         </div>

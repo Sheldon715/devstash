@@ -97,3 +97,49 @@
 .profile-toast-exit {
   animation: profile-toast-out 180ms ease-in forwards;
 }
+
+@keyframes sheet-overlay-in {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes sheet-content-in-right {
+  0% {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes sheet-content-in-left {
+  0% {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.sheet-overlay-enter {
+  animation: sheet-overlay-in 180ms ease-out forwards;
+}
+
+.sheet-content-enter-right {
+  animation: sheet-content-in-right 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.sheet-content-enter-left {
+  animation: sheet-content-in-left 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
