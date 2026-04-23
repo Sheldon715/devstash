@@ -3,12 +3,19 @@ import { notFound, redirect } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 
 import { auth } from "@/auth";
+import { ItemCard } from "@/components/dashboard/item-card";
+import { getAllDashboardCollections } from "@/lib/db/collections";
+import { DashboardShell } from "@/components/layout/dashboard-shell";
 import {
   DashboardNamedIcon,
   getDashboardItemTypeColor,
 } from "@/lib/dashboard-icons";
-import { getDashboardItemTypePage } from "@/lib/db/items";
-import { formatDashboardDate } from "@/lib/date";
+import {
+  getDashboardItemTypePage,
+  getDashboardSidebarItemTypes,
+} from "@/lib/db/items";
+
+export const dynamic = "force-dynamic";
 
 interface ItemTypePageProps {
   params: Promise<{
@@ -19,21 +26,36 @@ interface ItemTypePageProps {
 export default async function ItemTypePage({ params }: ItemTypePageProps) {
   const session = await auth();
 
-  if (!session?.user?.id) {
+  if (!session?.user?.id || !session.user.email) {
     redirect("/sign-in");
   }
 
   const { type } = await params;
-  const itemTypePage = await getDashboardItemTypePage(session.user.id, type);
+  const [collections, sidebarItemTypes, itemTypePage] = await Promise.all([
+    getAllDashboardCollections(session.user.id),
+    getDashboardSidebarItemTypes(session.user.id),
+    getDashboardItemTypePage(session.user.id, type),
+  ]);
 
   if (!itemTypePage) {
     notFound();
   }
 
   const { itemType, items } = itemTypePage;
+  const favoriteCollections = collections.filter((collection) => collection.isFavorite).slice(0, 4);
+  const recentCollections = collections.slice(0, 4);
 
   return (
-    <main className="min-h-screen bg-background px-4 py-8 text-foreground sm:px-6 lg:px-8">
+    <DashboardShell
+      currentUser={{
+        email: session.user.email,
+        image: session.user.image,
+        name: session.user.name,
+      }}
+      favoriteCollections={favoriteCollections}
+      recentCollections={recentCollections}
+      sidebarItemTypes={sidebarItemTypes}
+    >
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-8">
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <Link href="/dashboard" className="transition-colors hover:text-foreground">
@@ -65,43 +87,26 @@ export default async function ItemTypePage({ params }: ItemTypePageProps) {
           </div>
         </header>
 
-        <section className="grid gap-4">
-          {items.map((item) => (
-            <article
-              key={item.id}
-              className="rounded-[24px] border border-border/70 bg-[#09090b] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h2 className="text-xl font-semibold text-zinc-50">{item.title}</h2>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                    {item.description}
-                  </p>
-                </div>
-                <p className="shrink-0 text-sm text-muted-foreground">
-                  {formatDashboardDate(item.updatedAt)}
-                </p>
-              </div>
-
-              <div className="mt-4 flex flex-wrap gap-2">
-                <span
-                  className={`rounded-full border border-border/70 bg-card px-3 py-1 text-xs font-medium ${getDashboardItemTypeColor(item.typeKey)}`}
-                >
-                  {item.typeLabel}
-                </span>
-                {item.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="rounded-full border border-border/70 bg-card px-3 py-1 text-xs font-medium text-muted-foreground"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </article>
-          ))}
-        </section>
+        {items.length ? (
+          <section className="grid gap-4 md:grid-cols-2">
+            {items.map((item) => (
+              <ItemCard key={item.id} item={item} variant="compact" />
+            ))}
+          </section>
+        ) : (
+          <section className="rounded-[24px] border border-white/10 bg-[#08090c] p-8 shadow-[0_16px_48px_rgba(0,0,0,0.2)]">
+            <p className="text-sm uppercase tracking-[0.22em] text-muted-foreground">
+              Empty Type
+            </p>
+            <h2 className="mt-3 text-2xl font-semibold tracking-tight text-zinc-50">
+              No {itemType.name.toLowerCase()} items yet
+            </h2>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+              Items of this type will appear here as soon as they are added to your workspace.
+            </p>
+          </section>
+        )}
       </div>
-    </main>
+    </DashboardShell>
   );
 }

@@ -17,9 +17,11 @@ export function ItemCard({ item, variant }: ItemCardProps) {
   const updatedLabel = formatDashboardDate(item.updatedAt);
 
   return (
-    <article className="relative overflow-hidden rounded-[24px] border border-white/10 bg-[#08090c] p-4 shadow-[0_16px_48px_rgba(0,0,0,0.2)]">
+    <article
+      className="group relative overflow-hidden rounded-[24px] border border-white/10 bg-[#08090c] p-4 shadow-[0_16px_48px_rgba(0,0,0,0.2)] transition-all duration-300 hover:-translate-y-1 hover:border-white/15 hover:bg-[#0b0d12] hover:shadow-[0_20px_56px_rgba(0,0,0,0.28)]"
+    >
       <div
-        className={`absolute inset-y-0 left-0 w-1 rounded-l-[24px] bg-current ${getDashboardItemTypeColor(item.typeKey)}`}
+        className={`absolute inset-y-0 left-0 w-1 rounded-l-[24px] bg-current transition-all duration-300 group-hover:w-1.5 ${getDashboardItemTypeColor(item.typeKey)}`}
       />
 
       <div
@@ -33,11 +35,11 @@ export function ItemCard({ item, variant }: ItemCardProps) {
           <div
             className={`flex shrink-0 items-center justify-center rounded-2xl bg-[#111522] ${
               isFeatured ? "size-14" : "size-11"
-            }`}
+            } transition-all duration-300 group-hover:scale-105 group-hover:bg-[#151a29]`}
           >
             <DashboardItemTypeIcon
               typeKey={item.typeKey}
-              className={`${isFeatured ? "size-6" : "size-4.5"} ${getDashboardItemTypeColor(item.typeKey)}`}
+              className={`${isFeatured ? "size-6" : "size-4.5"} ${getDashboardItemTypeColor(item.typeKey)} transition-transform duration-300 group-hover:scale-110`}
             />
           </div>
 
@@ -47,7 +49,7 @@ export function ItemCard({ item, variant }: ItemCardProps) {
                 <h3
                   className={`min-w-0 truncate font-semibold tracking-tight text-zinc-50 ${
                     isFeatured ? "text-xl" : "text-base"
-                  }`}
+                  } transition-colors duration-300 group-hover:text-white`}
                 >
                   {item.title}
                 </h3>
@@ -62,7 +64,7 @@ export function ItemCard({ item, variant }: ItemCardProps) {
               <p
                 className={`max-w-3xl text-muted-foreground ${
                   isFeatured ? "text-sm leading-7" : "text-xs leading-6 sm:text-sm"
-                }`}
+                } transition-colors duration-300 group-hover:text-zinc-300`}
               >
                 {item.description}
               </p>
