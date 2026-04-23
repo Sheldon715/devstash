@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ChevronDown, ChevronsLeft, ChevronsRight, FolderOpen, Star, X } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +18,7 @@ import {
   DashboardNamedIcon,
   getDashboardItemTypeColor,
 } from "@/lib/dashboard-icons";
+import { getDashboardItemTypeRouteSegment } from "@/lib/item-types";
 import { cn } from "@/lib/utils";
 
 function getSidebarContentVisibilityClass(isCollapsed: boolean) {
@@ -47,6 +49,7 @@ export function Sidebar({
   sidebarItemTypes,
 }: SidebarProps) {
   const [isCollectionsOpen, setIsCollectionsOpen] = useState(true);
+  const pathname = usePathname();
 
   return (
     <>
@@ -145,22 +148,27 @@ export function Sidebar({
             className="border-b border-white/6 px-3.5 py-[clamp(10px,1.6vh,20px)]"
           >
             {sidebarItemTypes.map((itemType) => {
+              const href = `/items/${getDashboardItemTypeRouteSegment(itemType.typeKey)}`;
               const iconColor = getDashboardItemTypeColor(itemType.typeKey);
               const isProType = itemType.key === "file" || itemType.key === "image";
+              const isActive = pathname === href;
 
               return (
                 <Link
                   key={itemType.id}
-                  href={`/items/${itemType.key}`}
+                  href={href}
                   className={cn(
-                    "group flex items-center gap-2.5 rounded-xl py-[clamp(3px,0.6vh,6px)] transition-colors hover:text-white",
+                    "group flex items-center gap-2.5 rounded-xl border border-transparent px-2.5 py-[clamp(6px,0.85vh,9px)] transition-all duration-300 hover:border-white/8 hover:bg-white/[0.045] hover:text-white",
+                    isActive &&
+                      "border-white/10 bg-white/[0.06] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]",
                     isCollapsed && "justify-center"
                   )}
                   onClick={onCloseMobile}
                 >
                   <div
                     className={cn(
-                      "flex size-[clamp(22px,2.8vh,28px)] shrink-0 items-center justify-center transition-colors group-hover:brightness-110",
+                      "flex size-[clamp(22px,2.8vh,28px)] shrink-0 items-center justify-center rounded-lg transition-all duration-300 group-hover:brightness-110",
+                      isActive && "bg-white/[0.04]",
                       iconColor
                     )}
                   >
@@ -260,7 +268,10 @@ export function Sidebar({
                   >
                     <Link
                       href="/collections"
-                      className="text-[clamp(10px,1.3vh,12px)] font-medium text-muted-foreground transition-colors hover:text-zinc-50"
+                      className={cn(
+                        "inline-flex rounded-lg px-2 py-1.5 text-[clamp(10px,1.3vh,12px)] font-medium text-muted-foreground transition-all duration-300 hover:bg-white/[0.045] hover:text-zinc-50",
+                        pathname === "/collections" && "bg-white/[0.06] text-zinc-50",
+                      )}
                       onClick={onCloseMobile}
                     >
                       View all collections
@@ -356,11 +367,11 @@ function CollectionLink({
   return (
     <div
       className={cn(
-        "flex items-center gap-2.5 rounded-xl py-[clamp(3px,0.6vh,6px)] transition-colors hover:text-white",
+        "group flex items-center gap-2.5 rounded-xl border border-transparent px-2.5 py-[clamp(6px,0.85vh,9px)] transition-all duration-300 hover:border-white/8 hover:bg-white/[0.04] hover:text-white",
         isCollapsed && "justify-center"
       )}
     >
-      <div className="flex size-[clamp(22px,2.8vh,28px)] shrink-0 items-center justify-center text-muted-foreground">
+      <div className="flex size-[clamp(22px,2.8vh,28px)] shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-all duration-300 group-hover:bg-white/[0.04]">
         {showStar ? (
           <FolderOpen className="size-[clamp(12px,1.8vh,16px)]" />
         ) : (

@@ -1,6 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { normalizeDashboardQueryLimit } from "@/lib/dashboard-query";
-import { normalizeDashboardItemTypeKey, getDashboardItemTypeKeys } from "@/lib/item-types";
+import {
+  getDashboardItemTypeKeys,
+  normalizeDashboardItemTypeKey,
+  normalizeDashboardItemTypeRouteKey,
+} from "@/lib/item-types";
 import type { DashboardItemTypeKey } from "@/lib/mock-data";
 
 type DashboardItemWithRelations = Awaited<
@@ -172,10 +176,16 @@ export async function getDashboardSidebarItemTypes(userId: string) {
 }
 
 export async function getDashboardItemTypePage(userId: string, typeKey: string) {
+  const normalizedTypeKey = normalizeDashboardItemTypeRouteKey(typeKey);
+
+  if (!normalizedTypeKey) {
+    return null;
+  }
+
   const itemType = await prisma.itemType.findFirst({
     where: {
       isSystem: true,
-      key: typeKey,
+      key: normalizedTypeKey,
     },
     select: {
       key: true,

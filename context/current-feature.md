@@ -1,39 +1,32 @@
-# Current Feature: Auth Rate Limiting
+# Current Feature: Items List View
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
-
 In Progress
+
+
 
 ## Goals
 
-<!-- Goals & requirements -->
-- Add reusable auth rate limiting with Upstash Redis and `@upstash/ratelimit`
-- Protect the login, register, forgot-password, reset-password, and resend-verification endpoints with the spec limits
-- Return consistent `429 Too Many Requests` responses with a `Retry-After` header and user-friendly JSON errors
-- Surface rate limit errors in the frontend through existing toast/error handling patterns
-- Fail open if Upstash is unavailable so auth flows keep working during Redis outages
+- Create a dynamic route at `/items/[type]` for type-filtered item listings.
+- Fetch and display items filtered by the selected item type.
+- Render items in a responsive `ItemCard` grid with two columns on medium screens and up.
+- Show a left border on each item card using the corresponding item type color.
+- Keep the implementation aligned with existing codebase patterns.
 
 ## Todo List
 
-<!-- Feature-specific checklist -->
-- [x] Add Upstash Redis environment variables and a shared `src/lib/rate-limit.ts` helper with sliding-window configs per auth flow
-- [x] Apply rate limiting to the login, register, forgot-password, reset-password, and resend-verification endpoints using IP and email keys where required
-- [x] Return `429` JSON responses with `Retry-After` metadata and frontend-safe error messages for throttled requests
-- [x] Update auth UI/server-action error handling so users see clear toast feedback when they hit a limit
-- [ ] Run `npm run build` and verify the affected auth flows still behave correctly
+- [x] Create the dynamic `/items/[type]` route.
+- [x] Load the selected item type and fetch items filtered by that type.
+- [x] Build the items list page layout using a responsive two-column grid on medium screens and up.
+- [x] Render each item with the existing `ItemCard` pattern and a type-colored left border.
+- [x] Verify the implementation matches existing codebase patterns and passes `npm run build`.
 
 ## Notes
 
-<!-- Any extra notes -->
-- Target endpoints and limits come from `context/feature/rate-limiting-spec.md`.
-- Login should be limited by `IP + email`, resend verification by `IP + email`, and the other listed auth routes by `IP`.
-- The shared helper should return `{ success, remaining, reset }` and fail open if Upstash is unavailable.
-- `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are required for live limiting.
-- The Upstash Redis env vars were already present in the local env files, so this feature reused the existing values instead of adding new placeholders.
-- A new `/api/auth/resend-verification` route and verify-email resend UI were added because the spec referenced that endpoint but it did not exist yet.
-- `npm run build` passes after the rate-limiting changes; browser-level verification of the auth flows is still pending.
+- Source spec: `context/feature/item-list-view-spec.md`
+- Example routes include `/items/snippets` and `/items/notes`.
+- The page should focus on the list view only; no extra scope was added beyond the spec.
 
 ## History
 
@@ -59,3 +52,4 @@ In Progress
 - Profile page completed with a protected `/profile` route, live account details and usage stats, inline password change and delete-account flows, animated sidebar and user-menu interactions, and shared success toast feedback; manual browser verification still pending
 - Auth security auditor agent completed with a repo-specific Codex subagent at `.codex/agents/auth-auditor.toml`, scoped to real auth issues, report rewriting, passed checks, and NextAuth-aware false-positive guardrails
 - High auth data-exposure fix completed by removing hardcoded demo-user scoping from dashboard/profile data loaders and wiring protected routes to the authenticated user's `id`
+- Auth rate limiting completed with Upstash-backed auth endpoint limits, shared `429` + `Retry-After` handling, a new resend-verification flow, and passing build/lint verification; manual browser verification is still pending
