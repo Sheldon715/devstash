@@ -1,22 +1,32 @@
-# Current Feature
+# Current Feature: Items List Three-Column Layout
 
 ## Status
 
 <!-- Not Started|In Progress|Completed -->
-
+In Progress
 
 
 ## Goals
 
 <!-- Goals & requirements -->
+- Change the `/items/[type]` listing view to use three columns on larger screens.
+- Keep the layout responsive instead of forcing three columns at all breakpoints.
+- Update the related item-list spec once implementation starts so it matches the intended layout.
 
 ## Todo List
 
 <!-- Feature-specific checklist -->
+- [x] Update the `/items/[type]` grid layout to use three columns on larger screens
+- [x] Keep the listing responsive across smaller breakpoints
+- [x] Update the item list feature spec to match the implemented layout
+- [x] Run verification for the layout change
 
 ## Notes
 
 <!-- Any extra notes -->
+- Desired behavior: keep the current responsive feel, but move to three columns on larger screens.
+- Working branch: `feature/items-list-three-column-layout`
+- In this Codex environment, `npm run build` required unsandboxed execution because Next hit a Windows `spawn EPERM` sandbox limitation. The repo build passed outside the sandbox.
 
 ## History
 
@@ -44,3 +54,4 @@
 - High auth data-exposure fix completed by removing hardcoded demo-user scoping from dashboard/profile data loaders and wiring protected routes to the authenticated user's `id`
 - Auth rate limiting completed with Upstash-backed auth endpoint limits, shared `429` + `Retry-After` handling, a new resend-verification flow, and passing build/lint verification; manual browser verification is still pending
 - Items list view completed with a responsive `/items/[type]` grid that reuses `ItemCard`, plural type route support, improved sidebar and card hover states, bundled feature research/spec docs, and a passing production build
+- Vitest unit testing setup completed with Node-based Vitest config, unit test scripts, scoped tests for server actions and utilities only, representative action/utility coverage, and updated workflow documentation

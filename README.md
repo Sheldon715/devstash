@@ -18,6 +18,8 @@ npm run dev
 npm run build
 npm run start
 npm run lint
+npm run test
+npm run test:watch
 npm run db:test
 npm run db:seed
 npm run prisma:generate
@@ -58,10 +60,17 @@ npm run dev
 
 The development server runs at `http://localhost:3000`.
 
+6. Run the unit tests:
+
+```bash
+npm run test
+```
+
 ## Project Notes
 
 - The dashboard UI is backed by Prisma queries against the demo user data.
 - System item types are seeded and used for dashboard filters and item-type pages.
+- Unit tests use Vitest and are currently limited to server actions and utilities.
 - Project context and workflow notes live under `context/` and `AGENTS.md`.
 
 ## Prisma + Neon

@@ -88,7 +88,7 @@ export default async function ItemTypePage({ params }: ItemTypePageProps) {
         </header>
 
         {items.length ? (
-          <section className="grid gap-4 md:grid-cols-2">
+          <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {items.map((item) => (
               <ItemCard key={item.id} item={item} variant="compact" />
             ))}
