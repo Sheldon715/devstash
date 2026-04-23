@@ -29,6 +29,35 @@ export interface DashboardItemStats {
   favoriteItems: number;
 }
 
+export interface DashboardItemDetailTagRecord {
+  color: string | null;
+  name: string;
+}
+
+export interface DashboardItemDetailRecord {
+  id: string;
+  title: string;
+  description: string;
+  contentMode: "TEXT" | "FILE" | "URL";
+  content: string | null;
+  url: string | null;
+  fileName: string | null;
+  fileUrl: string | null;
+  fileMimeType: string | null;
+  fileSizeBytes: number | null;
+  language: string | null;
+  aiSummary: string | null;
+  collectionNames: string[];
+  tags: DashboardItemDetailTagRecord[];
+  isPinned: boolean;
+  isFavorite: boolean;
+  typeKey: DashboardItemTypeKey;
+  typeLabel: string;
+  createdAt: Date;
+  updatedAt: Date;
+  lastAccessedAt: Date | null;
+}
+
 export interface DashboardSidebarItemTypeRecord {
   id: string;
   key: string;
@@ -91,6 +120,62 @@ async function getDashboardItems(
               name: true,
             },
           },
+        },
+      },
+    },
+  });
+}
+
+async function getDashboardItemDetailQuery(userId: string, itemId: string) {
+  return prisma.item.findFirst({
+    where: {
+      id: itemId,
+      userId,
+    },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      contentMode: true,
+      content: true,
+      url: true,
+      fileName: true,
+      fileUrl: true,
+      fileMimeType: true,
+      fileSizeBytes: true,
+      language: true,
+      aiSummary: true,
+      isPinned: true,
+      isFavorite: true,
+      createdAt: true,
+      updatedAt: true,
+      lastAccessedAt: true,
+      type: {
+        select: {
+          key: true,
+          name: true,
+        },
+      },
+      tags: {
+        select: {
+          tag: {
+            select: {
+              color: true,
+              name: true,
+            },
+          },
+        },
+      },
+      collections: {
+        select: {
+          collection: {
+            select: {
+              name: true,
+            },
+          },
+        },
+        orderBy: {
+          sortOrder: "asc",
         },
       },
     },
@@ -212,6 +297,47 @@ export async function getDashboardItemTypePage(userId: string, typeKey: string) 
     } satisfies DashboardItemTypePageRecord,
     items: items.map(mapItemToDashboardRecord),
   };
+}
+
+export async function getDashboardItemDetail(userId: string, itemId: string) {
+  const item = await getDashboardItemDetailQuery(userId, itemId);
+
+  if (!item) {
+    return null;
+  }
+
+  return {
+    id: item.id,
+    title: item.title,
+    description: item.description ?? "No description yet.",
+    contentMode: item.contentMode,
+    content: item.content,
+    url: item.url,
+    fileName: item.fileName,
+    fileUrl: item.fileUrl,
+    fileMimeType: item.fileMimeType,
+    fileSizeBytes: item.fileSizeBytes,
+    language: item.language,
+    aiSummary: item.aiSummary,
+    collectionNames: [...new Set(item.collections.map(({ collection }) => collection.name))],
+    tags: item.tags
+      .map(({ tag }) => ({
+        color: tag.color,
+        name: tag.name,
+      }))
+      .filter(
+        (tag, index, tags) =>
+          tags.findIndex((candidate) => candidate.name === tag.name) === index,
+      )
+      .sort((left, right) => left.name.localeCompare(right.name)),
+    isPinned: item.isPinned,
+    isFavorite: item.isFavorite,
+    typeKey: normalizeDashboardItemTypeKey(item.type.key),
+    typeLabel: formatItemTypeLabel(item.type.name),
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt,
+    lastAccessedAt: item.lastAccessedAt,
+  } satisfies DashboardItemDetailRecord;
 }
 
 function mapItemToDashboardRecord(item: DashboardItemWithRelations): DashboardItemRecord {
