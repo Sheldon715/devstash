@@ -1,32 +1,22 @@
-# Current Feature: Items List View
+# Current Feature
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 
 
 ## Goals
 
-- Create a dynamic route at `/items/[type]` for type-filtered item listings.
-- Fetch and display items filtered by the selected item type.
-- Render items in a responsive `ItemCard` grid with two columns on medium screens and up.
-- Show a left border on each item card using the corresponding item type color.
-- Keep the implementation aligned with existing codebase patterns.
+<!-- Goals & requirements -->
 
 ## Todo List
 
-- [x] Create the dynamic `/items/[type]` route.
-- [x] Load the selected item type and fetch items filtered by that type.
-- [x] Build the items list page layout using a responsive two-column grid on medium screens and up.
-- [x] Render each item with the existing `ItemCard` pattern and a type-colored left border.
-- [x] Verify the implementation matches existing codebase patterns and passes `npm run build`.
+<!-- Feature-specific checklist -->
 
 ## Notes
 
-- Source spec: `context/feature/item-list-view-spec.md`
-- Example routes include `/items/snippets` and `/items/notes`.
-- The page should focus on the list view only; no extra scope was added beyond the spec.
+<!-- Any extra notes -->
 
 ## History
 
@@ -53,3 +43,4 @@ In Progress
 - Auth security auditor agent completed with a repo-specific Codex subagent at `.codex/agents/auth-auditor.toml`, scoped to real auth issues, report rewriting, passed checks, and NextAuth-aware false-positive guardrails
 - High auth data-exposure fix completed by removing hardcoded demo-user scoping from dashboard/profile data loaders and wiring protected routes to the authenticated user's `id`
 - Auth rate limiting completed with Upstash-backed auth endpoint limits, shared `429` + `Retry-After` handling, a new resend-verification flow, and passing build/lint verification; manual browser verification is still pending
+- Items list view completed with a responsive `/items/[type]` grid that reuses `ItemCard`, plural type route support, improved sidebar and card hover states, bundled feature research/spec docs, and a passing production build
