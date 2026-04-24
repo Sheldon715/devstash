@@ -75,6 +75,67 @@ export interface DashboardItemTypePageRecord {
   typeKey: DashboardItemTypeKey;
 }
 
+export interface UpdateItemData {
+  title: string;
+  description: string | null;
+  content: string | null;
+  url: string | null;
+  language: string | null;
+  tags: string[];
+}
+
+const dashboardItemDetailSelect = {
+  id: true,
+  title: true,
+  description: true,
+  contentMode: true,
+  content: true,
+  url: true,
+  fileName: true,
+  fileUrl: true,
+  fileMimeType: true,
+  fileSizeBytes: true,
+  language: true,
+  aiSummary: true,
+  isPinned: true,
+  isFavorite: true,
+  createdAt: true,
+  updatedAt: true,
+  lastAccessedAt: true,
+  type: {
+    select: {
+      key: true,
+      name: true,
+    },
+  },
+  tags: {
+    select: {
+      tag: {
+        select: {
+          color: true,
+          name: true,
+        },
+      },
+    },
+  },
+  collections: {
+    select: {
+      collection: {
+        select: {
+          name: true,
+        },
+      },
+    },
+    orderBy: {
+      sortOrder: "asc",
+    },
+  },
+} as const;
+
+type DashboardItemDetailWithRelations = NonNullable<
+  Awaited<ReturnType<typeof getDashboardItemDetailQuery>>
+>;
+
 async function getDashboardItems(
   userId: string,
   options?: {
@@ -132,53 +193,7 @@ async function getDashboardItemDetailQuery(userId: string, itemId: string) {
       id: itemId,
       userId,
     },
-    select: {
-      id: true,
-      title: true,
-      description: true,
-      contentMode: true,
-      content: true,
-      url: true,
-      fileName: true,
-      fileUrl: true,
-      fileMimeType: true,
-      fileSizeBytes: true,
-      language: true,
-      aiSummary: true,
-      isPinned: true,
-      isFavorite: true,
-      createdAt: true,
-      updatedAt: true,
-      lastAccessedAt: true,
-      type: {
-        select: {
-          key: true,
-          name: true,
-        },
-      },
-      tags: {
-        select: {
-          tag: {
-            select: {
-              color: true,
-              name: true,
-            },
-          },
-        },
-      },
-      collections: {
-        select: {
-          collection: {
-            select: {
-              name: true,
-            },
-          },
-        },
-        orderBy: {
-          sortOrder: "asc",
-        },
-      },
-    },
+    select: dashboardItemDetailSelect,
   });
 }
 
@@ -306,6 +321,68 @@ export async function getDashboardItemDetail(userId: string, itemId: string) {
     return null;
   }
 
+  return mapItemToDashboardDetailRecord(item);
+}
+
+export async function updateItem(
+  userId: string,
+  itemId: string,
+  data: UpdateItemData,
+): Promise<DashboardItemDetailRecord | null> {
+  const item = await prisma.item.findFirst({
+    where: {
+      id: itemId,
+      userId,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (!item) {
+    return null;
+  }
+
+  const tagNames = [...new Set(data.tags)];
+  const updatedItem = await prisma.item.update({
+    where: {
+      id: itemId,
+    },
+    data: {
+      title: data.title,
+      description: data.description,
+      content: data.content,
+      url: data.url,
+      language: data.language,
+      tags: {
+        deleteMany: {},
+        create: tagNames.map((name) => ({
+          tag: {
+            connectOrCreate: {
+              where: {
+                userId_name: {
+                  userId,
+                  name,
+                },
+              },
+              create: {
+                userId,
+                name,
+              },
+            },
+          },
+        })),
+      },
+    },
+    select: dashboardItemDetailSelect,
+  });
+
+  return mapItemToDashboardDetailRecord(updatedItem);
+}
+
+function mapItemToDashboardDetailRecord(
+  item: DashboardItemDetailWithRelations,
+): DashboardItemDetailRecord {
   return {
     id: item.id,
     title: item.title,
