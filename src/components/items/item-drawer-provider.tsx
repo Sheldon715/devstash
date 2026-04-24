@@ -4,6 +4,7 @@ import {
   type ReactNode,
   createContext,
   startTransition,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -14,13 +15,17 @@ import {
   Clock3,
   Copy,
   FileText,
+  type LucideIcon,
   Pencil,
   Pin,
+  Save,
   Star,
   Trash2,
   X,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
+import { updateItem } from "@/actions/items";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -29,6 +34,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { SuccessToast } from "@/components/ui/success-toast";
 import { DashboardItemTypeIcon, getDashboardItemTypeColor } from "@/lib/dashboard-icons";
 import type { DashboardItemDetailRecord } from "@/lib/db/items";
 
@@ -45,6 +51,21 @@ interface ItemDetailResponseBody {
   error?: string;
   success?: boolean;
   data?: SerializedDashboardItemDetailRecord;
+}
+
+interface EditItemFormState {
+  title: string;
+  description: string;
+  tags: string;
+  content: string;
+  language: string;
+  url: string;
+}
+
+interface ItemDrawerToastState {
+  message: string;
+  title: string;
+  variant: "error" | "success";
 }
 
 interface ItemDrawerContextValue {
@@ -64,11 +85,17 @@ function useItemDrawerContext() {
 }
 
 export function ItemDrawerProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [loadingItemId, setLoadingItemId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+  const [toastState, setToastState] = useState<ItemDrawerToastState | null>(null);
+  const [editFormState, setEditFormState] = useState<EditItemFormState | null>(null);
   const [detailsById, setDetailsById] = useState<Record<string, SerializedDashboardItemDetailRecord>>(
     {},
   );
@@ -76,6 +103,17 @@ export function ItemDrawerProvider({ children }: { children: ReactNode }) {
 
   const selectedItem = selectedItemId ? detailsById[selectedItemId] ?? null : null;
   const isLoadingSelectedItem = selectedItemId !== null && loadingItemId === selectedItemId;
+
+  const handleSheetOpenChange = useCallback((nextOpen: boolean) => {
+    setIsOpen(nextOpen);
+
+    if (!nextOpen) {
+      setError(null);
+      setCopiedItemId(null);
+      setEditError(null);
+      setIsEditing(false);
+    }
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -134,6 +172,19 @@ export function ItemDrawerProvider({ children }: { children: ReactNode }) {
       abortController.abort();
     };
   }, [detailsById, isOpen, selectedItemId]);
+
+  useEffect(() => {
+    if (!selectedItem) {
+      setEditFormState(null);
+      setIsEditing(false);
+      setEditError(null);
+      return;
+    }
+
+    setEditFormState(createEditItemFormState(selectedItem));
+    setIsEditing(false);
+    setEditError(null);
+  }, [selectedItem]);
 
   const contextValue = useMemo<ItemDrawerContextValue>(
     () => ({
@@ -196,14 +247,7 @@ export function ItemDrawerProvider({ children }: { children: ReactNode }) {
 
       <Sheet
         open={isOpen}
-        onOpenChange={(nextOpen) => {
-          setIsOpen(nextOpen);
-
-          if (!nextOpen) {
-            setError(null);
-            setCopiedItemId(null);
-          }
-        }}
+        onOpenChange={handleSheetOpenChange}
       >
         <SheetContent side="right" className="max-w-[46rem]">
           <div className="flex min-h-0 flex-1 flex-col">
@@ -256,41 +300,65 @@ export function ItemDrawerProvider({ children }: { children: ReactNode }) {
 
             <div className="border-b border-white/8 px-5 py-4 sm:px-6">
               {selectedItem ? (
-                <div className="flex flex-wrap items-center gap-3">
-                  <DrawerActionButton
-                    icon={Star}
-                    label="Favorite"
-                    active={selectedItem.isFavorite}
-                    activeClassName="border-[#facc15]/30 bg-[#facc15]/10 text-[#facc15]"
-                  />
-                  <DrawerActionButton
-                    icon={Pin}
-                    label="Pin"
-                    active={selectedItem.isPinned}
-                    activeClassName="border-sky-300/30 bg-sky-300/10 text-sky-200"
-                  />
-                  <DrawerActionButton
-                    icon={Copy}
-                    label={
-                      copiedItemId === selectedItem.id && getItemCopyValue(selectedItem)
-                        ? "Copied"
-                        : "Copy"
-                    }
-                    onClick={handleCopy}
-                    disabled={!getItemCopyValue(selectedItem)}
-                  />
-                  <DrawerActionButton icon={Pencil} label="Edit" disabled />
-                  <div className="ml-auto">
-                    <DrawerActionButton icon={Trash2} label="Delete" danger disabled />
+                isEditing ? (
+                  <div className="flex flex-wrap items-center gap-3">
+                    <DrawerActionButton
+                      icon={Save}
+                      label={isSaving ? "Saving" : "Save"}
+                      onClick={handleSave}
+                      disabled={isSaving || !editFormState?.title.trim()}
+                    />
+                    <DrawerActionButton
+                      icon={X}
+                      label="Cancel"
+                      onClick={handleCancelEdit}
+                      disabled={isSaving}
+                    />
                   </div>
-                </div>
+                ) : (
+                  <div className="flex flex-wrap items-center gap-3">
+                    <DrawerActionButton
+                      icon={Star}
+                      label="Favorite"
+                      active={selectedItem.isFavorite}
+                      activeClassName="border-[#facc15]/30 bg-[#facc15]/10 text-[#facc15]"
+                    />
+                    <DrawerActionButton
+                      icon={Pin}
+                      label="Pin"
+                      active={selectedItem.isPinned}
+                      activeClassName="border-sky-300/30 bg-sky-300/10 text-sky-200"
+                    />
+                    <DrawerActionButton
+                      icon={Copy}
+                      label={
+                        copiedItemId === selectedItem.id && getItemCopyValue(selectedItem)
+                          ? "Copied"
+                          : "Copy"
+                      }
+                      onClick={handleCopy}
+                      disabled={!getItemCopyValue(selectedItem)}
+                    />
+                    <DrawerActionButton icon={Pencil} label="Edit" onClick={handleEdit} />
+                    <div className="ml-auto">
+                      <DrawerActionButton icon={Trash2} label="Delete" danger disabled />
+                    </div>
+                  </div>
+                )
               ) : (
                 <DrawerActionBarSkeleton />
               )}
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6 sm:py-6">
-              {selectedItem ? (
+              {selectedItem && isEditing && editFormState ? (
+                <ItemDrawerEditBody
+                  editError={editError}
+                  formState={editFormState}
+                  item={selectedItem}
+                  onChange={updateEditFormField}
+                />
+              ) : selectedItem ? (
                 <ItemDrawerBody item={selectedItem} />
               ) : isLoadingSelectedItem ? (
                 <DrawerBodySkeleton />
@@ -316,8 +384,106 @@ export function ItemDrawerProvider({ children }: { children: ReactNode }) {
           </div>
         </SheetContent>
       </Sheet>
+
+      {toastState ? (
+        <SuccessToast
+          message={toastState.message}
+          onDone={() => setToastState(null)}
+          title={toastState.title}
+          variant={toastState.variant}
+        />
+      ) : null}
     </ItemDrawerContext.Provider>
   );
+
+  function handleEdit() {
+    if (!selectedItem) {
+      return;
+    }
+
+    setEditFormState(createEditItemFormState(selectedItem));
+    setEditError(null);
+    setIsEditing(true);
+  }
+
+  function handleCancelEdit() {
+    if (selectedItem) {
+      setEditFormState(createEditItemFormState(selectedItem));
+    }
+
+    setEditError(null);
+    setIsEditing(false);
+  }
+
+  function updateEditFormField(field: keyof EditItemFormState, value: string) {
+    setEditFormState((current) =>
+      current
+        ? {
+            ...current,
+            [field]: value,
+          }
+        : current,
+    );
+    setEditError(null);
+  }
+
+  async function handleSave() {
+    if (!selectedItem || !editFormState || isSaving) {
+      return;
+    }
+
+    setIsSaving(true);
+    setEditError(null);
+
+    let result: Awaited<ReturnType<typeof updateItem>>;
+
+    try {
+      result = await updateItem(selectedItem.id, {
+        title: editFormState.title,
+        description: editFormState.description,
+        content: editFormState.content,
+        language: editFormState.language,
+        url: editFormState.url,
+        tags: parseTagsInput(editFormState.tags),
+      });
+    } catch {
+      const message = "We couldn't save this item right now.";
+
+      setEditError(message);
+      setToastState({
+        message,
+        title: "Save failed",
+        variant: "error",
+      });
+      setIsSaving(false);
+      return;
+    }
+
+    setIsSaving(false);
+
+    if (!result.success) {
+      setEditError(result.error);
+      setToastState({
+        message: result.error,
+        title: "Save failed",
+        variant: "error",
+      });
+      return;
+    }
+
+    setDetailsById((current) => ({
+      ...current,
+      [result.data.id]: result.data,
+    }));
+    setEditFormState(createEditItemFormState(result.data));
+    setIsEditing(false);
+    setToastState({
+      message: "Item updated.",
+      title: "Saved",
+      variant: "success",
+    });
+    router.refresh();
+  }
 }
 
 export function useItemDrawer() {
@@ -327,27 +493,9 @@ export function useItemDrawer() {
 function ItemDrawerBody({ item }: { item: SerializedDashboardItemDetailRecord }) {
   return (
     <div className="space-y-6">
-      <div className="grid gap-3 sm:grid-cols-2">
-        <DetailStat
-          label="Type"
-          value={item.typeLabel}
-          icon={
-            <DashboardItemTypeIcon
-              typeKey={item.typeKey}
-              className={`size-4 ${getDashboardItemTypeColor(item.typeKey)}`}
-            />
-          }
-        />
-        <DetailStat label="Content mode" value={formatContentModeLabel(item.contentMode)} />
-        <DetailStat label="Language" value={item.language ?? "Not set"} />
-        <DetailStat label="Created" value={formatDetailTimestamp(item.createdAt)} />
-        <DetailStat
-          label="Last opened"
-          value={item.lastAccessedAt ? formatDetailTimestamp(item.lastAccessedAt) : "Not tracked yet"}
-          icon={<Clock3 className="size-4 text-zinc-400" />}
-        />
-        <DetailStat label="Updated" value={formatDetailTimestamp(item.updatedAt)} />
-      </div>
+      <DrawerMetaSection label={getPrimaryContentSectionLabel(item.contentMode)}>
+        <PrimaryContentCard item={item} />
+      </DrawerMetaSection>
 
       <DrawerMetaSection label="Tags">
         {item.tags.length ? (
@@ -383,18 +531,142 @@ function ItemDrawerBody({ item }: { item: SerializedDashboardItemDetailRecord })
         )}
       </DrawerMetaSection>
 
+      <ItemDrawerCompactMeta item={item} />
+
       {item.aiSummary ? (
         <DrawerMetaSection label="AI Summary">
-          <div className="rounded-[1.5rem] border border-white/8 bg-white/[0.04] p-4 text-sm leading-7 text-zinc-200">
+          <div className="rounded-xl border border-white/8 bg-white/[0.035] p-4 text-sm leading-7 text-zinc-200">
             {item.aiSummary}
           </div>
         </DrawerMetaSection>
       ) : null}
 
-      <DrawerMetaSection label={getPrimaryContentSectionLabel(item.contentMode)}>
-        <PrimaryContentCard item={item} />
-      </DrawerMetaSection>
+      <ItemDrawerFooterMeta item={item} />
     </div>
+  );
+}
+
+function ItemDrawerEditBody({
+  editError,
+  formState,
+  item,
+  onChange,
+}: {
+  editError: string | null;
+  formState: EditItemFormState;
+  item: SerializedDashboardItemDetailRecord;
+  onChange: (field: keyof EditItemFormState, value: string) => void;
+}) {
+  const showContentField = ["command", "note", "prompt", "snippet"].includes(item.typeKey);
+  const showLanguageField = ["command", "snippet"].includes(item.typeKey);
+  const showUrlField = item.typeKey === "link";
+
+  return (
+    <div className="space-y-6">
+      {editError ? (
+        <div className="rounded-[1.5rem] border border-rose-400/20 bg-rose-400/10 p-4 text-sm leading-6 text-rose-100">
+          {editError}
+        </div>
+      ) : null}
+
+      <div className="grid gap-4">
+        <EditTextField
+          label="Title"
+          required
+          value={formState.title}
+          onChange={(value) => onChange("title", value)}
+        />
+        <EditTextareaField
+          label="Description"
+          value={formState.description}
+          onChange={(value) => onChange("description", value)}
+        />
+      </div>
+
+      {showLanguageField ? (
+        <EditTextField
+          label="Language"
+          value={formState.language}
+          onChange={(value) => onChange("language", value)}
+        />
+      ) : null}
+
+      {showUrlField ? (
+        <EditTextField
+          label="URL"
+          value={formState.url}
+          onChange={(value) => onChange("url", value)}
+        />
+      ) : null}
+
+      {showContentField ? (
+        <EditTextareaField
+          label="Content"
+          minHeightClassName="min-h-64"
+          value={formState.content}
+          onChange={(value) => onChange("content", value)}
+        />
+      ) : null}
+
+      <EditTextField
+        label="Tags"
+        value={formState.tags}
+        onChange={(value) => onChange("tags", value)}
+      />
+
+      <ItemDrawerCompactMeta item={item} />
+      <ItemDrawerFooterMeta item={item} />
+    </div>
+  );
+}
+
+function EditTextField({
+  label,
+  onChange,
+  required = false,
+  value,
+}: {
+  label: string;
+  onChange: (value: string) => void;
+  required?: boolean;
+  value: string;
+}) {
+  return (
+    <label className="space-y-2">
+      <span className="text-xs font-medium uppercase tracking-[0.22em] text-zinc-500">
+        {label}
+        {required ? <span className="text-rose-300"> *</span> : null}
+      </span>
+      <input
+        type="text"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="h-12 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-sm text-zinc-100 outline-none transition-colors placeholder:text-zinc-600 focus:border-sky-300/35 focus:bg-white/[0.06]"
+      />
+    </label>
+  );
+}
+
+function EditTextareaField({
+  label,
+  minHeightClassName = "min-h-32",
+  onChange,
+  value,
+}: {
+  label: string;
+  minHeightClassName?: string;
+  onChange: (value: string) => void;
+  value: string;
+}) {
+  return (
+    <label className="space-y-2">
+      <span className="text-xs font-medium uppercase tracking-[0.22em] text-zinc-500">{label}</span>
+      <textarea
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className={`${minHeightClassName} w-full resize-y rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm leading-6 text-zinc-100 outline-none transition-colors placeholder:text-zinc-600 focus:border-sky-300/35 focus:bg-white/[0.06]`}
+      />
+    </label>
   );
 }
 
@@ -409,7 +681,7 @@ function PrimaryContentCard({ item }: { item: SerializedDashboardItemDetailRecor
         href={item.url}
         target="_blank"
         rel="noreferrer"
-        className="block rounded-[1.5rem] border border-white/8 bg-white/[0.04] p-4 transition-colors hover:border-white/15 hover:bg-white/[0.06]"
+        className="block rounded-xl border border-white/8 bg-white/[0.035] p-4 transition-colors hover:border-white/15 hover:bg-white/[0.06]"
       >
         <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Saved URL</p>
         <p className="mt-3 break-all text-sm leading-7 text-sky-200">{item.url}</p>
@@ -419,9 +691,9 @@ function PrimaryContentCard({ item }: { item: SerializedDashboardItemDetailRecor
 
   if (item.contentMode === "FILE") {
     return (
-      <div className="rounded-[1.5rem] border border-white/8 bg-white/[0.04] p-4">
+      <div className="rounded-xl border border-white/8 bg-white/[0.035] p-4">
         <div className="flex items-start gap-3">
-          <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-white/8 bg-[#0e1218]">
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-white/8 bg-[#0e1218]">
             <FileText className="size-5 text-zinc-100" />
           </div>
           <div className="min-w-0 space-y-2">
@@ -455,13 +727,45 @@ function PrimaryContentCard({ item }: { item: SerializedDashboardItemDetailRecor
   }
 
   return (
-    <div className="overflow-hidden rounded-[1.5rem] border border-white/8 bg-[#05070b]">
+    <div className="overflow-hidden rounded-xl border border-white/8 bg-[#05070b]">
       <div className="border-b border-white/8 px-4 py-3 text-xs uppercase tracking-[0.2em] text-zinc-500">
         {item.language ?? "text"}
       </div>
       <pre className="overflow-x-auto px-4 py-4 font-mono text-sm leading-7 whitespace-pre-wrap text-zinc-100">
         {item.content}
       </pre>
+    </div>
+  );
+}
+
+function ItemDrawerCompactMeta({ item }: { item: SerializedDashboardItemDetailRecord }) {
+  return (
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-white/8 pt-4 text-xs text-zinc-500">
+      <span className="inline-flex items-center gap-1.5">
+        <DashboardItemTypeIcon
+          typeKey={item.typeKey}
+          className={`size-3.5 ${getDashboardItemTypeColor(item.typeKey)}`}
+        />
+        {item.typeLabel}
+      </span>
+      <span>{formatContentModeLabel(item.contentMode)}</span>
+      {item.language ? <span>{item.language}</span> : null}
+      <span>{formatCollectionSummary(item.collectionNames)}</span>
+    </div>
+  );
+}
+
+function ItemDrawerFooterMeta({ item }: { item: SerializedDashboardItemDetailRecord }) {
+  return (
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-white/8 pt-4 text-xs leading-5 text-zinc-600">
+      <span>Created {formatDetailTimestamp(item.createdAt)}</span>
+      <span>Updated {formatDetailTimestamp(item.updatedAt)}</span>
+      {item.lastAccessedAt ? (
+        <span className="inline-flex items-center gap-1.5">
+          <Clock3 className="size-3.5" />
+          Last opened {formatDetailTimestamp(item.lastAccessedAt)}
+        </span>
+      ) : null}
     </div>
   );
 }
@@ -481,29 +785,9 @@ function DrawerMetaSection({
   );
 }
 
-function DetailStat({
-  icon,
-  label,
-  value,
-}: {
-  icon?: ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="rounded-[1.5rem] border border-white/8 bg-white/[0.04] p-4">
-      <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-zinc-500">
-        {icon}
-        <span>{label}</span>
-      </div>
-      <p className="mt-3 text-sm font-medium leading-6 text-zinc-100">{value}</p>
-    </div>
-  );
-}
-
 function EmptyMetaCopy({ label }: { label: string }) {
   return (
-    <div className="rounded-[1.5rem] border border-dashed border-white/10 bg-white/[0.025] p-4 text-sm text-zinc-500">
+    <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.025] p-4 text-sm text-zinc-500">
       {label}
     </div>
   );
@@ -522,7 +806,7 @@ function DrawerActionButton({
   activeClassName?: string;
   danger?: boolean;
   disabled?: boolean;
-  icon: typeof Star;
+  icon: LucideIcon;
   label: string;
   onClick?: () => void;
 }) {
@@ -596,6 +880,38 @@ function DrawerBodySkeleton() {
 
 function getItemCopyValue(item: SerializedDashboardItemDetailRecord) {
   return item.content ?? item.url ?? item.fileUrl ?? item.description ?? item.title;
+}
+
+function createEditItemFormState(
+  item: SerializedDashboardItemDetailRecord,
+): EditItemFormState {
+  return {
+    title: item.title,
+    description: item.description === "No description yet." ? "" : item.description,
+    tags: item.tags.map((tag) => tag.name).join(", "),
+    content: item.content ?? "",
+    language: item.language ?? "",
+    url: item.url ?? "",
+  };
+}
+
+function parseTagsInput(value: string) {
+  return [
+    ...new Set(
+      value
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter(Boolean),
+    ),
+  ];
+}
+
+function formatCollectionSummary(collectionNames: string[]) {
+  if (!collectionNames.length) {
+    return "None";
+  }
+
+  return collectionNames.join(", ");
 }
 
 function formatContentModeLabel(contentMode: SerializedDashboardItemDetailRecord["contentMode"]) {

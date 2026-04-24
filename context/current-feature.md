@@ -1,21 +1,39 @@
-# Current Feature
+# Current Feature: Item Drawer Edit Mode
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
-
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Add inline edit mode to the existing item drawer when the pencil action is clicked.
+- Replace the drawer action bar with Save and Cancel controls while editing.
+- Persist edits through a validated `updateItem(itemId, data)` server action.
+- Support editable title, description, tags, and relevant type-specific fields.
+- Keep item type, collections, and created/updated dates display-only in edit mode.
+- Refresh drawer/list data after save and show success or error toast feedback.
 
 ## Todo List
 
-<!-- Feature-specific checklist -->
+- [x] Review current item drawer, item data types, and action/query patterns.
+- [x] Add server-side update validation and `updateItem` action.
+- [x] Add database update query with ownership-safe tag replacement.
+- [x] Wire drawer edit mode with controlled inputs, Save, and Cancel.
+- [x] Refresh UI data and show save success/error toasts.
+- [x] Add focused unit tests for action/query-safe logic where applicable.
+- [x] Run `npm run test`, `npm run lint`, and `npm run build`.
+- [ ] Manually verify the edit drawer flow in the browser.
 
 ## Notes
 
-<!-- Any extra notes -->
+- Source spec: `context/feature/item-drawer-edit-spec.md`
+- Keep the drawer open when switching between view and edit mode.
+- No form library is needed; use controlled inputs with local state.
+- Zod validation is the server-side source of truth.
+- Disable Save client-side when the trimmed title is empty.
+- On update, replace existing tags with the submitted trimmed, non-empty tag names.
+- Return the updated `ItemDetail` from the save flow so the drawer can refresh without a second fetch.
+- Call `router.refresh()` after save so the underlying item cards reflect changes.
 
 ## History
 
