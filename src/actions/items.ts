@@ -4,8 +4,10 @@ import { z } from "zod";
 
 import { auth } from "@/auth";
 import {
+  createItem as createItemRecord,
   deleteItem as deleteItemRecord,
   updateItem as updateItemRecord,
+  type CreatableItemTypeKey,
   type DashboardItemDetailRecord,
 } from "@/lib/db/items";
 
@@ -31,6 +33,20 @@ interface UpdateItemFailure {
 }
 
 export type UpdateItemResult = UpdateItemSuccess | UpdateItemFailure;
+
+interface CreateItemSuccess {
+  success: true;
+  data: SerializedDashboardItemDetailRecord;
+  error: null;
+}
+
+interface CreateItemFailure {
+  success: false;
+  data: null;
+  error: string;
+}
+
+export type CreateItemResult = CreateItemSuccess | CreateItemFailure;
 
 interface DeleteItemSuccess {
   success: true;
@@ -84,6 +100,61 @@ const updateItemSchema = z.object({
     .array(z.string().trim().min(1, "Tags cannot be empty."))
     .transform((tags) => [...new Set(tags)]),
 });
+
+const creatableItemTypeKeys = ["snippet", "prompt", "command", "note", "link"] as const;
+
+const createItemSchema = updateItemSchema
+  .extend({
+    typeKey: z.enum(creatableItemTypeKeys),
+  })
+  .superRefine((data, context) => {
+    if (data.typeKey === "link" && !data.url) {
+      context.addIssue({
+        code: "custom",
+        message: "URL is required for link items.",
+        path: ["url"],
+      });
+    }
+  });
+
+export async function createItem(data: unknown): Promise<CreateItemResult> {
+  const parsedData = createItemSchema.safeParse(data);
+
+  if (!parsedData.success) {
+    return {
+      success: false,
+      data: null,
+      error: parsedData.error.issues.map((issue) => issue.message).join(" "),
+    };
+  }
+
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return {
+      success: false,
+      data: null,
+      error: "You need to be signed in to create items.",
+    };
+  }
+
+  const payload = normalizeCreateItemPayload(parsedData.data);
+  const createdItem = await createItemRecord(session.user.id, payload);
+
+  if (!createdItem) {
+    return {
+      success: false,
+      data: null,
+      error: "Item type not found.",
+    };
+  }
+
+  return {
+    success: true,
+    data: serializeItemDetail(createdItem),
+    error: null,
+  };
+}
 
 export async function updateItem(itemId: string, data: unknown): Promise<UpdateItemResult> {
   const parsedData = updateItemSchema.safeParse(data);
@@ -160,6 +231,21 @@ export async function deleteItem(itemId: string): Promise<DeleteItemResult> {
       id: parsedItemId.data,
     },
     error: null,
+  };
+}
+
+function normalizeCreateItemPayload(data: z.infer<typeof createItemSchema>) {
+  const textContentTypes: CreatableItemTypeKey[] = ["snippet", "prompt", "command", "note"];
+  const languageTypes: CreatableItemTypeKey[] = ["snippet", "command"];
+
+  return {
+    typeKey: data.typeKey,
+    title: data.title,
+    description: data.description,
+    content: textContentTypes.includes(data.typeKey) ? data.content : null,
+    url: data.typeKey === "link" ? data.url : null,
+    language: languageTypes.includes(data.typeKey) ? data.language : null,
+    tags: data.tags,
   };
 }
 

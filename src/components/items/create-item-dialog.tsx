@@ -1,0 +1,461 @@
+"use client";
+
+import { type FormEvent, useCallback, useState } from "react";
+import { Check, ChevronDown, LoaderCircle, Plus, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+
+import { createItem } from "@/actions/items";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { SuccessToast } from "@/components/ui/success-toast";
+import { DashboardItemTypeIcon, getDashboardItemTypeColor } from "@/lib/dashboard-icons";
+import type { DashboardItemTypeKey } from "@/lib/mock-data";
+import { cn } from "@/lib/utils";
+
+type CreatableItemTypeKey = "snippet" | "prompt" | "command" | "note" | "link";
+
+interface CreateItemDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+interface CreateItemFormState {
+  title: string;
+  description: string;
+  tags: string;
+  content: string;
+  language: string;
+  url: string;
+}
+
+interface CreateItemToastState {
+  message: string;
+  title: string;
+  variant: "error" | "success";
+}
+
+const createItemTypes = [
+  {
+    key: "snippet",
+    label: "Snippet",
+  },
+  {
+    key: "prompt",
+    label: "Prompt",
+  },
+  {
+    key: "command",
+    label: "Command",
+  },
+  {
+    key: "note",
+    label: "Note",
+  },
+  {
+    key: "link",
+    label: "Link",
+  },
+] as const satisfies readonly { key: CreatableItemTypeKey; label: string }[];
+
+const emptyFormState: CreateItemFormState = {
+  title: "",
+  description: "",
+  tags: "",
+  content: "",
+  language: "",
+  url: "",
+};
+
+export function CreateItemDialog({ onOpenChange, open }: CreateItemDialogProps) {
+  const router = useRouter();
+  const [selectedType, setSelectedType] = useState<CreatableItemTypeKey>("snippet");
+  const [formState, setFormState] = useState<CreateItemFormState>(emptyFormState);
+  const [error, setError] = useState<string | null>(null);
+  const [isTypeMenuOpen, setIsTypeMenuOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [toastState, setToastState] = useState<CreateItemToastState | null>(null);
+
+  const showContentField = ["command", "note", "prompt", "snippet"].includes(selectedType);
+  const showLanguageField = ["command", "snippet"].includes(selectedType);
+  const showUrlField = selectedType === "link";
+  const canSubmit =
+    Boolean(formState.title.trim()) && (!showUrlField || Boolean(formState.url.trim()));
+  const selectedTypeOption =
+    createItemTypes.find((itemType) => itemType.key === selectedType) ?? createItemTypes[0];
+
+  const handleOpenChange = useCallback((nextOpen: boolean) => {
+    if (isSubmitting) {
+      return;
+    }
+
+    setIsTypeMenuOpen(false);
+    setError(null);
+    onOpenChange(nextOpen);
+  }, [isSubmitting, onOpenChange]);
+
+  function updateFormField(field: keyof CreateItemFormState, value: string) {
+    setFormState((current) => ({
+      ...current,
+      [field]: value,
+    }));
+    setError(null);
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!canSubmit || isSubmitting) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError(null);
+
+    let result: Awaited<ReturnType<typeof createItem>>;
+
+    try {
+      result = await createItem({
+        typeKey: selectedType,
+        title: formState.title,
+        description: formState.description,
+        content: formState.content,
+        language: formState.language,
+        url: formState.url,
+        tags: parseTagsInput(formState.tags),
+      });
+    } catch {
+      const message = "We couldn't create this item right now.";
+
+      setError(message);
+      setToastState({
+        message,
+        title: "Create failed",
+        variant: "error",
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
+    setIsSubmitting(false);
+
+    if (!result.success) {
+      setError(result.error);
+      setToastState({
+        message: result.error,
+        title: "Create failed",
+        variant: "error",
+      });
+      return;
+    }
+
+    setFormState(emptyFormState);
+    setSelectedType("snippet");
+    setToastState({
+      message: "Item created.",
+      title: "Created",
+      variant: "success",
+    });
+    onOpenChange(false);
+    router.refresh();
+  }
+
+  return (
+    <>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent className="max-w-lg overflow-visible">
+          <form onSubmit={handleSubmit} className="flex flex-col">
+            <div className="border-b border-white/8 px-5 py-4">
+              <div className="flex items-start justify-between gap-4">
+                <DialogHeader>
+                  <DialogTitle>New Item</DialogTitle>
+                  <DialogDescription>
+                    Save a reusable developer resource to your stash.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <DialogClose
+                  disabled={isSubmitting}
+                  className="size-10 shrink-0 rounded-xl p-0"
+                >
+                  <X className="size-4" />
+                  <span className="sr-only">Close create item dialog</span>
+                </DialogClose>
+              </div>
+            </div>
+
+            <div className="flex flex-1 items-center px-5 py-4">
+              <div className="w-full space-y-4">
+                {error ? (
+                  <div className="rounded-2xl border border-rose-400/20 bg-rose-400/10 p-4 text-sm leading-6 text-rose-100">
+                    {error}
+                  </div>
+                ) : null}
+
+                <section className="space-y-3">
+                  <CreateItemSectionLabel label="Type" />
+                  <div className="relative">
+                    <button
+                      type="button"
+                      aria-expanded={isTypeMenuOpen}
+                      aria-haspopup="listbox"
+                      disabled={isSubmitting}
+                      onClick={() => setIsTypeMenuOpen((current) => !current)}
+                      className="flex h-10 w-full items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] px-4 text-left text-sm font-medium text-zinc-100 outline-none transition-colors hover:border-white/18 hover:bg-white/[0.06] focus:border-sky-300/35 focus:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      <DashboardItemTypeIcon
+                        typeKey={selectedTypeOption.key as DashboardItemTypeKey}
+                        className={cn(
+                          "size-4",
+                          getDashboardItemTypeColor(selectedTypeOption.key as DashboardItemTypeKey),
+                        )}
+                      />
+                      <span className="flex-1">{selectedTypeOption.label}</span>
+                      <ChevronDown
+                        className={cn(
+                          "size-4 text-zinc-500 transition-transform",
+                          isTypeMenuOpen ? "rotate-180" : "",
+                        )}
+                      />
+                    </button>
+
+                    {isTypeMenuOpen ? (
+                      <div
+                        role="listbox"
+                        className="create-type-menu-enter absolute top-[calc(100%+0.5rem)] left-0 z-20 w-full rounded-2xl border border-white/10 bg-[#0b0d12] p-1.5 shadow-[0_18px_60px_rgba(0,0,0,0.45)]"
+                      >
+                        {createItemTypes.map((itemType) => {
+                          const isSelected = itemType.key === selectedType;
+
+                          return (
+                            <button
+                              key={itemType.key}
+                              type="button"
+                              role="option"
+                              aria-selected={isSelected}
+                              className={cn(
+                                "create-type-menu-item flex h-9 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-medium text-zinc-300 transition-colors",
+                                "hover:bg-white/[0.06] hover:text-zinc-50",
+                                isSelected ? "bg-sky-300/10 text-zinc-50" : "",
+                              )}
+                              onClick={() => {
+                                setSelectedType(itemType.key);
+                                setIsTypeMenuOpen(false);
+                                setError(null);
+                              }}
+                            >
+                              <DashboardItemTypeIcon
+                                typeKey={itemType.key as DashboardItemTypeKey}
+                                className={cn(
+                                  "size-4",
+                                  isSelected
+                                    ? getDashboardItemTypeColor(itemType.key as DashboardItemTypeKey)
+                                    : "text-zinc-500",
+                                )}
+                              />
+                              <span className="flex-1">{itemType.label}</span>
+                              {isSelected ? <Check className="size-4 text-sky-200" /> : null}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : null}
+                  </div>
+                </section>
+
+                <div className="grid gap-4">
+                  <CreateTextField
+                    label="Title"
+                    required
+                    disabled={isSubmitting}
+                    placeholder="React hook for debounced search"
+                    value={formState.title}
+                    onChange={(value) => updateFormField("title", value)}
+                  />
+                  <CreateTextField
+                    label="Description"
+                    disabled={isSubmitting}
+                    placeholder="Short note about what this item helps with"
+                    value={formState.description}
+                    onChange={(value) => updateFormField("description", value)}
+                  />
+                </div>
+
+                {showUrlField ? (
+                  <CreateTextField
+                    label="URL"
+                    required
+                    disabled={isSubmitting}
+                    placeholder="https://example.com/docs"
+                    value={formState.url}
+                    onChange={(value) => updateFormField("url", value)}
+                  />
+                ) : null}
+
+                {showLanguageField ? (
+                  <CreateTextField
+                    label="Language"
+                    disabled={isSubmitting}
+                    placeholder="typescript"
+                    value={formState.language}
+                    onChange={(value) => updateFormField("language", value)}
+                  />
+                ) : null}
+
+                {showContentField ? (
+                  <CreateTextareaField
+                    label="Content"
+                    minHeightClassName="min-h-24"
+                    disabled={isSubmitting}
+                    placeholder={getContentPlaceholder(selectedType)}
+                    value={formState.content}
+                    onChange={(value) => updateFormField("content", value)}
+                  />
+                ) : null}
+
+                <CreateTextField
+                  label="Tags"
+                  disabled={isSubmitting}
+                  placeholder="react, auth, cli"
+                  value={formState.tags}
+                  onChange={(value) => updateFormField("tags", value)}
+                />
+              </div>
+            </div>
+
+            <DialogFooter className="border-t border-white/8 px-5 py-4">
+              <DialogClose disabled={isSubmitting}>Cancel</DialogClose>
+              <Button
+                type="submit"
+                disabled={!canSubmit || isSubmitting}
+                className="h-10 rounded-xl bg-zinc-50 px-4 text-zinc-950 hover:bg-white"
+              >
+                {isSubmitting ? (
+                  <LoaderCircle className="size-4 animate-spin" />
+                ) : (
+                  <Plus className="size-4" />
+                )}
+                Create item
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {toastState ? (
+        <SuccessToast
+          message={toastState.message}
+          onDone={() => setToastState(null)}
+          title={toastState.title}
+          variant={toastState.variant}
+        />
+      ) : null}
+    </>
+  );
+}
+
+function CreateItemSectionLabel({ label }: { label: string }) {
+  return (
+    <p className="text-xs font-medium uppercase tracking-[0.22em] text-zinc-500">{label}</p>
+  );
+}
+
+function CreateTextField({
+  disabled = false,
+  label,
+  onChange,
+  placeholder,
+  required = false,
+  value,
+}: {
+  disabled?: boolean;
+  label: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  required?: boolean;
+  value: string;
+}) {
+  return (
+    <label className="space-y-1.5">
+      <span className="text-xs font-medium uppercase tracking-[0.22em] text-zinc-500">
+        {label}
+        {required ? <span className="text-rose-300"> *</span> : null}
+      </span>
+      <input
+        type="text"
+        disabled={disabled}
+        placeholder={placeholder}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="h-10 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 text-sm text-zinc-100 outline-none transition-colors placeholder:text-zinc-600 focus:border-sky-300/35 focus:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-60"
+      />
+    </label>
+  );
+}
+
+function CreateTextareaField({
+  disabled = false,
+  label,
+  minHeightClassName = "min-h-28",
+  onChange,
+  placeholder,
+  value,
+}: {
+  disabled?: boolean;
+  label: string;
+  minHeightClassName?: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  value: string;
+}) {
+  return (
+    <label className="space-y-1.5">
+      <span className="text-xs font-medium uppercase tracking-[0.22em] text-zinc-500">{label}</span>
+      <textarea
+        disabled={disabled}
+        placeholder={placeholder}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className={cn(
+          minHeightClassName,
+          "w-full resize-none rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm leading-5 text-zinc-100 outline-none transition-colors placeholder:text-zinc-600 focus:border-sky-300/35 focus:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-60",
+        )}
+      />
+    </label>
+  );
+}
+
+function getContentPlaceholder(typeKey: CreatableItemTypeKey) {
+  switch (typeKey) {
+    case "command":
+      return "npm run build";
+    case "prompt":
+      return "Review this code for correctness, security, and missing tests...";
+    case "note":
+      return "Capture the key idea, setup note, or decision here...";
+    case "snippet":
+      return "export function useExample() {\n  return null;\n}";
+    case "link":
+      return "";
+    default:
+      return "";
+  }
+}
+
+function parseTagsInput(value: string) {
+  return [
+    ...new Set(
+      value
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter(Boolean),
+    ),
+  ];
+}

@@ -1,20 +1,35 @@
-# Current Feature
+# Current Feature: Item Create
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Add a New Item modal opened from the top bar "New Item" button.
+- Use the shadcn Dialog component for the create flow.
+- Support type selection for snippet, prompt, command, note, and link items.
+- Show shared fields for all types: required title, description, and tags.
+- Show type-specific fields: content and language for snippet/command, content for prompt/note, and required URL for link.
+- Add a Zod-validated `createItem` server action.
+- Add a `createItem` database query function in `lib/db/items.ts`.
+- Show a success toast, close the modal, and refresh data after successful creation.
 
 ## Todo List
 
-<!-- Feature-specific checklist -->
+- [x] Inspect existing item action, database, drawer, toast, and top bar patterns.
+- [x] Build the create item dialog UI with type-aware fields.
+- [x] Implement Zod validation and the `createItem` server action.
+- [x] Implement the `createItem` database helper in `lib/db/items.ts`.
+- [x] Wire success/error toast handling, modal close, and refresh behavior.
+- [x] Add focused Vitest coverage for server action/database logic where appropriate.
+- [x] Run `npm run test`, `npm run lint`, and `npm run build`.
 
 ## Notes
 
-<!-- Any extra notes -->
+- Loaded from `context/feature/item-create-spec.md`.
+- Scope is limited to text and link item creation for the existing built-in types listed in the spec.
+- Follow existing authenticated user ownership and tag handling patterns from item edit/delete work.
 
 ## History
 

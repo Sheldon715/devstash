@@ -1,31 +1,42 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { prismaItemDeleteMock, prismaItemFindFirstMock, prismaItemUpdateMock } = vi.hoisted(() => ({
+const {
+  prismaItemCreateMock,
+  prismaItemDeleteMock,
+  prismaItemFindFirstMock,
+  prismaItemTypeFindFirstMock,
+  prismaItemUpdateMock,
+} = vi.hoisted(() => ({
+  prismaItemCreateMock: vi.fn(),
   prismaItemDeleteMock: vi.fn(),
   prismaItemFindFirstMock: vi.fn(),
+  prismaItemTypeFindFirstMock: vi.fn(),
   prismaItemUpdateMock: vi.fn(),
 }));
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     item: {
+      create: prismaItemCreateMock,
       delete: prismaItemDeleteMock,
       findFirst: prismaItemFindFirstMock,
       update: prismaItemUpdateMock,
     },
     itemType: {
       findMany: vi.fn(),
-      findFirst: vi.fn(),
+      findFirst: prismaItemTypeFindFirstMock,
     },
   },
 }));
 
-import { deleteItem, getDashboardItemDetail, updateItem } from "@/lib/db/items";
+import { createItem, deleteItem, getDashboardItemDetail, updateItem } from "@/lib/db/items";
 
 describe("item db queries", () => {
   beforeEach(() => {
+    prismaItemCreateMock.mockReset();
     prismaItemDeleteMock.mockReset();
     prismaItemFindFirstMock.mockReset();
+    prismaItemTypeFindFirstMock.mockReset();
     prismaItemUpdateMock.mockReset();
   });
 
@@ -133,6 +144,146 @@ describe("item db queries", () => {
       updatedAt,
       lastAccessedAt,
     });
+  });
+
+  it("returns null when creating an item with an unknown type", async () => {
+    prismaItemTypeFindFirstMock.mockResolvedValue(null);
+
+    await expect(
+      createItem("user-1", {
+        typeKey: "note",
+        title: "Loose note",
+        description: null,
+        content: null,
+        url: null,
+        language: null,
+        tags: [],
+      }),
+    ).resolves.toBeNull();
+
+    expect(prismaItemCreateMock).not.toHaveBeenCalled();
+  });
+
+  it("creates an item with system type ownership and tags", async () => {
+    const createdAt = new Date("2026-04-22T03:12:00.000Z");
+    const updatedAt = new Date("2026-04-24T08:30:00.000Z");
+
+    prismaItemTypeFindFirstMock.mockResolvedValue({
+      id: "type-command",
+      contentMode: "TEXT",
+    });
+    prismaItemCreateMock.mockResolvedValue({
+      id: "item-1",
+      title: "Build command",
+      description: "Runs the production build.",
+      contentMode: "TEXT",
+      content: "npm run build",
+      url: null,
+      fileName: null,
+      fileUrl: null,
+      fileMimeType: null,
+      fileSizeBytes: null,
+      language: "shell",
+      aiSummary: null,
+      isPinned: false,
+      isFavorite: false,
+      createdAt,
+      updatedAt,
+      lastAccessedAt: null,
+      type: {
+        key: "command",
+        name: "command",
+      },
+      tags: [
+        {
+          tag: {
+            color: null,
+            name: "cli",
+          },
+        },
+      ],
+      collections: [],
+    });
+
+    await expect(
+      createItem("user-1", {
+        typeKey: "command",
+        title: "Build command",
+        description: "Runs the production build.",
+        content: "npm run build",
+        url: null,
+        language: "shell",
+        tags: ["cli", "cli"],
+      }),
+    ).resolves.toEqual({
+      id: "item-1",
+      title: "Build command",
+      description: "Runs the production build.",
+      contentMode: "TEXT",
+      content: "npm run build",
+      url: null,
+      fileName: null,
+      fileUrl: null,
+      fileMimeType: null,
+      fileSizeBytes: null,
+      language: "shell",
+      aiSummary: null,
+      collectionNames: [],
+      tags: [
+        {
+          color: null,
+          name: "cli",
+        },
+      ],
+      isPinned: false,
+      isFavorite: false,
+      typeKey: "command",
+      typeLabel: "Command",
+      createdAt,
+      updatedAt,
+      lastAccessedAt: null,
+    });
+
+    expect(prismaItemTypeFindFirstMock).toHaveBeenCalledWith({
+      where: {
+        key: "command",
+        isSystem: true,
+      },
+      select: {
+        id: true,
+        contentMode: true,
+      },
+    });
+    expect(prismaItemCreateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          userId: "user-1",
+          typeId: "type-command",
+          title: "Build command",
+          contentMode: "TEXT",
+          tags: {
+            create: [
+              {
+                tag: {
+                  connectOrCreate: {
+                    where: {
+                      userId_name: {
+                        userId: "user-1",
+                        name: "cli",
+                      },
+                    },
+                    create: {
+                      userId: "user-1",
+                      name: "cli",
+                    },
+                  },
+                },
+              },
+            ],
+          },
+        }),
+      }),
+    );
   });
 
   it("does not update an item that does not belong to the user", async () => {

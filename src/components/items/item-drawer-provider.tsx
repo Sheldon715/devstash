@@ -304,7 +304,17 @@ export function ItemDrawerProvider({ children }: { children: ReactNode }) {
                       Updated {formatDetailTimestamp(selectedItem.updatedAt)}
                     </span>
                   </div>
-                  <SheetTitle className="text-3xl sm:text-[2rem]">{selectedItem.title}</SheetTitle>
+                  <div className="flex items-center gap-3">
+                    <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04]">
+                      <DashboardItemTypeIcon
+                        typeKey={selectedItem.typeKey}
+                        className={`size-5 ${getDashboardItemTypeColor(selectedItem.typeKey)}`}
+                      />
+                    </span>
+                    <SheetTitle className="text-3xl sm:text-[2rem]">
+                      {selectedItem.title}
+                    </SheetTitle>
+                  </div>
                   <SheetDescription className="max-w-3xl text-sm leading-7 text-zinc-300 sm:text-base">
                     {selectedItem.description}
                   </SheetDescription>

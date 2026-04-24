@@ -84,6 +84,18 @@ export interface UpdateItemData {
   tags: string[];
 }
 
+export type CreatableItemTypeKey = "snippet" | "prompt" | "command" | "note" | "link";
+
+export interface CreateItemData {
+  typeKey: CreatableItemTypeKey;
+  title: string;
+  description: string | null;
+  content: string | null;
+  url: string | null;
+  language: string | null;
+  tags: string[];
+}
+
 const dashboardItemDetailSelect = {
   id: true,
   title: true,
@@ -322,6 +334,61 @@ export async function getDashboardItemDetail(userId: string, itemId: string) {
   }
 
   return mapItemToDashboardDetailRecord(item);
+}
+
+export async function createItem(
+  userId: string,
+  data: CreateItemData,
+): Promise<DashboardItemDetailRecord | null> {
+  const itemType = await prisma.itemType.findFirst({
+    where: {
+      key: data.typeKey,
+      isSystem: true,
+    },
+    select: {
+      id: true,
+      contentMode: true,
+    },
+  });
+
+  if (!itemType) {
+    return null;
+  }
+
+  const tagNames = [...new Set(data.tags)];
+  const createdItem = await prisma.item.create({
+    data: {
+      userId,
+      typeId: itemType.id,
+      title: data.title,
+      description: data.description,
+      contentMode: itemType.contentMode,
+      content: data.content,
+      url: data.url,
+      language: data.language,
+      tags: {
+        create: tagNames.map((name) => ({
+          tag: {
+            connectOrCreate: {
+              where: {
+                userId_name: {
+                  userId,
+                  name,
+                },
+              },
+              create: {
+                userId,
+                name,
+              },
+            },
+          },
+        })),
+      },
+    },
+    select: dashboardItemDetailSelect,
+  });
+
+  return mapItemToDashboardDetailRecord(createdItem);
 }
 
 export async function updateItem(
