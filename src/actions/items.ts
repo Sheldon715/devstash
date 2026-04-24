@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import { auth } from "@/auth";
 import {
+  deleteItem as deleteItemRecord,
   updateItem as updateItemRecord,
   type DashboardItemDetailRecord,
 } from "@/lib/db/items";
@@ -30,6 +31,22 @@ interface UpdateItemFailure {
 }
 
 export type UpdateItemResult = UpdateItemSuccess | UpdateItemFailure;
+
+interface DeleteItemSuccess {
+  success: true;
+  data: {
+    id: string;
+  };
+  error: null;
+}
+
+interface DeleteItemFailure {
+  success: false;
+  data: null;
+  error: string;
+}
+
+export type DeleteItemResult = DeleteItemSuccess | DeleteItemFailure;
 
 const optionalTextSchema = z
   .string()
@@ -102,6 +119,46 @@ export async function updateItem(itemId: string, data: unknown): Promise<UpdateI
   return {
     success: true,
     data: serializeItemDetail(updatedItem),
+    error: null,
+  };
+}
+
+export async function deleteItem(itemId: string): Promise<DeleteItemResult> {
+  const parsedItemId = z.string().trim().min(1).safeParse(itemId);
+
+  if (!parsedItemId.success) {
+    return {
+      success: false,
+      data: null,
+      error: "Item not found.",
+    };
+  }
+
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return {
+      success: false,
+      data: null,
+      error: "You need to be signed in to delete items.",
+    };
+  }
+
+  const deletedItem = await deleteItemRecord(session.user.id, parsedItemId.data);
+
+  if (!deletedItem) {
+    return {
+      success: false,
+      data: null,
+      error: "Item not found.",
+    };
+  }
+
+  return {
+    success: true,
+    data: {
+      id: parsedItemId.data,
+    },
     error: null,
   };
 }

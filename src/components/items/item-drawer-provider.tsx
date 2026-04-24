@@ -12,9 +12,11 @@ import {
   useState,
 } from "react";
 import {
+  AlertTriangle,
   Clock3,
   Copy,
   FileText,
+  LoaderCircle,
   type LucideIcon,
   Pencil,
   Pin,
@@ -25,7 +27,17 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import { updateItem } from "@/actions/items";
+import { deleteItem, updateItem } from "@/actions/items";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -93,6 +105,8 @@ export function ItemDrawerProvider({ children }: { children: ReactNode }) {
   const [copiedItemId, setCopiedItemId] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
   const [toastState, setToastState] = useState<ItemDrawerToastState | null>(null);
   const [editFormState, setEditFormState] = useState<EditItemFormState | null>(null);
@@ -112,6 +126,7 @@ export function ItemDrawerProvider({ children }: { children: ReactNode }) {
       setCopiedItemId(null);
       setEditError(null);
       setIsEditing(false);
+      setIsDeleteDialogOpen(false);
     }
   }, []);
 
@@ -184,6 +199,7 @@ export function ItemDrawerProvider({ children }: { children: ReactNode }) {
     setEditFormState(createEditItemFormState(selectedItem));
     setIsEditing(false);
     setEditError(null);
+    setIsDeleteDialogOpen(false);
   }, [selectedItem]);
 
   const contextValue = useMemo<ItemDrawerContextValue>(
@@ -341,7 +357,12 @@ export function ItemDrawerProvider({ children }: { children: ReactNode }) {
                     />
                     <DrawerActionButton icon={Pencil} label="Edit" onClick={handleEdit} />
                     <div className="ml-auto">
-                      <DrawerActionButton icon={Trash2} label="Delete" danger disabled />
+                      <DrawerActionButton
+                        icon={Trash2}
+                        label="Delete"
+                        onClick={() => setIsDeleteDialogOpen(true)}
+                        danger
+                      />
                     </div>
                   </div>
                 )
@@ -384,6 +405,44 @@ export function ItemDrawerProvider({ children }: { children: ReactNode }) {
           </div>
         </SheetContent>
       </Sheet>
+
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={(nextOpen) => {
+          if (!isDeleting) {
+            setIsDeleteDialogOpen(nextOpen);
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <div className="flex items-start gap-4">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-rose-400/12 text-rose-200">
+              <AlertTriangle className="size-5" />
+            </div>
+
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete item?</AlertDialogTitle>
+              <AlertDialogDescription>
+                {selectedItem
+                  ? `This will permanently delete "${selectedItem.title}" from your stash. This action cannot be undone.`
+                  : "This will permanently delete the selected item. This action cannot be undone."}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
+              {isDeleting ? (
+                <LoaderCircle className="size-4 animate-spin" />
+              ) : (
+                <Trash2 className="size-4" />
+              )}
+              Delete item
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {toastState ? (
         <SuccessToast
@@ -480,6 +539,59 @@ export function ItemDrawerProvider({ children }: { children: ReactNode }) {
     setToastState({
       message: "Item updated.",
       title: "Saved",
+      variant: "success",
+    });
+    router.refresh();
+  }
+
+  async function handleDelete() {
+    if (!selectedItem || isDeleting) {
+      return;
+    }
+
+    setIsDeleting(true);
+
+    let result: Awaited<ReturnType<typeof deleteItem>>;
+
+    try {
+      result = await deleteItem(selectedItem.id);
+    } catch {
+      const message = "We couldn't delete this item right now.";
+
+      setToastState({
+        message,
+        title: "Delete failed",
+        variant: "error",
+      });
+      setIsDeleting(false);
+      return;
+    }
+
+    if (!result.success) {
+      setToastState({
+        message: result.error,
+        title: "Delete failed",
+        variant: "error",
+      });
+      setIsDeleting(false);
+      return;
+    }
+
+    setDetailsById((current) => {
+      const nextState = { ...current };
+
+      delete nextState[result.data.id];
+
+      return nextState;
+    });
+    setSelectedItemId(null);
+    setIsEditing(false);
+    setIsOpen(false);
+    setIsDeleteDialogOpen(false);
+    setIsDeleting(false);
+    setToastState({
+      message: "Item deleted.",
+      title: "Deleted",
       variant: "success",
     });
     router.refresh();

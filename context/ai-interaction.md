@@ -16,7 +16,7 @@ This is the common workflow that we will use for every single feature/fix:
 2. **Todo List** - Before starting implementation, add a feature-specific todo list to @context/current-feature.md. Each task must use markdown checkboxes (`- [ ]` / `- [x]`). Update the checklist as work progresses and check items off as soon as they are completed.
 3. **Branch** - Create new branch for feature, fix, etc
 4. **Implement** - Implement the feature/fix that I create in @context/current-feature.md
-5. **Test** - Run `npm run test`, `npm run lint`, and `npm run build`, then verify the feature manually in the browser when UI behavior is involved
+5. **Test** - Run `npm run test`, `npm run lint`, and `npm run build`. Manual browser verification is only required when explicitly requested.
 6. **Iterate** - Iterate and change things if needed
 7. **Commit** - Only after build passes and everything works
 8. **Merge** - Merge to main

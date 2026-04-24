@@ -380,6 +380,30 @@ export async function updateItem(
   return mapItemToDashboardDetailRecord(updatedItem);
 }
 
+export async function deleteItem(userId: string, itemId: string): Promise<boolean> {
+  const item = await prisma.item.findFirst({
+    where: {
+      id: itemId,
+      userId,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (!item) {
+    return false;
+  }
+
+  await prisma.item.delete({
+    where: {
+      id: itemId,
+    },
+  });
+
+  return true;
+}
+
 function mapItemToDashboardDetailRecord(
   item: DashboardItemDetailWithRelations,
 ): DashboardItemDetailRecord {

@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { authMock, updateItemRecordMock } = vi.hoisted(() => ({
+const { authMock, deleteItemRecordMock, updateItemRecordMock } = vi.hoisted(() => ({
   authMock: vi.fn(),
+  deleteItemRecordMock: vi.fn(),
   updateItemRecordMock: vi.fn(),
 }));
 
@@ -10,14 +11,16 @@ vi.mock("@/auth", () => ({
 }));
 
 vi.mock("@/lib/db/items", () => ({
+  deleteItem: deleteItemRecordMock,
   updateItem: updateItemRecordMock,
 }));
 
-import { updateItem } from "@/actions/items";
+import { deleteItem, updateItem } from "@/actions/items";
 
 describe("item actions", () => {
   beforeEach(() => {
     authMock.mockReset();
+    deleteItemRecordMock.mockReset();
     updateItemRecordMock.mockReset();
   });
 
@@ -184,6 +187,68 @@ describe("item actions", () => {
       language: null,
       tags: [],
     });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "Item not found.",
+    });
+  });
+
+  it("returns delete validation errors before checking auth", async () => {
+    const result = await deleteItem("   ");
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "Item not found.",
+    });
+    expect(authMock).not.toHaveBeenCalled();
+    expect(deleteItemRecordMock).not.toHaveBeenCalled();
+  });
+
+  it("requires a signed-in user to delete an item", async () => {
+    authMock.mockResolvedValue(null);
+
+    const result = await deleteItem("item-1");
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "You need to be signed in to delete items.",
+    });
+    expect(deleteItemRecordMock).not.toHaveBeenCalled();
+  });
+
+  it("deletes an item owned by the signed-in user", async () => {
+    authMock.mockResolvedValue({
+      user: {
+        id: "user-1",
+      },
+    });
+    deleteItemRecordMock.mockResolvedValue(true);
+
+    const result = await deleteItem(" item-1 ");
+
+    expect(deleteItemRecordMock).toHaveBeenCalledWith("user-1", "item-1");
+    expect(result).toEqual({
+      success: true,
+      data: {
+        id: "item-1",
+      },
+      error: null,
+    });
+  });
+
+  it("returns not found when deleting an item outside the signed-in user's account", async () => {
+    authMock.mockResolvedValue({
+      user: {
+        id: "user-1",
+      },
+    });
+    deleteItemRecordMock.mockResolvedValue(false);
+
+    const result = await deleteItem("item-1");
 
     expect(result).toEqual({
       success: false,

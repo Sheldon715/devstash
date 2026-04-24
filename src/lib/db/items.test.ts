@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { prismaItemFindFirstMock, prismaItemUpdateMock } = vi.hoisted(() => ({
+const { prismaItemDeleteMock, prismaItemFindFirstMock, prismaItemUpdateMock } = vi.hoisted(() => ({
+  prismaItemDeleteMock: vi.fn(),
   prismaItemFindFirstMock: vi.fn(),
   prismaItemUpdateMock: vi.fn(),
 }));
@@ -8,6 +9,7 @@ const { prismaItemFindFirstMock, prismaItemUpdateMock } = vi.hoisted(() => ({
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     item: {
+      delete: prismaItemDeleteMock,
       findFirst: prismaItemFindFirstMock,
       update: prismaItemUpdateMock,
     },
@@ -18,10 +20,11 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-import { getDashboardItemDetail, updateItem } from "@/lib/db/items";
+import { deleteItem, getDashboardItemDetail, updateItem } from "@/lib/db/items";
 
 describe("item db queries", () => {
   beforeEach(() => {
+    prismaItemDeleteMock.mockReset();
     prismaItemFindFirstMock.mockReset();
     prismaItemUpdateMock.mockReset();
   });
@@ -259,5 +262,30 @@ describe("item db queries", () => {
         }),
       }),
     );
+  });
+
+  it("does not delete an item that does not belong to the user", async () => {
+    prismaItemFindFirstMock.mockResolvedValue(null);
+
+    await expect(deleteItem("user-1", "item-1")).resolves.toBe(false);
+
+    expect(prismaItemDeleteMock).not.toHaveBeenCalled();
+  });
+
+  it("deletes an owned item", async () => {
+    prismaItemFindFirstMock.mockResolvedValue({
+      id: "item-1",
+    });
+    prismaItemDeleteMock.mockResolvedValue({
+      id: "item-1",
+    });
+
+    await expect(deleteItem("user-1", "item-1")).resolves.toBe(true);
+
+    expect(prismaItemDeleteMock).toHaveBeenCalledWith({
+      where: {
+        id: "item-1",
+      },
+    });
   });
 });

@@ -1,20 +1,28 @@
-# Current Feature
+# Current Feature: Item Delete Functionality
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Add delete functionality for items.
+- Require a Shadcn confirmation before deletion.
+- Show a success toast after an item is deleted.
 
 ## Todo List
 
-<!-- Feature-specific checklist -->
+- [x] Identify existing item action, drawer, and toast patterns.
+- [x] Add an ownership-safe item delete mutation/API path.
+- [x] Add a Shadcn confirmation dialog to the item UI.
+- [x] Refresh affected item lists/detail state after deletion.
+- [x] Show a success toast when deletion completes.
+- [x] Run `npm run test`, `npm run lint`, and `npm run build`.
+- [x] Manual browser verification skipped unless explicitly requested.
 
 ## Notes
 
-<!-- Any extra notes -->
+- Loaded from inline feature request.
 
 ## History
 
