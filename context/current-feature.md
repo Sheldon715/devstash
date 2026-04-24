@@ -1,28 +1,20 @@
-# Current Feature: Item Delete Functionality
+# Current Feature
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Add delete functionality for items.
-- Require a Shadcn confirmation before deletion.
-- Show a success toast after an item is deleted.
+<!-- Goals & requirements -->
 
 ## Todo List
 
-- [x] Identify existing item action, drawer, and toast patterns.
-- [x] Add an ownership-safe item delete mutation/API path.
-- [x] Add a Shadcn confirmation dialog to the item UI.
-- [x] Refresh affected item lists/detail state after deletion.
-- [x] Show a success toast when deletion completes.
-- [x] Run `npm run test`, `npm run lint`, and `npm run build`.
-- [x] Manual browser verification skipped unless explicitly requested.
+<!-- Feature-specific checklist -->
 
 ## Notes
 
-- Loaded from inline feature request.
+<!-- Any extra notes -->
 
 ## History
 
@@ -54,3 +46,4 @@ In Progress
 - Vitest testing workflow and responsive items layout update completed with Vitest scripts/config plus initial action and utility tests, updated testing docs, and a `/items/[type]` grid that expands to three columns on large screens
 - Item drawer completed with a shared right-side lazy-loaded detail drawer on dashboard and item type pages, an authenticated `/api/items/[id]` route, utility and API route test coverage, and passing lint/test/build verification; full manual browser walkthrough is still pending
 - Item drawer edit mode completed with inline Save/Cancel editing, Zod-validated item updates, ownership-safe tag replacement, refreshed drawer/card data, improved drawer layout and toast/cursor behavior, runtime Zod dependency wiring, and passing lint/test/build verification
+- Item delete functionality completed with an ownership-safe delete action, Shadcn-style confirmation dialog, success/error toast feedback, refreshed drawer/list state, keyboard-safe modal handling, updated unit coverage, and passing lint/test/build verification
