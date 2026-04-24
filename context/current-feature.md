@@ -1,39 +1,20 @@
-# Current Feature: Item Drawer Edit Mode
+# Current Feature
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Add inline edit mode to the existing item drawer when the pencil action is clicked.
-- Replace the drawer action bar with Save and Cancel controls while editing.
-- Persist edits through a validated `updateItem(itemId, data)` server action.
-- Support editable title, description, tags, and relevant type-specific fields.
-- Keep item type, collections, and created/updated dates display-only in edit mode.
-- Refresh drawer/list data after save and show success or error toast feedback.
+<!-- Goals & requirements -->
 
 ## Todo List
 
-- [x] Review current item drawer, item data types, and action/query patterns.
-- [x] Add server-side update validation and `updateItem` action.
-- [x] Add database update query with ownership-safe tag replacement.
-- [x] Wire drawer edit mode with controlled inputs, Save, and Cancel.
-- [x] Refresh UI data and show save success/error toasts.
-- [x] Add focused unit tests for action/query-safe logic where applicable.
-- [x] Run `npm run test`, `npm run lint`, and `npm run build`.
-- [ ] Manually verify the edit drawer flow in the browser.
+<!-- Feature-specific checklist -->
 
 ## Notes
 
-- Source spec: `context/feature/item-drawer-edit-spec.md`
-- Keep the drawer open when switching between view and edit mode.
-- No form library is needed; use controlled inputs with local state.
-- Zod validation is the server-side source of truth.
-- Disable Save client-side when the trimmed title is empty.
-- On update, replace existing tags with the submitted trimmed, non-empty tag names.
-- Return the updated `ItemDetail` from the save flow so the drawer can refresh without a second fetch.
-- Call `router.refresh()` after save so the underlying item cards reflect changes.
+<!-- Any extra notes -->
 
 ## History
 
@@ -64,3 +45,4 @@ In Progress
 - Vitest unit testing setup completed with Node-based Vitest config, unit test scripts, scoped tests for server actions and utilities only, representative action/utility coverage, and updated workflow documentation
 - Vitest testing workflow and responsive items layout update completed with Vitest scripts/config plus initial action and utility tests, updated testing docs, and a `/items/[type]` grid that expands to three columns on large screens
 - Item drawer completed with a shared right-side lazy-loaded detail drawer on dashboard and item type pages, an authenticated `/api/items/[id]` route, utility and API route test coverage, and passing lint/test/build verification; full manual browser walkthrough is still pending
+- Item drawer edit mode completed with inline Save/Cancel editing, Zod-validated item updates, ownership-safe tag replacement, refreshed drawer/card data, improved drawer layout and toast/cursor behavior, runtime Zod dependency wiring, and passing lint/test/build verification
