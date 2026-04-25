@@ -1,38 +1,20 @@
-# Current Feature: Markdown Editor
+# Current Feature
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Add a `MarkdownEditor` component for notes and prompts.
-- Provide Write and Preview tabs with GitHub Flavored Markdown support via `react-markdown` and `remark-gfm`.
-- Replace plain textareas with `MarkdownEditor` only for note and prompt content.
-- Keep the existing `CodeEditor` behavior unchanged for snippets and commands.
-- Support readonly display mode and editable create/edit modes.
-- Match the existing dark editor styling, including container/header colors and copy button behavior.
-- Style rendered markdown clearly for headings, code, lists, blockquotes, links, and tables.
+<!-- Goals & requirements -->
 
 ## Todo List
 
-- [x] Inspect the existing `CodeEditor`, `NewItemDialog`, and `ItemDrawer` integration points.
-- [x] Add Markdown rendering dependencies if they are not already installed.
-- [x] Create the reusable `MarkdownEditor` component with write, preview, readonly, and copy support.
-- [x] Add dark-mode markdown preview styling with a reliable `.markdown-preview` class.
-- [x] Use `MarkdownEditor` for note and prompt content in `NewItemDialog`.
-- [x] Use `MarkdownEditor` for note and prompt content in `ItemDrawer` edit mode.
-- [x] Use `MarkdownEditor` for note and prompt content in `ItemDrawer` readonly view mode.
-- [x] Verify snippets and commands still use `CodeEditor`.
-- [x] Run lint, tests where relevant, and production build.
+<!-- Feature-specific checklist -->
 
 ## Notes
 
-- Loaded from `context/feature/markdown-editor-spec.md`.
-- Readonly mode should show only the Preview tab.
-- Edit mode should default to Write while keeping Preview available.
-- Markdown editor visual shell should match CodeEditor behavior: `bg-[#1e1e1e]` body, `bg-[#2d2d2d]` header, and fluid height with max 400px.
-- Preview styling should cover `h1`-`h6`, fenced and inline code, ordered and unordered lists, blockquotes, links, and tables.
+<!-- Any extra notes -->
 
 ## History
 
@@ -67,3 +49,4 @@ In Progress
 - Item delete functionality completed with an ownership-safe delete action, Shadcn-style confirmation dialog, success/error toast feedback, refreshed drawer/list state, keyboard-safe modal handling, updated unit coverage, and passing lint/test/build verification
 - Item create functionality completed with a compact animated New Item dialog, type-specific fields and placeholders, Zod-validated creation action, Prisma-backed item/tag creation, drawer type-icon polish, focused unit coverage, and passing lint/test/build verification
 - Code Editor feature completed with a Monaco-powered dark CodeEditor for snippet and command display/edit/create flows, copy and language header controls, type-specific create buttons with preselected item types, file/image placeholder create support, and passing lint/test/build verification
+- Markdown Editor feature completed with a GFM-enabled MarkdownEditor for notes and prompts, Write/Preview tabs, readonly previews, macOS-style header controls, dark markdown styling, and passing lint/test/build verification
