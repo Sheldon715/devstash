@@ -4,6 +4,7 @@ import { useState } from "react";
 import { FolderPlus, LayoutPanelLeft, Plus, Search } from "lucide-react";
 import { usePathname } from "next/navigation";
 
+import { CreateCollectionDialog } from "@/components/collections/create-collection-dialog";
 import { CreateItemDialog } from "@/components/items/create-item-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,7 @@ interface TopBarProps {
 }
 
 export function TopBar({ onOpenMobileSidebar }: TopBarProps) {
+  const [isCreateCollectionDialogOpen, setIsCreateCollectionDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const pathname = usePathname();
   const routeType = getCurrentItemType(pathname);
@@ -46,8 +48,21 @@ export function TopBar({ onOpenMobileSidebar }: TopBarProps) {
           </div>
 
           <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            className="shrink-0 rounded-xl border-border/80 bg-card text-foreground sm:hidden"
+            onClick={() => setIsCreateCollectionDialogOpen(true)}
+          >
+            <FolderPlus className="size-4" />
+            <span className="sr-only">New Collection</span>
+          </Button>
+
+          <Button
+            type="button"
             variant="outline"
             className="hidden rounded-xl border-border/80 bg-card text-foreground sm:inline-flex"
+            onClick={() => setIsCreateCollectionDialogOpen(true)}
           >
             <FolderPlus className="size-4" />
             New Collection
@@ -69,6 +84,10 @@ export function TopBar({ onOpenMobileSidebar }: TopBarProps) {
         initialType={routeType ?? "snippet"}
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
+      />
+      <CreateCollectionDialog
+        open={isCreateCollectionDialogOpen}
+        onOpenChange={setIsCreateCollectionDialogOpen}
       />
     </>
   );
