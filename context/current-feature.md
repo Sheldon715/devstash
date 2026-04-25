@@ -1,32 +1,20 @@
-# Current Feature: Audit Quick Wins
+# Current Feature
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Apply low-risk hardening and cleanup items found during the codebase audit.
-- Prioritize changes that reduce security risk or duplication without changing user-facing workflows.
-- Keep the scope intentionally small and avoid larger auth/upload architecture changes unless they become necessary.
+<!-- Goals & requirements -->
 
 ## Todo List
 
-- [x] Add `X-Content-Type-Options: nosniff` to `/api/uploads/[id]` responses.
-- [x] Force SVG uploads to download instead of inline display, or remove `.svg` from allowed image uploads for now.
-- [x] Extract duplicated `formatFileSize()` into a shared file utility.
-- [x] Extract duplicated email validation into a shared email utility.
-- [x] Add tests for upload response headers, especially SVG/content disposition behavior.
-- [x] Add an env helper for the public app origin before replacing request-origin usage.
-- [x] Add a production warning or helper check when auth rate limiting env vars are missing.
-- [x] Return generic client-facing errors for R2 upload failures.
-- [x] Add `Cache-Control: no-store` to non-image file responses from `/api/uploads/[id]`.
-- [x] Add a short comment near rate-limit fail-open behavior marking it as dev-only intent.
+<!-- Feature-specific checklist -->
 
 ## Notes
 
-- Lowest-risk first batch: `nosniff`, shared formatting/email utilities, upload header tests, and generic upload errors.
-- Defer larger policy decisions, such as a dedicated cookieless upload domain or fail-closed production rate limiting, until these quick wins are complete.
+<!-- Any extra notes -->
 
 ## History
 
@@ -65,3 +53,4 @@ In Progress
 - File Upload with Cloudflare R2 completed with authenticated R2 upload, download proxy, temporary upload cleanup, file/image metadata persistence, drawer previews/downloads, delete-time R2 cleanup, and focused upload/action/db test coverage
 - Image Gallery View completed with image-specific thumbnail gallery cards, 16:9 cover thumbnails with hover zoom, scroll-safe image upload dialog styling, tab-close temporary upload cleanup, and passing upload route tests, lint, and production build verification
 - File List View completed with a responsive `/items/files` single-column list, extension-aware file rows, direct download controls, drawer-opening row interactions, file metadata mapping coverage, and passing lint, tests, and production build verification
+- Audit Quick Wins completed with safer upload response headers, SVG upload hardening, generic R2 client errors, shared email/file-size/app-origin utilities, production rate-limit configuration warning, and focused upload header test coverage
