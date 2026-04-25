@@ -1,32 +1,20 @@
-# Current Feature: Image Gallery View
+# Current Feature
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Replace the regular item card with an image thumbnail card for image views.
-- Show images in a 3-column grid/gallery layout.
-- Render image thumbnails with a 16:9 aspect ratio using `aspect-video`.
-- Use `object-cover` so images fill thumbnail cards, accepting edge cropping when needed.
-- Add a subtle hover zoom effect using 5% scale and a 300ms transition.
+<!-- Goals & requirements -->
 
 ## Todo List
 
-- [x] Locate the image item list/grid rendering path.
-- [x] Create or adapt an image thumbnail card component.
-- [x] Wire image views to use the gallery layout instead of the regular item card.
-- [x] Verify thumbnail aspect ratio, object fit, and hover transition.
-- [x] Keep the create dialog submit button reachable after image upload previews.
-- [x] Match create dialog scrolling with the project scrollbar style.
-- [x] Queue cleanup for temporary uploads when the browser tab closes before item creation.
-- [x] Run `npm run lint` and `npm run build`.
+<!-- Feature-specific checklist -->
 
 ## Notes
 
-- Spec source: `context/feature/image-display-spec.md`
-- Feature focuses on image display only; no upload/storage behavior changes are requested.
+<!-- Any extra notes -->
 
 ## History
 
@@ -63,3 +51,4 @@ In Progress
 - Code Editor feature completed with a Monaco-powered dark CodeEditor for snippet and command display/edit/create flows, copy and language header controls, type-specific create buttons with preselected item types, file/image placeholder create support, and passing lint/test/build verification
 - Markdown Editor feature completed with a GFM-enabled MarkdownEditor for notes and prompts, Write/Preview tabs, readonly previews, macOS-style header controls, dark markdown styling, and passing lint/test/build verification
 - File Upload with Cloudflare R2 completed with authenticated R2 upload, download proxy, temporary upload cleanup, file/image metadata persistence, drawer previews/downloads, delete-time R2 cleanup, and focused upload/action/db test coverage
+- Image Gallery View completed with image-specific thumbnail gallery cards, 16:9 cover thumbnails with hover zoom, scroll-safe image upload dialog styling, tab-close temporary upload cleanup, and passing upload route tests, lint, and production build verification
