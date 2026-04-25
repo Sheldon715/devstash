@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { isValidEmail, normalizeEmailAddress } from "@/lib/email";
 
 interface RegisterResponseBody {
   error?: string;
@@ -39,10 +40,6 @@ const INITIAL_FORM_STATE: RegisterFormState = {
   password: "",
 };
 
-function isValidEmail(email: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
 export function RegisterForm({ requiresEmailVerification }: RegisterFormProps) {
   const router = useRouter();
   const [formState, setFormState] = useState(INITIAL_FORM_STATE);
@@ -58,7 +55,7 @@ export function RegisterForm({ requiresEmailVerification }: RegisterFormProps) {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const trimmedEmail = formState.email.trim().toLowerCase();
+    const trimmedEmail = normalizeEmailAddress(formState.email);
     const trimmedName = formState.name.trim();
 
     if (!trimmedEmail || !formState.password || !formState.confirmPassword) {

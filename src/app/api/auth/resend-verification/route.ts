@@ -4,6 +4,8 @@ import {
   sendVerificationEmailForAddress,
 } from "@/lib/email-verification";
 import { isEmailVerificationRequired } from "@/lib/email-verification-settings";
+import { getPublicAppOrigin } from "@/lib/app-url";
+import { isValidEmail, normalizeEmailAddress } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 import {
   checkAuthRateLimit,
@@ -14,12 +16,8 @@ type ResendVerificationRequestBody = {
   email?: unknown;
 };
 
-function isValidEmail(email: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
 function parseResendVerificationRequestBody(body: ResendVerificationRequestBody) {
-  const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+  const email = typeof body.email === "string" ? normalizeEmailAddress(body.email) : "";
 
   if (!email) {
     return {
@@ -97,7 +95,7 @@ export async function POST(request: Request) {
   });
 
   if (user && !user.emailVerified) {
-    await sendVerificationEmailForAddress(user.email, new URL(request.url).origin);
+    await sendVerificationEmailForAddress(user.email, getPublicAppOrigin(request.url));
   }
 
   return NextResponse.json(

@@ -22,7 +22,7 @@ export interface UploadValidationResult {
 const IMAGE_MAX_SIZE_BYTES = 5 * 1024 * 1024;
 const FILE_MAX_SIZE_BYTES = 10 * 1024 * 1024;
 
-const IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"] as const;
+const IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".gif", ".webp"] as const;
 const FILE_EXTENSIONS = [
   ".pdf",
   ".txt",
@@ -41,7 +41,6 @@ const IMAGE_MIME_TYPES = [
   "image/jpeg",
   "image/gif",
   "image/webp",
-  "image/svg+xml",
 ] as const;
 
 const FILE_MIME_TYPES = [

@@ -105,14 +105,11 @@ export async function POST(request: Request) {
         fileSizeBytes: file.size,
       },
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json<UploadResponseBody>(
       {
         success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : "We couldn't upload this file right now.",
+        error: "We couldn't upload this file right now.",
       },
       { status: 500 },
     );

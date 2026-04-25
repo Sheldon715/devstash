@@ -367,7 +367,7 @@ describe("item actions", () => {
     expect(result).toEqual({
       success: false,
       data: null,
-      error: "Images must use one of these extensions: .png, .jpg, .jpeg, .gif, .webp, .svg.",
+      error: "Images must use one of these extensions: .png, .jpg, .jpeg, .gif, .webp.",
     });
     expect(authMock).not.toHaveBeenCalled();
     expect(createItemRecordMock).not.toHaveBeenCalled();

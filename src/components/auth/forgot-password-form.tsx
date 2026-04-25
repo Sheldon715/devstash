@@ -6,6 +6,7 @@ import { LoaderCircle, MailCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { isValidEmail, normalizeEmailAddress } from "@/lib/email";
 
 interface ForgotPasswordResponseBody {
   error?: string;
@@ -33,10 +34,6 @@ const INITIAL_FORM_STATE: ForgotPasswordFormState = {
   isSubmitted: false,
 };
 
-function isValidEmail(email: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
 export function ForgotPasswordForm({ defaultEmail = "" }: ForgotPasswordFormProps) {
   const [formState, setFormState] = useState<ForgotPasswordFormState>({
     ...INITIAL_FORM_STATE,
@@ -46,7 +43,7 @@ export function ForgotPasswordForm({ defaultEmail = "" }: ForgotPasswordFormProp
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const email = formState.email.trim().toLowerCase();
+    const email = normalizeEmailAddress(formState.email);
 
     if (!email) {
       setFormState((current) => ({

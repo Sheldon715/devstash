@@ -18,6 +18,7 @@ import { createElement, type KeyboardEvent } from "react";
 import { useItemDrawer } from "@/components/items/item-drawer-provider";
 import type { DashboardItemRecord } from "@/lib/db/items";
 import { formatDashboardDate } from "@/lib/date";
+import { formatFileSize } from "@/lib/file-size";
 
 interface FileListViewProps {
   items: DashboardItemRecord[];
@@ -157,18 +158,3 @@ function getFileIcon(extension: string, mimeType: string | null): LucideIcon {
   return File;
 }
 
-function formatFileSize(fileSizeBytes: number | null) {
-  if (fileSizeBytes === null) {
-    return "Unknown";
-  }
-
-  if (fileSizeBytes < 1024) {
-    return `${fileSizeBytes} B`;
-  }
-
-  if (fileSizeBytes < 1024 * 1024) {
-    return `${(fileSizeBytes / 1024).toFixed(1)} KB`;
-  }
-
-  return `${(fileSizeBytes / (1024 * 1024)).toFixed(1)} MB`;
-}

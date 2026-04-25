@@ -4,6 +4,7 @@ import { type ChangeEvent, type DragEvent, useEffect, useRef, useState } from "r
 import { FileText, ImageIcon, LoaderCircle, Upload, X } from "lucide-react";
 import Image from "next/image";
 
+import { formatFileSize } from "@/lib/file-size";
 import {
   isImageMimeType,
   validateUploadFileMetadata,
@@ -202,7 +203,7 @@ export function FileUpload({
 
   const Icon = itemType === "image" ? ImageIcon : FileText;
   const accept = itemType === "image"
-    ? ".png,.jpg,.jpeg,.gif,.webp,.svg"
+    ? ".png,.jpg,.jpeg,.gif,.webp"
     : ".pdf,.txt,.md,.json,.yaml,.yml,.xml,.csv,.toml,.ini";
 
   return (
@@ -269,7 +270,7 @@ export function FileUpload({
                 {isUploading ? "Uploading..." : `Upload ${itemType}`}
               </p>
               <p className="mt-1 text-xs text-zinc-500">
-                {itemType === "image" ? "PNG, JPG, GIF, WebP, SVG up to 5 MB" : "PDF, text, data, and config files up to 10 MB"}
+                {itemType === "image" ? "PNG, JPG, GIF, WebP up to 5 MB" : "PDF, text, data, and config files up to 10 MB"}
               </p>
             </div>
           </div>
@@ -297,16 +298,4 @@ export function FileUpload({
       ) : null}
     </div>
   );
-}
-
-function formatFileSize(fileSizeBytes: number) {
-  if (fileSizeBytes < 1024) {
-    return `${fileSizeBytes} B`;
-  }
-
-  if (fileSizeBytes < 1024 * 1024) {
-    return `${(fileSizeBytes / 1024).toFixed(1)} KB`;
-  }
-
-  return `${(fileSizeBytes / (1024 * 1024)).toFixed(1)} MB`;
 }
