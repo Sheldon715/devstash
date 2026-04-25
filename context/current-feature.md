@@ -1,45 +1,20 @@
-# Current Feature: File Upload with Cloudflare R2
+# Current Feature
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Create upload API route for Cloudflare R2.
-- Keep Prisma/database helper work inside `lib/db/items.ts`.
-- Create a `FileUpload` component with drag-and-drop support.
-- Update the create item modal to use `FileUpload` for file and image types.
-- Delete stored R2 files when file or image items are deleted.
-- Create a download proxy API route to avoid CORS issues.
-- Add a download button in `ItemDrawer` for file types.
-- Show upload progress while files are uploading.
-- Display image previews for image items and file metadata for file items.
+<!-- Goals & requirements -->
 
 ## Todo List
 
-- [x] Review existing item create, drawer, delete, and database helper flows.
-- [x] Add Cloudflare R2 storage configuration and upload/download/delete helpers.
-- [x] Add upload API route with file/image validation and progress-compatible client contract.
-- [x] Build reusable drag-and-drop `FileUpload` component.
-- [x] Wire file/image creation flows to upload metadata through existing item helpers.
-- [x] Delete R2 objects when file/image items are deleted.
-- [x] Add download proxy API route and ItemDrawer download action.
-- [x] Render image previews and file metadata in create/detail flows.
-- [x] Add focused unit coverage for server-side upload/delete/download utilities where practical.
-- [x] Run `npm run lint` and `npm run build`.
+<!-- Feature-specific checklist -->
 
 ## Notes
 
-- Spec source: `context/feature/file-image-spec.md`.
-- Image uploads: max 5 MB; allowed extensions are `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.svg`.
-- File uploads: max 10 MB; allowed extensions are `.pdf`, `.txt`, `.md`, `.json`, `.yaml`, `.yml`, `.xml`, `.csv`, `.toml`, `.ini`.
-- Allowed image MIME types: `image/png`, `image/jpeg`, `image/gif`, `image/webp`, `image/svg+xml`.
-- Allowed file MIME types: `application/pdf`, `text/plain`, `text/markdown`, `application/json`, `application/x-yaml`, `text/yaml`, `application/xml`, `text/xml`, `text/csv`, `application/toml`.
-- Use API routes for upload/download behavior because progress tracking, files, status codes, and headers are required.
-- Required R2 env vars: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`.
-- Optional R2 env var: `R2_PUBLIC_URL` for storing a public object URL alongside the proxy-backed item.
-- The R2 helper also accepts `CLOUDFLARE_R2_ACCOUNT_ID`, `CLOUDFLARE_R2_ACCESS_KEY_ID`, `CLOUDFLARE_R2_SECRET_ACCESS_KEY`, `CLOUDFLARE_R2_BUCKET`, and `CLOUDFLARE_R2_PUBLIC_URL` aliases.
+<!-- Any extra notes -->
 
 ## History
 
@@ -75,3 +50,4 @@ In Progress
 - Item create functionality completed with a compact animated New Item dialog, type-specific fields and placeholders, Zod-validated creation action, Prisma-backed item/tag creation, drawer type-icon polish, focused unit coverage, and passing lint/test/build verification
 - Code Editor feature completed with a Monaco-powered dark CodeEditor for snippet and command display/edit/create flows, copy and language header controls, type-specific create buttons with preselected item types, file/image placeholder create support, and passing lint/test/build verification
 - Markdown Editor feature completed with a GFM-enabled MarkdownEditor for notes and prompts, Write/Preview tabs, readonly previews, macOS-style header controls, dark markdown styling, and passing lint/test/build verification
+- File Upload with Cloudflare R2 completed with authenticated R2 upload, download proxy, temporary upload cleanup, file/image metadata persistence, drawer previews/downloads, delete-time R2 cleanup, and focused upload/action/db test coverage
