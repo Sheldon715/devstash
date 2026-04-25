@@ -59,6 +59,7 @@ let cachedRatelimiters:
   | Record<AuthRateLimitScope, Ratelimit>
   | null
   | undefined;
+let hasWarnedAboutMissingRedis = false;
 
 function createAllowedResult(): RateLimitCheckResult {
   return {
@@ -74,6 +75,11 @@ function getRedisClient() {
   }
 
   if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+    if (process.env.NODE_ENV === "production" && !hasWarnedAboutMissingRedis) {
+      hasWarnedAboutMissingRedis = true;
+      console.warn("Auth rate limiting is disabled because Upstash Redis env vars are missing.");
+    }
+
     cachedRedis = null;
     return cachedRedis;
   }
@@ -205,6 +211,7 @@ export async function checkAuthRateLimit(
   const ratelimiters = getRatelimiters();
 
   if (!ratelimiters) {
+    // Local development can run without Redis; production should configure Upstash.
     return createAllowedResult();
   }
 

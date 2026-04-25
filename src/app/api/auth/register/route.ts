@@ -5,6 +5,8 @@ import {
   sendVerificationEmailForAddress,
 } from "@/lib/email-verification";
 import { isEmailVerificationRequired } from "@/lib/email-verification-settings";
+import { getPublicAppOrigin } from "@/lib/app-url";
+import { isValidEmail, normalizeEmailAddress } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 import { checkAuthRateLimit, createRateLimitResponse } from "@/lib/rate-limit";
 
@@ -15,13 +17,9 @@ type RegisterRequestBody = {
   confirmPassword?: unknown;
 };
 
-function isValidEmail(email: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
 function parseRegisterRequestBody(body: RegisterRequestBody) {
   const name = typeof body.name === "string" ? body.name.trim() : "";
-  const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+  const email = typeof body.email === "string" ? normalizeEmailAddress(body.email) : "";
   const password = typeof body.password === "string" ? body.password : "";
   const confirmPassword = typeof body.confirmPassword === "string" ? body.confirmPassword : "";
 
@@ -68,7 +66,7 @@ export async function POST(request: Request) {
   }
 
   const parsedBody = parseRegisterRequestBody(body);
-  const origin = new URL(request.url).origin;
+  const origin = getPublicAppOrigin(request.url);
   const emailVerificationRequired = isEmailVerificationRequired();
 
   if ("error" in parsedBody) {

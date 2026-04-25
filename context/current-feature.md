@@ -1,20 +1,32 @@
-# Current Feature
+# Current Feature: Audit Quick Wins
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Apply low-risk hardening and cleanup items found during the codebase audit.
+- Prioritize changes that reduce security risk or duplication without changing user-facing workflows.
+- Keep the scope intentionally small and avoid larger auth/upload architecture changes unless they become necessary.
 
 ## Todo List
 
-<!-- Feature-specific checklist -->
+- [x] Add `X-Content-Type-Options: nosniff` to `/api/uploads/[id]` responses.
+- [x] Force SVG uploads to download instead of inline display, or remove `.svg` from allowed image uploads for now.
+- [x] Extract duplicated `formatFileSize()` into a shared file utility.
+- [x] Extract duplicated email validation into a shared email utility.
+- [x] Add tests for upload response headers, especially SVG/content disposition behavior.
+- [x] Add an env helper for the public app origin before replacing request-origin usage.
+- [x] Add a production warning or helper check when auth rate limiting env vars are missing.
+- [x] Return generic client-facing errors for R2 upload failures.
+- [x] Add `Cache-Control: no-store` to non-image file responses from `/api/uploads/[id]`.
+- [x] Add a short comment near rate-limit fail-open behavior marking it as dev-only intent.
 
 ## Notes
 
-<!-- Any extra notes -->
+- Lowest-risk first batch: `nosniff`, shared formatting/email utilities, upload header tests, and generic upload errors.
+- Defer larger policy decisions, such as a dedicated cookieless upload domain or fail-closed production rate limiting, until these quick wins are complete.
 
 ## History
 

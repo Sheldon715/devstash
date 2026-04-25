@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { isValidEmail, normalizeEmailAddress } from "@/lib/email";
 import { resetPassword } from "@/lib/password-reset";
 import {
   isValidPasswordResetPassword,
@@ -14,12 +15,8 @@ type ResetPasswordRequestBody = {
   token?: unknown;
 };
 
-function isValidEmail(email: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
 function parseResetPasswordRequestBody(body: ResetPasswordRequestBody) {
-  const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+  const email = typeof body.email === "string" ? normalizeEmailAddress(body.email) : "";
   const password = typeof body.password === "string" ? body.password : "";
   const confirmPassword = typeof body.confirmPassword === "string" ? body.confirmPassword : "";
   const token = typeof body.token === "string" ? body.token.trim() : "";

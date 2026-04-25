@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { getPublicAppOrigin } from "@/lib/app-url";
+import { isValidEmail, normalizeEmailAddress } from "@/lib/email";
 import { requestPasswordReset } from "@/lib/password-reset";
 import { checkAuthRateLimit, createRateLimitResponse } from "@/lib/rate-limit";
 
@@ -7,12 +9,8 @@ type ForgotPasswordRequestBody = {
   email?: unknown;
 };
 
-function isValidEmail(email: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
 function parseForgotPasswordRequestBody(body: ForgotPasswordRequestBody) {
-  const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+  const email = typeof body.email === "string" ? normalizeEmailAddress(body.email) : "";
 
   if (!email) {
     return {
@@ -69,7 +67,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    await requestPasswordReset(parsedBody.data.email, new URL(request.url).origin);
+    await requestPasswordReset(parsedBody.data.email, getPublicAppOrigin(request.url));
   } catch (error) {
     // Keep the response generic so this endpoint does not reveal whether an account exists.
     console.error("Password reset request failed.", error);

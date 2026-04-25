@@ -29,6 +29,17 @@ describe("upload validation", () => {
     });
   });
 
+  it("rejects SVG uploads", () => {
+    expect(
+      validateUploadFileMetadata({
+        fileName: "diagram.svg",
+        itemType: "image",
+        mimeType: "image/svg+xml",
+        sizeBytes: 1024,
+      }).error,
+    ).toContain("Images must use one of these extensions");
+  });
+
   it("rejects unsupported file extensions", () => {
     expect(
       validateUploadFileMetadata({

@@ -52,10 +52,12 @@ export async function GET(request: Request, context: UploadContentRouteContext) 
   }
 
   const url = new URL(request.url);
-  const shouldDownload = url.searchParams.get("download") === "1";
+  const isSvg = file.fileMimeType.toLowerCase() === "image/svg+xml";
+  const shouldDownload = url.searchParams.get("download") === "1" || isSvg;
   const headers = new Headers({
     "content-disposition": createContentDisposition(file.fileName, shouldDownload),
     "content-type": storedObject.contentType ?? file.fileMimeType,
+    "x-content-type-options": "nosniff",
   });
 
   if (storedObject.contentLength) {
@@ -66,6 +68,8 @@ export async function GET(request: Request, context: UploadContentRouteContext) 
 
   if (!shouldDownload && isImageMimeType(file.fileMimeType)) {
     headers.set("cache-control", "private, max-age=300");
+  } else {
+    headers.set("cache-control", "no-store");
   }
 
   return new Response(storedObject.body, {

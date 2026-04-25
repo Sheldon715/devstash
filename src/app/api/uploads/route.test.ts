@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { authMock, deleteR2ObjectMock, isItemFileKeyInUseMock } = vi.hoisted(() => ({
+const { authMock, deleteR2ObjectMock, isItemFileKeyInUseMock, uploadR2ObjectMock } = vi.hoisted(() => ({
   authMock: vi.fn(),
   deleteR2ObjectMock: vi.fn(),
   isItemFileKeyInUseMock: vi.fn(),
+  uploadR2ObjectMock: vi.fn(),
 }));
 
 vi.mock("@/auth", () => ({
@@ -16,11 +17,49 @@ vi.mock("@/lib/db/items", () => ({
 
 vi.mock("@/lib/storage/r2", () => ({
   deleteR2Object: deleteR2ObjectMock,
-  uploadR2Object: vi.fn(),
+  uploadR2Object: uploadR2ObjectMock,
 }));
 
-import { DELETE } from "@/app/api/uploads/route";
+import { DELETE, POST } from "@/app/api/uploads/route";
 import { POST as CLEANUP_POST } from "@/app/api/uploads/cleanup/route";
+
+describe("POST /api/uploads", () => {
+  beforeEach(() => {
+    authMock.mockReset();
+    uploadR2ObjectMock.mockReset();
+  });
+
+  it("returns a generic error when R2 upload fails", async () => {
+    authMock.mockResolvedValue({
+      user: {
+        id: "user-1",
+      },
+    });
+    uploadR2ObjectMock.mockRejectedValue(new Error("provider-specific failure"));
+
+    const formData = new FormData();
+    formData.set("type", "image");
+    formData.set(
+      "file",
+      new File(["image"], "photo.png", {
+        type: "image/png",
+      }),
+    );
+
+    const response = await POST(
+      new Request("http://localhost:3000/api/uploads", {
+        body: formData,
+        method: "POST",
+      }),
+    );
+
+    await expect(response.json()).resolves.toEqual({
+      success: false,
+      error: "We couldn't upload this file right now.",
+    });
+    expect(response.status).toBe(500);
+  });
+});
 
 describe("DELETE /api/uploads", () => {
   beforeEach(() => {

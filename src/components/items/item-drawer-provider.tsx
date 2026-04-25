@@ -54,6 +54,7 @@ import {
 import { SuccessToast } from "@/components/ui/success-toast";
 import { DashboardItemTypeIcon, getDashboardItemTypeColor } from "@/lib/dashboard-icons";
 import type { DashboardItemDetailRecord } from "@/lib/db/items";
+import { formatFileSize } from "@/lib/file-size";
 
 type SerializedDashboardItemDetailRecord = Omit<
   DashboardItemDetailRecord,
@@ -1195,14 +1196,3 @@ function formatDetailTimestamp(value: string) {
   }).format(new Date(value));
 }
 
-function formatFileSize(fileSizeBytes: number) {
-  if (fileSizeBytes < 1024) {
-    return `${fileSizeBytes} B`;
-  }
-
-  if (fileSizeBytes < 1024 * 1024) {
-    return `${(fileSizeBytes / 1024).toFixed(1)} KB`;
-  }
-
-  return `${(fileSizeBytes / (1024 * 1024)).toFixed(1)} MB`;
-}
