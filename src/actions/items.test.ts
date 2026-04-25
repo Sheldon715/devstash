@@ -141,6 +141,7 @@ describe("item actions", () => {
       title: "Useful command",
       description: "Runs the production build.",
       content: "npm run build",
+      file: null,
       url: null,
       language: "shell",
       tags: ["cli"],
@@ -179,7 +180,7 @@ describe("item actions", () => {
     });
   });
 
-  it("allows file and image items without text, URL, or language fields", async () => {
+  it("allows file and image items with uploaded file metadata", async () => {
     const createdAt = new Date("2026-04-22T03:12:00.000Z");
     const updatedAt = new Date("2026-04-24T08:30:00.000Z");
 
@@ -242,6 +243,13 @@ describe("item actions", () => {
         title: "Config archive",
         description: "",
         content: "ignored file content",
+        file: {
+          fileKey: "users/user-1/file/config.json",
+          fileUrl: null,
+          fileName: "config.json",
+          fileMimeType: "application/json",
+          fileSizeBytes: 512,
+        },
         url: "https://example.com/ignored",
         language: "typescript",
         tags: [],
@@ -262,6 +270,13 @@ describe("item actions", () => {
         title: "Architecture sketch",
         description: "",
         content: "ignored image content",
+        file: {
+          fileKey: "users/user-1/image/sketch.webp",
+          fileUrl: null,
+          fileName: "sketch.webp",
+          fileMimeType: "image/webp",
+          fileSizeBytes: 1024,
+        },
         url: "https://example.com/ignored",
         language: "typescript",
         tags: [],
@@ -282,6 +297,13 @@ describe("item actions", () => {
       title: "Config archive",
       description: null,
       content: null,
+      file: {
+        fileKey: "users/user-1/file/config.json",
+        fileUrl: null,
+        fileName: "config.json",
+        fileMimeType: "application/json",
+        fileSizeBytes: 512,
+      },
       url: null,
       language: null,
       tags: [],
@@ -291,10 +313,96 @@ describe("item actions", () => {
       title: "Architecture sketch",
       description: null,
       content: null,
+      file: {
+        fileKey: "users/user-1/image/sketch.webp",
+        fileUrl: null,
+        fileName: "sketch.webp",
+        fileMimeType: "image/webp",
+        fileSizeBytes: 1024,
+      },
       url: null,
       language: null,
       tags: [],
     });
+  });
+
+  it("requires an uploaded file when creating file items", async () => {
+    const result = await createItem({
+      typeKey: "file",
+      title: "Config archive",
+      description: "",
+      content: "",
+      url: "",
+      language: "",
+      tags: [],
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "Upload a file first.",
+    });
+    expect(authMock).not.toHaveBeenCalled();
+    expect(createItemRecordMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects file metadata that does not match the selected upload type", async () => {
+    const result = await createItem({
+      typeKey: "image",
+      title: "Config archive",
+      description: "",
+      content: "",
+      file: {
+        fileKey: "users/user-1/file/config.json",
+        fileUrl: null,
+        fileName: "config.json",
+        fileMimeType: "application/json",
+        fileSizeBytes: 512,
+      },
+      url: "",
+      language: "",
+      tags: [],
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "Images must use one of these extensions: .png, .jpg, .jpeg, .gif, .webp, .svg.",
+    });
+    expect(authMock).not.toHaveBeenCalled();
+    expect(createItemRecordMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects uploaded file keys from the wrong upload type", async () => {
+    authMock.mockResolvedValue({
+      user: {
+        id: "user-1",
+      },
+    });
+
+    const result = await createItem({
+      typeKey: "image",
+      title: "Architecture sketch",
+      description: "",
+      content: "",
+      file: {
+        fileKey: "users/user-1/file/sketch.webp",
+        fileUrl: null,
+        fileName: "sketch.webp",
+        fileMimeType: "image/webp",
+        fileSizeBytes: 1024,
+      },
+      url: "",
+      language: "",
+      tags: [],
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "Upload a file first.",
+    });
+    expect(createItemRecordMock).not.toHaveBeenCalled();
   });
 
   it("returns an error when the item type cannot be found", async () => {

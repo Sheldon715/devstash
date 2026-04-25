@@ -10,6 +10,10 @@ import {
   type CreatableItemTypeKey,
   type DashboardItemDetailRecord,
 } from "@/lib/db/items";
+import {
+  isUploadKeyForItemType,
+  validateUploadFileMetadata,
+} from "@/lib/uploads";
 
 type SerializedDashboardItemDetailRecord = Omit<
   DashboardItemDetailRecord,
@@ -114,6 +118,16 @@ const creatableItemTypeKeys = [
 const createItemSchema = updateItemSchema
   .extend({
     typeKey: z.enum(creatableItemTypeKeys),
+    file: z
+      .object({
+        fileKey: z.string().trim().min(1, "Upload a file first."),
+        fileUrl: z.string().trim().url().nullable(),
+        fileName: z.string().trim().min(1, "File name is required."),
+        fileMimeType: z.string().trim().min(1, "File type is required."),
+        fileSizeBytes: z.number().int().positive("File size is required."),
+      })
+      .optional()
+      .nullable(),
   })
   .superRefine((data, context) => {
     if (data.typeKey === "link" && !data.url) {
@@ -122,6 +136,31 @@ const createItemSchema = updateItemSchema
         message: "URL is required for link items.",
         path: ["url"],
       });
+    }
+
+    if ((data.typeKey === "file" || data.typeKey === "image") && !data.file) {
+      context.addIssue({
+        code: "custom",
+        message: "Upload a file first.",
+        path: ["file"],
+      });
+    }
+
+    if ((data.typeKey === "file" || data.typeKey === "image") && data.file) {
+      const validation = validateUploadFileMetadata({
+        fileName: data.file.fileName,
+        itemType: data.typeKey,
+        mimeType: data.file.fileMimeType,
+        sizeBytes: data.file.fileSizeBytes,
+      });
+
+      if (validation.error) {
+        context.addIssue({
+          code: "custom",
+          message: validation.error,
+          path: ["file"],
+        });
+      }
     }
   });
 
@@ -146,7 +185,16 @@ export async function createItem(data: unknown): Promise<CreateItemResult> {
     };
   }
 
-  const payload = normalizeCreateItemPayload(parsedData.data);
+  const payload = normalizeCreateItemPayload(parsedData.data, session.user.id);
+
+  if (!payload) {
+    return {
+      success: false,
+      data: null,
+      error: "Upload a file first.",
+    };
+  }
+
   const createdItem = await createItemRecord(session.user.id, payload);
 
   if (!createdItem) {
@@ -242,15 +290,22 @@ export async function deleteItem(itemId: string): Promise<DeleteItemResult> {
   };
 }
 
-function normalizeCreateItemPayload(data: z.infer<typeof createItemSchema>) {
+function normalizeCreateItemPayload(data: z.infer<typeof createItemSchema>, userId: string) {
   const textContentTypes: CreatableItemTypeKey[] = ["snippet", "prompt", "command", "note"];
   const languageTypes: CreatableItemTypeKey[] = ["snippet", "command"];
+  const uploadItemType = data.typeKey === "file" || data.typeKey === "image" ? data.typeKey : null;
+  const file = uploadItemType ? data.file ?? null : null;
+
+  if (file && uploadItemType && !isUploadKeyForItemType(file.fileKey, userId, uploadItemType)) {
+    return null;
+  }
 
   return {
     typeKey: data.typeKey,
     title: data.title,
     description: data.description,
     content: textContentTypes.includes(data.typeKey) ? data.content : null,
+    file,
     url: data.typeKey === "link" ? data.url : null,
     language: languageTypes.includes(data.typeKey) ? data.language : null,
     tags: data.tags,

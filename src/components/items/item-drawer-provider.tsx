@@ -15,7 +15,9 @@ import {
   AlertTriangle,
   Clock3,
   Copy,
+  Download,
   FileText,
+  ImageIcon,
   LoaderCircle,
   type LucideIcon,
   Pencil,
@@ -25,6 +27,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 import { deleteItem, updateItem } from "@/actions/items";
@@ -889,11 +892,29 @@ function PrimaryContentCard({ item }: { item: SerializedDashboardItemDetailRecor
   }
 
   if (item.contentMode === "FILE") {
+    const isImage = item.typeKey === "image";
+
     return (
       <div className="rounded-xl border border-white/8 bg-white/[0.035] p-4">
+        {isImage && item.fileName ? (
+          <div className="mb-4 overflow-hidden rounded-xl border border-white/8 bg-[#05070b]">
+            <Image
+              src={`/api/uploads/${item.id}`}
+              alt=""
+              width={800}
+              height={520}
+              unoptimized
+              className="max-h-[28rem] w-full object-contain"
+            />
+          </div>
+        ) : null}
         <div className="flex items-start gap-3">
           <div className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-white/8 bg-[#0e1218]">
-            <FileText className="size-5 text-zinc-100" />
+            {isImage ? (
+              <ImageIcon className="size-5 text-zinc-100" />
+            ) : (
+              <FileText className="size-5 text-zinc-100" />
+            )}
           </div>
           <div className="min-w-0 space-y-2">
             <p className="text-sm font-semibold text-zinc-50">
@@ -903,17 +924,16 @@ function PrimaryContentCard({ item }: { item: SerializedDashboardItemDetailRecor
               {item.fileMimeType ?? "Unknown file type"}
               {item.fileSizeBytes ? ` • ${formatFileSize(item.fileSizeBytes)}` : ""}
             </p>
-            {item.fileUrl ? (
+            {item.fileName ? (
               <a
-                href={item.fileUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex text-sm font-medium text-sky-200 transition-colors hover:text-sky-100"
+                href={`/api/uploads/${item.id}?download=1`}
+                className="inline-flex h-9 items-center gap-2 rounded-xl border border-sky-300/20 bg-sky-300/10 px-3 text-sm font-medium text-sky-100 transition-colors hover:border-sky-200/30 hover:bg-sky-300/15"
               >
-                Open file URL
+                <Download className="size-4" />
+                Download file
               </a>
             ) : (
-              <p className="text-sm text-zinc-500">A file URL has not been saved yet.</p>
+              <p className="text-sm text-zinc-500">A file has not been uploaded yet.</p>
             )}
           </div>
         </div>

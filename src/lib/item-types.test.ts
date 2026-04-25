@@ -14,9 +14,9 @@ describe("item-types", () => {
       "prompt",
       "command",
       "note",
+      "link",
       "file",
       "image",
-      "link",
     ]);
   });
 
