@@ -22,8 +22,11 @@ export interface DashboardItemRecord {
   collectionNames: string[];
   tags: string[];
   fileName: string | null;
+  fileMimeType: string | null;
+  fileSizeBytes: number | null;
   isPinned: boolean;
   isFavorite: boolean;
+  createdAt: Date;
   updatedAt: Date;
 }
 
@@ -181,8 +184,11 @@ async function getDashboardItems(
       title: true,
       description: true,
       fileName: true,
+      fileMimeType: true,
+      fileSizeBytes: true,
       isPinned: true,
       isFavorite: true,
+      createdAt: true,
       updatedAt: true,
       type: {
         select: {
@@ -598,8 +604,11 @@ function mapItemToDashboardRecord(item: DashboardItemWithRelations): DashboardIt
       left.localeCompare(right),
     ),
     fileName: item.fileName,
+    fileMimeType: item.fileMimeType,
+    fileSizeBytes: item.fileSizeBytes,
     isPinned: item.isPinned,
     isFavorite: item.isFavorite,
+    createdAt: item.createdAt,
     updatedAt: item.updatedAt,
   };
 }

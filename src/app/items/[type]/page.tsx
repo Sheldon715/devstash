@@ -4,6 +4,7 @@ import { ChevronRight } from "lucide-react";
 
 import { auth } from "@/auth";
 import { ItemCard } from "@/components/dashboard/item-card";
+import { FileListView } from "@/components/items/file-list-view";
 import { ImageThumbnailCard } from "@/components/items/image-thumbnail-card";
 import { TypePageCreateButton } from "@/components/items/type-page-create-button";
 import { getAllDashboardCollections } from "@/lib/db/collections";
@@ -44,6 +45,7 @@ export default async function ItemTypePage({ params }: ItemTypePageProps) {
   }
 
   const { itemType, items } = itemTypePage;
+  const isFileList = itemType.typeKey === "file";
   const isImageGallery = itemType.typeKey === "image";
   const favoriteCollections = collections.filter((collection) => collection.isFavorite).slice(0, 4);
   const recentCollections = collections.slice(0, 4);
@@ -97,15 +99,19 @@ export default async function ItemTypePage({ params }: ItemTypePageProps) {
         </header>
 
         {items.length ? (
-          <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {items.map((item) => (
-              isImageGallery ? (
-                <ImageThumbnailCard key={item.id} item={item} />
-              ) : (
-                <ItemCard key={item.id} item={item} variant="compact" />
-              )
-            ))}
-          </section>
+          isFileList ? (
+            <FileListView items={items} />
+          ) : (
+            <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {items.map((item) => (
+                isImageGallery ? (
+                  <ImageThumbnailCard key={item.id} item={item} />
+                ) : (
+                  <ItemCard key={item.id} item={item} variant="compact" />
+                )
+              ))}
+            </section>
+          )
         ) : (
           <section className="rounded-[24px] border border-white/10 bg-[#08090c] p-8 shadow-[0_16px_48px_rgba(0,0,0,0.2)]">
             <p className="text-sm uppercase tracking-[0.22em] text-muted-foreground">

@@ -4,6 +4,7 @@ const {
   deleteR2ObjectMock,
   prismaItemCreateMock,
   prismaItemDeleteMock,
+  prismaItemFindManyMock,
   prismaItemFindFirstMock,
   prismaItemTypeFindFirstMock,
   prismaItemUpdateMock,
@@ -11,6 +12,7 @@ const {
   deleteR2ObjectMock: vi.fn(),
   prismaItemCreateMock: vi.fn(),
   prismaItemDeleteMock: vi.fn(),
+  prismaItemFindManyMock: vi.fn(),
   prismaItemFindFirstMock: vi.fn(),
   prismaItemTypeFindFirstMock: vi.fn(),
   prismaItemUpdateMock: vi.fn(),
@@ -25,6 +27,7 @@ vi.mock("@/lib/prisma", () => ({
     item: {
       create: prismaItemCreateMock,
       delete: prismaItemDeleteMock,
+      findMany: prismaItemFindManyMock,
       findFirst: prismaItemFindFirstMock,
       update: prismaItemUpdateMock,
     },
@@ -39,6 +42,7 @@ import {
   createItem,
   deleteItem,
   getDashboardItemDetail,
+  getDashboardItemTypePage,
   isItemFileKeyInUse,
   updateItem,
 } from "@/lib/db/items";
@@ -47,6 +51,7 @@ describe("item db queries", () => {
   beforeEach(() => {
     prismaItemCreateMock.mockReset();
     prismaItemDeleteMock.mockReset();
+    prismaItemFindManyMock.mockReset();
     prismaItemFindFirstMock.mockReset();
     prismaItemTypeFindFirstMock.mockReset();
     prismaItemUpdateMock.mockReset();
@@ -157,6 +162,93 @@ describe("item db queries", () => {
       updatedAt,
       lastAccessedAt,
     });
+  });
+
+  it("maps file metadata for the item type page list", async () => {
+    const createdAt = new Date("2026-04-20T03:12:00.000Z");
+    const updatedAt = new Date("2026-04-24T08:30:00.000Z");
+
+    prismaItemTypeFindFirstMock.mockResolvedValue({
+      key: "file",
+      name: "file",
+      icon: "paperclip",
+    });
+    prismaItemFindManyMock.mockResolvedValue([
+      {
+        id: "item-1",
+        title: "Architecture notes",
+        description: null,
+        fileName: "architecture.pdf",
+        fileMimeType: "application/pdf",
+        fileSizeBytes: 2048,
+        isPinned: false,
+        isFavorite: true,
+        createdAt,
+        updatedAt,
+        type: {
+          key: "file",
+          name: "file",
+        },
+        tags: [
+          {
+            tag: {
+              name: "docs",
+            },
+          },
+        ],
+        collections: [
+          {
+            collection: {
+              name: "Planning",
+            },
+          },
+        ],
+      },
+    ]);
+
+    await expect(getDashboardItemTypePage("user-1", "files")).resolves.toEqual({
+      itemType: {
+        key: "file",
+        name: "File",
+        icon: "paperclip",
+        totalItems: 1,
+        typeKey: "file",
+      },
+      items: [
+        {
+          id: "item-1",
+          title: "Architecture notes",
+          description: "No description yet.",
+          typeKey: "file",
+          typeLabel: "File",
+          collectionNames: ["Planning"],
+          tags: ["docs"],
+          fileName: "architecture.pdf",
+          fileMimeType: "application/pdf",
+          fileSizeBytes: 2048,
+          isPinned: false,
+          isFavorite: true,
+          createdAt,
+          updatedAt,
+        },
+      ],
+    });
+
+    expect(prismaItemFindManyMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          userId: "user-1",
+          type: {
+            key: "file",
+          },
+        },
+        select: expect.objectContaining({
+          createdAt: true,
+          fileMimeType: true,
+          fileSizeBytes: true,
+        }),
+      }),
+    );
   });
 
   it("returns null when creating an item with an unknown type", async () => {
