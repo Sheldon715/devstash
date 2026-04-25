@@ -1,33 +1,20 @@
-# Current Feature: Collection Create
+# Current Feature
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Add a top-bar button for creating a collection.
-- Open a modal with collection name and description fields.
-- Persist collections as user-scoped records through shared `lib/db` functions and an API route for client-side creation.
-- Show success and failure toast feedback.
-- Refresh affected collection data after save so the new collection appears in the UI.
+<!-- Goals & requirements -->
 
 ## Todo List
 
-- [x] Create feature branch.
-- [x] Trace existing item-create and collection data patterns.
-- [x] Add server-side collection create validation and database helper.
-- [x] Add client API route for collection creation.
-- [x] Build top-bar create collection modal with toast feedback.
-- [x] Refresh UI data after successful create.
-- [x] Add or update focused tests for collection creation.
-- [x] Run lint, tests, and production build.
+<!-- Feature-specific checklist -->
 
 ## Notes
 
-- Follow item-create conventions where possible.
-- Collections must remain scoped to the authenticated user.
-- Server components should continue fetching collection data through `lib/db` helpers.
+<!-- Any extra notes -->
 
 ## History
 
@@ -68,3 +55,4 @@ In Progress
 - File List View completed with a responsive `/items/files` single-column list, extension-aware file rows, direct download controls, drawer-opening row interactions, file metadata mapping coverage, and passing lint, tests, and production build verification
 - Audit Quick Wins completed with safer upload response headers, SVG upload hardening, generic R2 client errors, shared email/file-size/app-origin utilities, production rate-limit configuration warning, and focused upload header test coverage
 - Component Refactor Candidates completed with extracted item drawer, create dialog, sidebar, file upload, and item DB helper modules while preserving behavior and passing lint, tests, and production build verification
+- Collection Create completed with an authenticated `/api/collections` create route, user-scoped collection DB helper, top-bar create collection modal with success/error toast feedback, refreshed server-rendered collection data, and passing lint/test/build verification
