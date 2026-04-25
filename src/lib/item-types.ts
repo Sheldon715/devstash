@@ -5,9 +5,9 @@ const DASHBOARD_ITEM_TYPE_KEYS = [
   "prompt",
   "command",
   "note",
+  "link",
   "file",
   "image",
-  "link",
 ] as const satisfies readonly DashboardItemTypeKey[];
 
 const DASHBOARD_ITEM_TYPE_ROUTE_ALIASES: Record<string, DashboardItemTypeKey> = {

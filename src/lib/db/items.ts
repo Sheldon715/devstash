@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/prisma";
+import { deleteR2Object } from "@/lib/storage/r2";
+import { isUploadKeyOwnedByUser, type UploadedFileMetadata } from "@/lib/uploads";
 import { normalizeDashboardQueryLimit } from "@/lib/dashboard-query";
 import {
   getDashboardItemTypeKeys,
@@ -91,9 +93,18 @@ export interface CreateItemData {
   title: string;
   description: string | null;
   content: string | null;
+  file: UploadedFileMetadata | null;
   url: string | null;
   language: string | null;
   tags: string[];
+}
+
+export interface DownloadableItemFileRecord {
+  fileKey: string;
+  fileMimeType: string;
+  fileName: string;
+  fileSizeBytes: number;
+  typeKey: DashboardItemTypeKey;
 }
 
 const dashboardItemDetailSelect = {
@@ -336,6 +347,59 @@ export async function getDashboardItemDetail(userId: string, itemId: string) {
   return mapItemToDashboardDetailRecord(item);
 }
 
+export async function getDownloadableItemFile(
+  userId: string,
+  itemId: string,
+): Promise<DownloadableItemFileRecord | null> {
+  const item = await prisma.item.findFirst({
+    where: {
+      id: itemId,
+      userId,
+      contentMode: "FILE",
+      fileKey: {
+        not: null,
+      },
+    },
+    select: {
+      fileKey: true,
+      fileMimeType: true,
+      fileName: true,
+      fileSizeBytes: true,
+      type: {
+        select: {
+          key: true,
+        },
+      },
+    },
+  });
+
+  if (!item || !item.fileKey || !item.fileMimeType || !item.fileName || item.fileSizeBytes === null) {
+    return null;
+  }
+
+  return {
+    fileKey: item.fileKey,
+    fileMimeType: item.fileMimeType,
+    fileName: item.fileName,
+    fileSizeBytes: item.fileSizeBytes,
+    typeKey: normalizeDashboardItemTypeKey(item.type.key),
+  };
+}
+
+export async function isItemFileKeyInUse(userId: string, fileKey: string): Promise<boolean> {
+  const matchingItem = await prisma.item.findFirst({
+    where: {
+      userId,
+      fileKey,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  return Boolean(matchingItem);
+}
+
 export async function createItem(
   userId: string,
   data: CreateItemData,
@@ -364,6 +428,11 @@ export async function createItem(
       description: data.description,
       contentMode: itemType.contentMode,
       content: data.content,
+      fileKey: itemType.contentMode === "FILE" ? data.file?.fileKey ?? null : null,
+      fileName: itemType.contentMode === "FILE" ? data.file?.fileName ?? null : null,
+      fileMimeType: itemType.contentMode === "FILE" ? data.file?.fileMimeType ?? null : null,
+      fileSizeBytes: itemType.contentMode === "FILE" ? data.file?.fileSizeBytes ?? null : null,
+      fileUrl: itemType.contentMode === "FILE" ? data.file?.fileUrl ?? null : null,
       url: data.url,
       language: data.language,
       tags: {
@@ -403,6 +472,7 @@ export async function updateItem(
     },
     select: {
       id: true,
+      fileKey: true,
     },
   });
 
@@ -455,11 +525,16 @@ export async function deleteItem(userId: string, itemId: string): Promise<boolea
     },
     select: {
       id: true,
+      fileKey: true,
     },
   });
 
   if (!item) {
     return false;
+  }
+
+  if (item.fileKey && isUploadKeyOwnedByUser(item.fileKey, userId)) {
+    await deleteR2Object(item.fileKey);
   }
 
   await prisma.item.delete({

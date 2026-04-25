@@ -1,17 +1,23 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const {
+  deleteR2ObjectMock,
   prismaItemCreateMock,
   prismaItemDeleteMock,
   prismaItemFindFirstMock,
   prismaItemTypeFindFirstMock,
   prismaItemUpdateMock,
 } = vi.hoisted(() => ({
+  deleteR2ObjectMock: vi.fn(),
   prismaItemCreateMock: vi.fn(),
   prismaItemDeleteMock: vi.fn(),
   prismaItemFindFirstMock: vi.fn(),
   prismaItemTypeFindFirstMock: vi.fn(),
   prismaItemUpdateMock: vi.fn(),
+}));
+
+vi.mock("@/lib/storage/r2", () => ({
+  deleteR2Object: deleteR2ObjectMock,
 }));
 
 vi.mock("@/lib/prisma", () => ({
@@ -29,7 +35,13 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-import { createItem, deleteItem, getDashboardItemDetail, updateItem } from "@/lib/db/items";
+import {
+  createItem,
+  deleteItem,
+  getDashboardItemDetail,
+  isItemFileKeyInUse,
+  updateItem,
+} from "@/lib/db/items";
 
 describe("item db queries", () => {
   beforeEach(() => {
@@ -38,6 +50,7 @@ describe("item db queries", () => {
     prismaItemFindFirstMock.mockReset();
     prismaItemTypeFindFirstMock.mockReset();
     prismaItemUpdateMock.mockReset();
+    deleteR2ObjectMock.mockReset();
   });
 
   it("returns null when the requested item does not exist", async () => {
@@ -155,6 +168,7 @@ describe("item db queries", () => {
         title: "Loose note",
         description: null,
         content: null,
+        file: null,
         url: null,
         language: null,
         tags: [],
@@ -211,6 +225,7 @@ describe("item db queries", () => {
         title: "Build command",
         description: "Runs the production build.",
         content: "npm run build",
+        file: null,
         url: null,
         language: "shell",
         tags: ["cli", "cli"],
@@ -426,6 +441,7 @@ describe("item db queries", () => {
   it("deletes an owned item", async () => {
     prismaItemFindFirstMock.mockResolvedValue({
       id: "item-1",
+      fileKey: null,
     });
     prismaItemDeleteMock.mockResolvedValue({
       id: "item-1",
@@ -436,6 +452,61 @@ describe("item db queries", () => {
     expect(prismaItemDeleteMock).toHaveBeenCalledWith({
       where: {
         id: "item-1",
+      },
+    });
+    expect(deleteR2ObjectMock).not.toHaveBeenCalled();
+  });
+
+  it("deletes an owned uploaded file from R2", async () => {
+    prismaItemFindFirstMock.mockResolvedValue({
+      id: "item-1",
+      fileKey: "users/user-1/file/config.json",
+    });
+    prismaItemDeleteMock.mockResolvedValue({
+      id: "item-1",
+    });
+
+    await expect(deleteItem("user-1", "item-1")).resolves.toBe(true);
+
+    expect(deleteR2ObjectMock).toHaveBeenCalledWith("users/user-1/file/config.json");
+    expect(prismaItemDeleteMock).toHaveBeenCalledWith({
+      where: {
+        id: "item-1",
+      },
+    });
+    expect(deleteR2ObjectMock.mock.invocationCallOrder[0]).toBeLessThan(
+      prismaItemDeleteMock.mock.invocationCallOrder[0],
+    );
+  });
+
+  it("does not delete the item row when R2 cleanup fails", async () => {
+    prismaItemFindFirstMock.mockResolvedValue({
+      id: "item-1",
+      fileKey: "users/user-1/file/config.json",
+    });
+    deleteR2ObjectMock.mockRejectedValue(new Error("R2 unavailable"));
+
+    await expect(deleteItem("user-1", "item-1")).rejects.toThrow("R2 unavailable");
+
+    expect(prismaItemDeleteMock).not.toHaveBeenCalled();
+  });
+
+  it("checks whether an uploaded file key is attached to an item", async () => {
+    prismaItemFindFirstMock.mockResolvedValueOnce({ id: "item-1" }).mockResolvedValueOnce(null);
+
+    await expect(
+      isItemFileKeyInUse("user-1", "users/user-1/file/config.json"),
+    ).resolves.toBe(true);
+    await expect(
+      isItemFileKeyInUse("user-1", "users/user-1/file/unused.json"),
+    ).resolves.toBe(false);
+    expect(prismaItemFindFirstMock).toHaveBeenNthCalledWith(1, {
+      where: {
+        userId: "user-1",
+        fileKey: "users/user-1/file/config.json",
+      },
+      select: {
+        id: true,
       },
     });
   });

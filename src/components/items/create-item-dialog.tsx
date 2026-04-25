@@ -1,12 +1,14 @@
 "use client";
 
-import { type FormEvent, useCallback, useMemo, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { Check, ChevronDown, LoaderCircle, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { createItem } from "@/actions/items";
 import { CodeEditor } from "@/components/items/code-editor";
+import { FileUpload } from "@/components/items/file-upload";
 import { MarkdownEditor } from "@/components/items/markdown-editor";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,6 +22,8 @@ import {
 import { SuccessToast } from "@/components/ui/success-toast";
 import { DashboardItemTypeIcon, getDashboardItemTypeColor } from "@/lib/dashboard-icons";
 import type { DashboardItemTypeKey } from "@/lib/mock-data";
+import { deleteTemporaryUpload } from "@/lib/upload-cleanup";
+import type { UploadedFileMetadata, UploadItemType } from "@/lib/uploads";
 import { cn } from "@/lib/utils";
 
 type CreatableItemTypeKey = DashboardItemTypeKey;
@@ -63,16 +67,16 @@ const createItemTypes = [
     label: "Note",
   },
   {
+    key: "link",
+    label: "Link",
+  },
+  {
     key: "file",
     label: "File",
   },
   {
     key: "image",
     label: "Image",
-  },
-  {
-    key: "link",
-    label: "Link",
   },
 ] as const satisfies readonly { key: CreatableItemTypeKey; label: string }[];
 
@@ -94,14 +98,18 @@ export function CreateItemDialog({ initialType = "snippet", onOpenChange, open }
   const [isTypeMenuOpen, setIsTypeMenuOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toastState, setToastState] = useState<CreateItemToastState | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<UploadedFileMetadata | null>(null);
 
   const showContentField = ["command", "note", "prompt", "snippet"].includes(selectedType);
   const showCodeEditor = isCodeEditorItemType(selectedType);
+  const showFileUpload = isUploadItemType(selectedType);
   const showMarkdownEditor = isMarkdownEditorItemType(selectedType);
   const showLanguageField = ["command", "snippet"].includes(selectedType);
   const showUrlField = selectedType === "link";
   const canSubmit =
-    Boolean(formState.title.trim()) && (!showUrlField || Boolean(formState.url.trim()));
+    Boolean(formState.title.trim()) &&
+    (!showUrlField || Boolean(formState.url.trim())) &&
+    (!showFileUpload || Boolean(uploadedFile));
   const selectedTypeOption =
     createItemTypes.find((itemType) => itemType.key === selectedType) ?? createItemTypes[0];
 
@@ -110,10 +118,24 @@ export function CreateItemDialog({ initialType = "snippet", onOpenChange, open }
       return;
     }
 
+    if (!nextOpen && uploadedFile) {
+      void cleanupUploadedFile(uploadedFile);
+      setUploadedFile(null);
+    }
+
     setIsTypeMenuOpen(false);
     setError(null);
     onOpenChange(nextOpen);
-  }, [isSubmitting, onOpenChange]);
+  }, [isSubmitting, onOpenChange, uploadedFile]);
+
+  useEffect(() => {
+    if (!showFileUpload) {
+      if (uploadedFile) {
+        void cleanupUploadedFile(uploadedFile);
+      }
+      setUploadedFile(null);
+    }
+  }, [showFileUpload, uploadedFile]);
 
   function updateFormField(field: keyof CreateItemFormState, value: string) {
     setFormState((current) => ({
@@ -141,6 +163,7 @@ export function CreateItemDialog({ initialType = "snippet", onOpenChange, open }
         title: formState.title,
         description: formState.description,
         content: formState.content,
+        file: uploadedFile,
         language: formState.language,
         url: formState.url,
         tags: parseTagsInput(formState.tags),
@@ -171,6 +194,7 @@ export function CreateItemDialog({ initialType = "snippet", onOpenChange, open }
     }
 
     setFormState(emptyFormState);
+    setUploadedFile(null);
     setSelectedType(defaultType);
     setToastState({
       message: "Item created.",
@@ -232,6 +256,7 @@ export function CreateItemDialog({ initialType = "snippet", onOpenChange, open }
                         )}
                       />
                       <span className="flex-1">{selectedTypeOption.label}</span>
+                      {isProItemType(selectedTypeOption.key) ? <ProBadge /> : null}
                       <ChevronDown
                         className={cn(
                           "size-4 text-zinc-500 transition-transform",
@@ -247,6 +272,7 @@ export function CreateItemDialog({ initialType = "snippet", onOpenChange, open }
                       >
                         {createItemTypes.map((itemType) => {
                           const isSelected = itemType.key === selectedType;
+                          const isProType = isProItemType(itemType.key);
 
                           return (
                             <button
@@ -259,22 +285,28 @@ export function CreateItemDialog({ initialType = "snippet", onOpenChange, open }
                                 "hover:bg-white/[0.06] hover:text-zinc-50",
                                 isSelected ? "bg-sky-300/10 text-zinc-50" : "",
                               )}
-                              onClick={() => {
-                                setSelectedType(itemType.key);
-                                setIsTypeMenuOpen(false);
-                                setError(null);
-                              }}
+                                onClick={() => {
+                                  setSelectedType(itemType.key);
+                                  if (
+                                    uploadedFile &&
+                                    (!isUploadItemType(itemType.key) || itemType.key !== selectedType)
+                                  ) {
+                                    void cleanupUploadedFile(uploadedFile);
+                                    setUploadedFile(null);
+                                  }
+                                  setIsTypeMenuOpen(false);
+                                  setError(null);
+                                }}
                             >
                               <DashboardItemTypeIcon
                                 typeKey={itemType.key as DashboardItemTypeKey}
                                 className={cn(
                                   "size-4",
-                                  isSelected
-                                    ? getDashboardItemTypeColor(itemType.key as DashboardItemTypeKey)
-                                    : "text-zinc-500",
+                                  getDashboardItemTypeColor(itemType.key as DashboardItemTypeKey),
                                 )}
                               />
                               <span className="flex-1">{itemType.label}</span>
+                              {isProType ? <ProBadge /> : null}
                               {isSelected ? <Check className="size-4 text-sky-200" /> : null}
                             </button>
                           );
@@ -289,14 +321,14 @@ export function CreateItemDialog({ initialType = "snippet", onOpenChange, open }
                     label="Title"
                     required
                     disabled={isSubmitting}
-                    placeholder="React hook for debounced search"
+                    placeholder="Item title"
                     value={formState.title}
                     onChange={(value) => updateFormField("title", value)}
                   />
                   <CreateTextField
                     label="Description"
                     disabled={isSubmitting}
-                    placeholder="Short note about what this item helps with"
+                    placeholder="Optional description"
                     value={formState.description}
                     onChange={(value) => updateFormField("description", value)}
                   />
@@ -307,7 +339,7 @@ export function CreateItemDialog({ initialType = "snippet", onOpenChange, open }
                     label="URL"
                     required
                     disabled={isSubmitting}
-                    placeholder="https://example.com/docs"
+                    placeholder="https://example.com"
                     value={formState.url}
                     onChange={(value) => updateFormField("url", value)}
                   />
@@ -317,7 +349,7 @@ export function CreateItemDialog({ initialType = "snippet", onOpenChange, open }
                   <CreateTextField
                     label="Language"
                     disabled={isSubmitting}
-                    placeholder="typescript"
+                    placeholder="Language"
                     value={formState.language}
                     onChange={(value) => updateFormField("language", value)}
                   />
@@ -352,10 +384,23 @@ export function CreateItemDialog({ initialType = "snippet", onOpenChange, open }
                   )
                 ) : null}
 
+                {showFileUpload ? (
+                  <div className="space-y-1.5">
+                    <CreateItemSectionLabel label={selectedType === "image" ? "Image" : "File"} />
+                    <FileUpload
+                      disabled={isSubmitting}
+                      itemType={selectedType}
+                      value={uploadedFile}
+                      onChange={handleUploadedFileChange}
+                      onError={handleUploadError}
+                    />
+                  </div>
+                ) : null}
+
                 <CreateTextField
                   label="Tags"
                   disabled={isSubmitting}
-                  placeholder="react, auth, cli"
+                  placeholder="tag, tag"
                   value={formState.tags}
                   onChange={(value) => updateFormField("tags", value)}
                 />
@@ -391,6 +436,39 @@ export function CreateItemDialog({ initialType = "snippet", onOpenChange, open }
       ) : null}
     </>
   );
+
+  function handleUploadedFileChange(file: UploadedFileMetadata | null) {
+    setUploadedFile(file);
+    setError(null);
+
+    if (file && !formState.title.trim()) {
+      setFormState((current) => ({
+        ...current,
+        title: file.fileName.replace(/\.[^.]+$/g, ""),
+      }));
+    }
+  }
+
+  function handleUploadError(message: string) {
+    setError(message);
+    setToastState({
+      message,
+      title: "Upload failed",
+      variant: "error",
+    });
+  }
+
+  async function cleanupUploadedFile(file: UploadedFileMetadata) {
+    try {
+      await deleteTemporaryUpload(file.fileKey);
+    } catch {
+      setToastState({
+        message: "The temporary upload could not be removed from storage.",
+        title: "Cleanup failed",
+        variant: "error",
+      });
+    }
+  }
 }
 
 function CreateItemSectionLabel({ label }: { label: string }) {
@@ -523,13 +601,13 @@ function CreateMarkdownField({
 function getContentPlaceholder(typeKey: CreatableItemTypeKey) {
   switch (typeKey) {
     case "command":
-      return "npm run build";
+      return "Command text";
     case "prompt":
-      return "Review this code for correctness, security, and missing tests...";
+      return "Prompt text";
     case "note":
-      return "Capture the key idea, setup note, or decision here...";
+      return "Note text";
     case "snippet":
-      return "export function useExample() {\n  return null;\n}";
+      return "Code snippet";
     case "link":
       return "";
     case "file":
@@ -550,6 +628,25 @@ function isCodeEditorItemType(typeKey: CreatableItemTypeKey) {
 
 function isMarkdownEditorItemType(typeKey: CreatableItemTypeKey) {
   return typeKey === "note" || typeKey === "prompt";
+}
+
+function ProBadge() {
+  return (
+    <Badge
+      variant="outline"
+      className="border-white/10 bg-white/[0.04] text-[8px] text-zinc-300"
+    >
+      PRO
+    </Badge>
+  );
+}
+
+function isUploadItemType(typeKey: CreatableItemTypeKey): typeKey is UploadItemType {
+  return typeKey === "file" || typeKey === "image";
+}
+
+function isProItemType(typeKey: CreatableItemTypeKey) {
+  return typeKey === "file" || typeKey === "image";
 }
 
 function parseTagsInput(value: string) {
