@@ -1,20 +1,32 @@
-# Current Feature
+# Current Feature: File List View
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+Completed
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Update `/items/files` to display files as a single-column list instead of grid cards.
+- Render each file row with an extension-based file icon, file name, file size, upload date, and download button.
+- Highlight rows on hover.
+- Open `ItemDrawer` when a row is clicked.
+- Trigger direct file download from the download button without opening the row drawer.
+- Stack row information vertically on mobile.
 
 ## Todo List
 
-<!-- Feature-specific checklist -->
+- [x] Find the current `/items/[type]` rendering path and identify the files-specific branch point.
+- [x] Add a files-only single-column list layout for `/items/files`.
+- [x] Render each row with extension-based file icon, file name, file size, upload date, and download button.
+- [x] Add hover highlighting and preserve row click behavior for opening `ItemDrawer`.
+- [x] Ensure the download button stops row-click propagation and triggers direct download.
+- [x] Make the list responsive with vertically stacked file info on mobile.
+- [x] Verify lint/build and any relevant item display tests.
 
 ## Notes
 
-<!-- Any extra notes -->
+- Loaded from `context/feature/file-display-spec.md`.
+- Target experience should feel similar to Google Drive or Dropbox file lists.
 
 ## History
 
