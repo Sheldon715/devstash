@@ -179,6 +179,124 @@ describe("item actions", () => {
     });
   });
 
+  it("allows file and image items without text, URL, or language fields", async () => {
+    const createdAt = new Date("2026-04-22T03:12:00.000Z");
+    const updatedAt = new Date("2026-04-24T08:30:00.000Z");
+
+    authMock.mockResolvedValue({
+      user: {
+        id: "user-1",
+      },
+    });
+    createItemRecordMock
+      .mockResolvedValueOnce({
+        id: "item-file",
+        title: "Config archive",
+        description: null,
+        contentMode: "FILE",
+        content: null,
+        url: null,
+        fileName: null,
+        fileUrl: null,
+        fileMimeType: null,
+        fileSizeBytes: null,
+        language: null,
+        aiSummary: null,
+        collectionNames: [],
+        tags: [],
+        isPinned: false,
+        isFavorite: false,
+        typeKey: "file",
+        typeLabel: "File",
+        createdAt,
+        updatedAt,
+        lastAccessedAt: null,
+      })
+      .mockResolvedValueOnce({
+        id: "item-image",
+        title: "Architecture sketch",
+        description: null,
+        contentMode: "FILE",
+        content: null,
+        url: null,
+        fileName: null,
+        fileUrl: null,
+        fileMimeType: null,
+        fileSizeBytes: null,
+        language: null,
+        aiSummary: null,
+        collectionNames: [],
+        tags: [],
+        isPinned: false,
+        isFavorite: false,
+        typeKey: "image",
+        typeLabel: "Image",
+        createdAt,
+        updatedAt,
+        lastAccessedAt: null,
+      });
+
+    await expect(
+      createItem({
+        typeKey: "file",
+        title: "Config archive",
+        description: "",
+        content: "ignored file content",
+        url: "https://example.com/ignored",
+        language: "typescript",
+        tags: [],
+      }),
+    ).resolves.toMatchObject({
+      success: true,
+      data: {
+        content: null,
+        contentMode: "FILE",
+        language: null,
+        typeKey: "file",
+        url: null,
+      },
+    });
+    await expect(
+      createItem({
+        typeKey: "image",
+        title: "Architecture sketch",
+        description: "",
+        content: "ignored image content",
+        url: "https://example.com/ignored",
+        language: "typescript",
+        tags: [],
+      }),
+    ).resolves.toMatchObject({
+      success: true,
+      data: {
+        content: null,
+        contentMode: "FILE",
+        language: null,
+        typeKey: "image",
+        url: null,
+      },
+    });
+
+    expect(createItemRecordMock).toHaveBeenNthCalledWith(1, "user-1", {
+      typeKey: "file",
+      title: "Config archive",
+      description: null,
+      content: null,
+      url: null,
+      language: null,
+      tags: [],
+    });
+    expect(createItemRecordMock).toHaveBeenNthCalledWith(2, "user-1", {
+      typeKey: "image",
+      title: "Architecture sketch",
+      description: null,
+      content: null,
+      url: null,
+      language: null,
+      tags: [],
+    });
+  });
+
   it("returns an error when the item type cannot be found", async () => {
     authMock.mockResolvedValue({
       user: {

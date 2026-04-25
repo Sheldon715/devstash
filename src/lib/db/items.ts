@@ -84,7 +84,7 @@ export interface UpdateItemData {
   tags: string[];
 }
 
-export type CreatableItemTypeKey = "snippet" | "prompt" | "command" | "note" | "link";
+export type CreatableItemTypeKey = DashboardItemTypeKey;
 
 export interface CreateItemData {
   typeKey: CreatableItemTypeKey;

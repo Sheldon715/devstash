@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { FolderPlus, LayoutPanelLeft, Plus, Search } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 import { CreateItemDialog } from "@/components/items/create-item-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { normalizeDashboardItemTypeRouteKey } from "@/lib/item-types";
 
 interface TopBarProps {
   onOpenMobileSidebar: () => void;
@@ -13,6 +15,8 @@ interface TopBarProps {
 
 export function TopBar({ onOpenMobileSidebar }: TopBarProps) {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const pathname = usePathname();
+  const routeType = getCurrentItemType(pathname);
 
   return (
     <>
@@ -60,7 +64,22 @@ export function TopBar({ onOpenMobileSidebar }: TopBarProps) {
         </div>
       </div>
 
-      <CreateItemDialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen} />
+      <CreateItemDialog
+        key={routeType ?? "default"}
+        initialType={routeType ?? "snippet"}
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+      />
     </>
   );
+}
+
+function getCurrentItemType(pathname: string) {
+  const match = /^\/items\/([^/]+)/.exec(pathname);
+
+  if (!match) {
+    return null;
+  }
+
+  return normalizeDashboardItemTypeRouteKey(decodeURIComponent(match[1]));
 }

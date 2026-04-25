@@ -28,6 +28,7 @@ import {
 import { useRouter } from "next/navigation";
 
 import { deleteItem, updateItem } from "@/actions/items";
+import { CodeEditor } from "@/components/items/code-editor";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -680,6 +681,7 @@ function ItemDrawerEditBody({
   onChange: (field: keyof EditItemFormState, value: string) => void;
 }) {
   const showContentField = ["command", "note", "prompt", "snippet"].includes(item.typeKey);
+  const showCodeEditor = isCodeEditorItemType(item.typeKey);
   const showLanguageField = ["command", "snippet"].includes(item.typeKey);
   const showUrlField = item.typeKey === "link";
 
@@ -722,12 +724,21 @@ function ItemDrawerEditBody({
       ) : null}
 
       {showContentField ? (
-        <EditTextareaField
-          label="Content"
-          minHeightClassName="min-h-64"
-          value={formState.content}
-          onChange={(value) => onChange("content", value)}
-        />
+        showCodeEditor ? (
+          <EditCodeField
+            label="Content"
+            language={formState.language}
+            value={formState.content}
+            onChange={(value) => onChange("content", value)}
+          />
+        ) : (
+          <EditTextareaField
+            label="Content"
+            minHeightClassName="min-h-64"
+            value={formState.content}
+            onChange={(value) => onChange("content", value)}
+          />
+        )
       ) : null}
 
       <EditTextField
@@ -792,6 +803,31 @@ function EditTextareaField({
   );
 }
 
+function EditCodeField({
+  label,
+  language,
+  onChange,
+  value,
+}: {
+  label: string;
+  language: string;
+  onChange: (value: string) => void;
+  value: string;
+}) {
+  return (
+    <div className="space-y-2">
+      <p className="text-xs font-medium uppercase tracking-[0.22em] text-zinc-500">{label}</p>
+      <CodeEditor
+        language={language}
+        maxHeight={400}
+        minHeight={260}
+        value={value}
+        onChange={onChange}
+      />
+    </div>
+  );
+}
+
 function PrimaryContentCard({ item }: { item: SerializedDashboardItemDetailRecord }) {
   if (item.contentMode === "URL") {
     if (!item.url) {
@@ -846,6 +882,18 @@ function PrimaryContentCard({ item }: { item: SerializedDashboardItemDetailRecor
 
   if (!item.content) {
     return <EmptyMetaCopy label="No text content saved for this item yet." />;
+  }
+
+  if (isCodeEditorItemType(item.typeKey)) {
+    return (
+      <CodeEditor
+        language={item.language}
+        maxHeight={400}
+        minHeight={220}
+        readOnly
+        value={item.content}
+      />
+    );
   }
 
   return (
@@ -1002,6 +1050,10 @@ function DrawerBodySkeleton() {
 
 function getItemCopyValue(item: SerializedDashboardItemDetailRecord) {
   return item.content ?? item.url ?? item.fileUrl ?? item.description ?? item.title;
+}
+
+function isCodeEditorItemType(typeKey: string) {
+  return typeKey === "command" || typeKey === "snippet";
 }
 
 function createEditItemFormState(

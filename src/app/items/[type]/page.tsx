@@ -4,6 +4,7 @@ import { ChevronRight } from "lucide-react";
 
 import { auth } from "@/auth";
 import { ItemCard } from "@/components/dashboard/item-card";
+import { TypePageCreateButton } from "@/components/items/type-page-create-button";
 import { getAllDashboardCollections } from "@/lib/db/collections";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import {
@@ -66,23 +67,29 @@ export default async function ItemTypePage({ params }: ItemTypePageProps) {
         </nav>
 
         <header className="rounded-[28px] border border-border/70 bg-[#0b0b0d] p-8 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
-          <div className="flex items-center gap-4">
-            <div className="flex size-14 items-center justify-center rounded-2xl border border-white/6 bg-card">
-              <DashboardNamedIcon
-                iconName={itemType.icon}
-                className={`size-6 ${getDashboardItemTypeColor(itemType.typeKey)}`}
-              />
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex size-14 items-center justify-center rounded-2xl border border-white/6 bg-card">
+                <DashboardNamedIcon
+                  iconName={itemType.icon}
+                  className={`size-6 ${getDashboardItemTypeColor(itemType.typeKey)}`}
+                />
+              </div>
+              <div>
+                <p className="text-sm uppercase tracking-[0.22em] text-muted-foreground">
+                  Item Type
+                </p>
+                <h1 className="mt-2 text-4xl font-semibold tracking-tight text-zinc-50">
+                  {itemType.name}
+                </h1>
+                <p className="mt-2 text-base text-muted-foreground">
+                  {items.length} saved items in this category
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm uppercase tracking-[0.22em] text-muted-foreground">
-                Item Type
-              </p>
-              <h1 className="mt-2 text-4xl font-semibold tracking-tight text-zinc-50">
-                {itemType.name}
-              </h1>
-              <p className="mt-2 text-base text-muted-foreground">
-                {items.length} saved items in this category
-              </p>
+
+            <div className="sm:self-start">
+              <TypePageCreateButton typeKey={itemType.typeKey} typeName={itemType.name} />
             </div>
           </div>
         </header>
