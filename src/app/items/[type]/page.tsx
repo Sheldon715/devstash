@@ -61,7 +61,7 @@ export default async function ItemTypePage({ params }: ItemTypePageProps) {
       recentCollections={recentCollections}
       sidebarItemTypes={sidebarItemTypes}
     >
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-8">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <Link href="/dashboard" className="transition-colors hover:text-foreground">
             Dashboard
@@ -102,7 +102,7 @@ export default async function ItemTypePage({ params }: ItemTypePageProps) {
           isFileList ? (
             <FileListView items={items} />
           ) : (
-            <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <section className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,28rem),1fr))] gap-5">
               {items.map((item) => (
                 isImageGallery ? (
                   <ImageThumbnailCard key={item.id} item={item} />

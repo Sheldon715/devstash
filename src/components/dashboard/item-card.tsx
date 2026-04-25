@@ -42,42 +42,36 @@ export function ItemCard({ item, variant }: ItemCardProps) {
       tabIndex={0}
       onClick={handleOpen}
       onKeyDown={handleKeyDown}
-      className="group relative block w-full overflow-hidden rounded-[24px] border border-white/10 bg-[#08090c] p-4 text-left shadow-[0_16px_48px_rgba(0,0,0,0.2)] transition-all duration-300 hover:-translate-y-1 hover:border-white/15 hover:bg-[#0b0d12] hover:shadow-[0_20px_56px_rgba(0,0,0,0.28)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      className="group relative flex h-full w-full overflow-hidden rounded-[24px] border border-white/10 bg-[#08090c] p-5 text-left shadow-[0_16px_48px_rgba(0,0,0,0.2)] transition-all duration-300 hover:-translate-y-1 hover:border-white/15 hover:bg-[#0b0d12] hover:shadow-[0_20px_56px_rgba(0,0,0,0.28)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
     >
       <div
         className={`absolute inset-y-0 left-0 w-1 rounded-l-[24px] bg-current transition-all duration-300 group-hover:w-1.5 ${getDashboardItemTypeColor(item.typeKey)}`}
       />
 
-      <div
-        className={`relative flex gap-4 pl-2 ${
-          isFeatured
-            ? "flex-col sm:flex-row sm:items-start sm:justify-between"
-            : "items-start justify-between"
-        }`}
-      >
+      <div className="relative flex min-h-0 flex-1 pl-2">
         <div className="flex min-w-0 flex-1 gap-4">
           <div
             className={`flex shrink-0 items-center justify-center rounded-2xl bg-[#111522] ${
-              isFeatured ? "size-14" : "size-11"
+              isFeatured ? "size-14" : "size-12"
             } transition-all duration-300 group-hover:scale-105 group-hover:bg-[#151a29]`}
           >
             <DashboardItemTypeIcon
               typeKey={item.typeKey}
-              className={`${isFeatured ? "size-6" : "size-4.5"} ${getDashboardItemTypeColor(item.typeKey)} transition-transform duration-300 group-hover:scale-110`}
+              className={`${isFeatured ? "size-6" : "size-5"} ${getDashboardItemTypeColor(item.typeKey)} transition-transform duration-300 group-hover:scale-110`}
             />
           </div>
 
-          <div className="min-w-0 space-y-2.5">
-            <div className="space-y-1.5">
-              <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex min-w-0 flex-1 flex-col pr-10">
+            <div className="space-y-2">
+              <div className="flex min-w-0 items-start gap-2.5">
                 <h3
-                  className={`min-w-0 truncate font-semibold tracking-tight text-zinc-50 ${
-                    isFeatured ? "text-xl" : "text-base"
+                  className={`line-clamp-2 min-w-0 flex-1 font-semibold tracking-tight text-zinc-50 ${
+                    isFeatured ? "min-h-14 text-xl leading-7" : "min-h-10 text-lg leading-6"
                   } transition-colors duration-300 group-hover:text-white`}
                 >
                   {item.title}
                 </h3>
-                <div className="flex items-center gap-1.5 text-muted-foreground">
+                <div className="flex shrink-0 items-center gap-1.5 pt-1 text-zinc-400">
                   {item.isPinned ? <Pin className="size-3.5 fill-current" /> : null}
                   {item.isFavorite ? (
                     <Star className="size-3.5 fill-[#facc15] text-[#facc15]" />
@@ -86,15 +80,15 @@ export function ItemCard({ item, variant }: ItemCardProps) {
               </div>
 
               <p
-                className={`max-w-3xl text-muted-foreground ${
-                  isFeatured ? "text-sm leading-7" : "text-xs leading-6 sm:text-sm"
-                } transition-colors duration-300 group-hover:text-zinc-300`}
+                className={`line-clamp-2 max-w-3xl text-zinc-300/85 ${
+                  isFeatured ? "min-h-14 text-sm leading-7" : "min-h-12 text-sm leading-6"
+                } transition-colors duration-300 group-hover:text-zinc-200`}
               >
                 {item.description}
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-1.5">
+            <div className="mt-3 flex min-h-8 flex-wrap content-start gap-1.5">
               <span
                 className={`rounded-full bg-white/[0.05] px-2.5 py-1 text-xs font-medium sm:text-sm ${getDashboardItemTypeColor(item.typeKey)}`}
               >
@@ -111,16 +105,17 @@ export function ItemCard({ item, variant }: ItemCardProps) {
             </div>
 
             {item.collectionNames.length ? (
-              <p className="text-xs text-muted-foreground sm:text-sm">
-                In {item.collectionNames.join(", ")}
-              </p>
-            ) : null}
+              <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-400 sm:text-sm">
+                <span>{updatedLabel}</span>
+                <span className="min-w-0 truncate">
+                  In {item.collectionNames.join(", ")}
+                </span>
+              </div>
+            ) : (
+              <p className="mt-4 text-xs text-zinc-400 sm:text-sm">{updatedLabel}</p>
+            )}
           </div>
         </div>
-
-        <p className="shrink-0 pt-1 pr-10 text-xs text-muted-foreground sm:text-sm">
-          {updatedLabel}
-        </p>
       </div>
 
       <QuickCopyButton
