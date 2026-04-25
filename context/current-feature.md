@@ -1,32 +1,20 @@
-# Current Feature: File List View
+# Current Feature
 
 ## Status
 
-Completed
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Update `/items/files` to display files as a single-column list instead of grid cards.
-- Render each file row with an extension-based file icon, file name, file size, upload date, and download button.
-- Highlight rows on hover.
-- Open `ItemDrawer` when a row is clicked.
-- Trigger direct file download from the download button without opening the row drawer.
-- Stack row information vertically on mobile.
+<!-- Goals & requirements -->
 
 ## Todo List
 
-- [x] Find the current `/items/[type]` rendering path and identify the files-specific branch point.
-- [x] Add a files-only single-column list layout for `/items/files`.
-- [x] Render each row with extension-based file icon, file name, file size, upload date, and download button.
-- [x] Add hover highlighting and preserve row click behavior for opening `ItemDrawer`.
-- [x] Ensure the download button stops row-click propagation and triggers direct download.
-- [x] Make the list responsive with vertically stacked file info on mobile.
-- [x] Verify lint/build and any relevant item display tests.
+<!-- Feature-specific checklist -->
 
 ## Notes
 
-- Loaded from `context/feature/file-display-spec.md`.
-- Target experience should feel similar to Google Drive or Dropbox file lists.
+<!-- Any extra notes -->
 
 ## History
 
@@ -64,3 +52,4 @@ Completed
 - Markdown Editor feature completed with a GFM-enabled MarkdownEditor for notes and prompts, Write/Preview tabs, readonly previews, macOS-style header controls, dark markdown styling, and passing lint/test/build verification
 - File Upload with Cloudflare R2 completed with authenticated R2 upload, download proxy, temporary upload cleanup, file/image metadata persistence, drawer previews/downloads, delete-time R2 cleanup, and focused upload/action/db test coverage
 - Image Gallery View completed with image-specific thumbnail gallery cards, 16:9 cover thumbnails with hover zoom, scroll-safe image upload dialog styling, tab-close temporary upload cleanup, and passing upload route tests, lint, and production build verification
+- File List View completed with a responsive `/items/files` single-column list, extension-aware file rows, direct download controls, drawer-opening row interactions, file metadata mapping coverage, and passing lint, tests, and production build verification
