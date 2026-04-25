@@ -101,7 +101,15 @@ const updateItemSchema = z.object({
     .transform((tags) => [...new Set(tags)]),
 });
 
-const creatableItemTypeKeys = ["snippet", "prompt", "command", "note", "link"] as const;
+const creatableItemTypeKeys = [
+  "snippet",
+  "prompt",
+  "command",
+  "note",
+  "file",
+  "image",
+  "link",
+] as const;
 
 const createItemSchema = updateItemSchema
   .extend({

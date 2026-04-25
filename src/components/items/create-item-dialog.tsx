@@ -1,10 +1,11 @@
 "use client";
 
-import { type FormEvent, useCallback, useState } from "react";
+import { type FormEvent, useCallback, useMemo, useState } from "react";
 import { Check, ChevronDown, LoaderCircle, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { createItem } from "@/actions/items";
+import { CodeEditor } from "@/components/items/code-editor";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,9 +21,10 @@ import { DashboardItemTypeIcon, getDashboardItemTypeColor } from "@/lib/dashboar
 import type { DashboardItemTypeKey } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
-type CreatableItemTypeKey = "snippet" | "prompt" | "command" | "note" | "link";
+type CreatableItemTypeKey = DashboardItemTypeKey;
 
 interface CreateItemDialogProps {
+  initialType?: CreatableItemTypeKey;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -60,6 +62,14 @@ const createItemTypes = [
     label: "Note",
   },
   {
+    key: "file",
+    label: "File",
+  },
+  {
+    key: "image",
+    label: "Image",
+  },
+  {
     key: "link",
     label: "Link",
   },
@@ -74,9 +84,10 @@ const emptyFormState: CreateItemFormState = {
   url: "",
 };
 
-export function CreateItemDialog({ onOpenChange, open }: CreateItemDialogProps) {
+export function CreateItemDialog({ initialType = "snippet", onOpenChange, open }: CreateItemDialogProps) {
   const router = useRouter();
-  const [selectedType, setSelectedType] = useState<CreatableItemTypeKey>("snippet");
+  const defaultType = useMemo(() => normalizeCreatableItemType(initialType), [initialType]);
+  const [selectedType, setSelectedType] = useState<CreatableItemTypeKey>(defaultType);
   const [formState, setFormState] = useState<CreateItemFormState>(emptyFormState);
   const [error, setError] = useState<string | null>(null);
   const [isTypeMenuOpen, setIsTypeMenuOpen] = useState(false);
@@ -84,6 +95,7 @@ export function CreateItemDialog({ onOpenChange, open }: CreateItemDialogProps) 
   const [toastState, setToastState] = useState<CreateItemToastState | null>(null);
 
   const showContentField = ["command", "note", "prompt", "snippet"].includes(selectedType);
+  const showCodeEditor = isCodeEditorItemType(selectedType);
   const showLanguageField = ["command", "snippet"].includes(selectedType);
   const showUrlField = selectedType === "link";
   const canSubmit =
@@ -157,7 +169,7 @@ export function CreateItemDialog({ onOpenChange, open }: CreateItemDialogProps) 
     }
 
     setFormState(emptyFormState);
-    setSelectedType("snippet");
+    setSelectedType(defaultType);
     setToastState({
       message: "Item created.",
       title: "Created",
@@ -310,14 +322,24 @@ export function CreateItemDialog({ onOpenChange, open }: CreateItemDialogProps) 
                 ) : null}
 
                 {showContentField ? (
-                  <CreateTextareaField
-                    label="Content"
-                    minHeightClassName="min-h-24"
-                    disabled={isSubmitting}
-                    placeholder={getContentPlaceholder(selectedType)}
-                    value={formState.content}
-                    onChange={(value) => updateFormField("content", value)}
-                  />
+                  showCodeEditor ? (
+                    <CreateCodeField
+                      label="Content"
+                      disabled={isSubmitting}
+                      language={formState.language}
+                      value={formState.content}
+                      onChange={(value) => updateFormField("content", value)}
+                    />
+                  ) : (
+                    <CreateTextareaField
+                      label="Content"
+                      minHeightClassName="min-h-24"
+                      disabled={isSubmitting}
+                      placeholder={getContentPlaceholder(selectedType)}
+                      value={formState.content}
+                      onChange={(value) => updateFormField("content", value)}
+                    />
+                  )
                 ) : null}
 
                 <CreateTextField
@@ -432,6 +454,34 @@ function CreateTextareaField({
   );
 }
 
+function CreateCodeField({
+  disabled = false,
+  label,
+  language,
+  onChange,
+  value,
+}: {
+  disabled?: boolean;
+  label: string;
+  language: string;
+  onChange: (value: string) => void;
+  value: string;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <p className="text-xs font-medium uppercase tracking-[0.22em] text-zinc-500">{label}</p>
+      <CodeEditor
+        disabled={disabled}
+        language={language}
+        maxHeight={400}
+        minHeight={180}
+        value={value}
+        onChange={onChange}
+      />
+    </div>
+  );
+}
+
 function getContentPlaceholder(typeKey: CreatableItemTypeKey) {
   switch (typeKey) {
     case "command":
@@ -444,9 +494,20 @@ function getContentPlaceholder(typeKey: CreatableItemTypeKey) {
       return "export function useExample() {\n  return null;\n}";
     case "link":
       return "";
+    case "file":
+    case "image":
+      return "";
     default:
       return "";
   }
+}
+
+function normalizeCreatableItemType(typeKey: CreatableItemTypeKey) {
+  return createItemTypes.some((itemType) => itemType.key === typeKey) ? typeKey : "snippet";
+}
+
+function isCodeEditorItemType(typeKey: CreatableItemTypeKey) {
+  return typeKey === "command" || typeKey === "snippet";
 }
 
 function parseTagsInput(value: string) {
