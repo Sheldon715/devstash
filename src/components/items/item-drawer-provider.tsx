@@ -386,7 +386,7 @@ export function ItemDrawerProvider({ children }: { children: ReactNode }) {
               )}
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6 sm:py-6">
+            <div className="devstash-scrollbar min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6 sm:py-6">
               {selectedItem && isEditing && editFormState ? (
                 <ItemDrawerEditBody
                   editError={editError}

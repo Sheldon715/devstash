@@ -4,6 +4,7 @@ import { ChevronRight } from "lucide-react";
 
 import { auth } from "@/auth";
 import { ItemCard } from "@/components/dashboard/item-card";
+import { ImageThumbnailCard } from "@/components/items/image-thumbnail-card";
 import { TypePageCreateButton } from "@/components/items/type-page-create-button";
 import { getAllDashboardCollections } from "@/lib/db/collections";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
@@ -43,6 +44,7 @@ export default async function ItemTypePage({ params }: ItemTypePageProps) {
   }
 
   const { itemType, items } = itemTypePage;
+  const isImageGallery = itemType.typeKey === "image";
   const favoriteCollections = collections.filter((collection) => collection.isFavorite).slice(0, 4);
   const recentCollections = collections.slice(0, 4);
 
@@ -97,7 +99,11 @@ export default async function ItemTypePage({ params }: ItemTypePageProps) {
         {items.length ? (
           <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {items.map((item) => (
-              <ItemCard key={item.id} item={item} variant="compact" />
+              isImageGallery ? (
+                <ImageThumbnailCard key={item.id} item={item} />
+              ) : (
+                <ItemCard key={item.id} item={item} variant="compact" />
+              )
             ))}
           </section>
         ) : (

@@ -17,3 +17,26 @@ export async function deleteTemporaryUpload(fileKey: string) {
     throw new Error(body?.error ?? "We couldn't remove this upload right now.");
   }
 }
+
+export function queueTemporaryUploadCleanup(fileKey: string) {
+  const body = JSON.stringify({ fileKey });
+
+  if (navigator.sendBeacon) {
+    const payload = new Blob([body], {
+      type: "application/json",
+    });
+
+    if (navigator.sendBeacon("/api/uploads/cleanup", payload)) {
+      return;
+    }
+  }
+
+  fetch("/api/uploads/cleanup", {
+    body,
+    headers: {
+      "content-type": "application/json",
+    },
+    keepalive: true,
+    method: "POST",
+  }).catch(() => {});
+}
