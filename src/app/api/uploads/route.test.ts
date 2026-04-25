@@ -20,6 +20,7 @@ vi.mock("@/lib/storage/r2", () => ({
 }));
 
 import { DELETE } from "@/app/api/uploads/route";
+import { POST as CLEANUP_POST } from "@/app/api/uploads/cleanup/route";
 
 describe("DELETE /api/uploads", () => {
   beforeEach(() => {
@@ -108,5 +109,98 @@ describe("DELETE /api/uploads", () => {
       success: true,
     });
     expect(deleteR2ObjectMock).toHaveBeenCalledWith("users/user-1/file/config.json");
+  });
+});
+
+describe("POST /api/uploads/cleanup", () => {
+  beforeEach(() => {
+    authMock.mockReset();
+    deleteR2ObjectMock.mockReset();
+    isItemFileKeyInUseMock.mockReset();
+  });
+
+  it("returns 401 when the user is not authenticated", async () => {
+    authMock.mockResolvedValue(null);
+
+    const response = await CLEANUP_POST(
+      new Request("http://localhost:3000/api/uploads/cleanup", {
+        body: JSON.stringify({
+          fileKey: "users/user-1/image/photo.webp",
+        }),
+        method: "POST",
+      }),
+    );
+
+    expect(response.status).toBe(401);
+    expect(deleteR2ObjectMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects cleanup keys outside the signed-in user's storage prefix", async () => {
+    authMock.mockResolvedValue({
+      user: {
+        id: "user-1",
+      },
+    });
+
+    const response = await CLEANUP_POST(
+      new Request("http://localhost:3000/api/uploads/cleanup", {
+        body: JSON.stringify({
+          fileKey: "users/user-2/image/photo.webp",
+        }),
+        method: "POST",
+      }),
+    );
+
+    expect(response.status).toBe(404);
+    expect(deleteR2ObjectMock).not.toHaveBeenCalled();
+  });
+
+  it("treats attached files as already clean without deleting them", async () => {
+    authMock.mockResolvedValue({
+      user: {
+        id: "user-1",
+      },
+    });
+    isItemFileKeyInUseMock.mockResolvedValue(true);
+
+    const response = await CLEANUP_POST(
+      new Request("http://localhost:3000/api/uploads/cleanup", {
+        body: JSON.stringify({
+          fileKey: "users/user-1/image/photo.webp",
+        }),
+        method: "POST",
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      success: true,
+    });
+    expect(deleteR2ObjectMock).not.toHaveBeenCalled();
+  });
+
+  it("deletes an unattached upload owned by the signed-in user", async () => {
+    authMock.mockResolvedValue({
+      user: {
+        id: "user-1",
+      },
+    });
+    isItemFileKeyInUseMock.mockResolvedValue(false);
+    deleteR2ObjectMock.mockResolvedValue(undefined);
+
+    const response = await CLEANUP_POST(
+      new Request("http://localhost:3000/api/uploads/cleanup", {
+        body: JSON.stringify({
+          fileKey: "users/user-1/image/photo.webp",
+        }),
+        method: "POST",
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      success: true,
+    });
+    expect(deleteR2ObjectMock).toHaveBeenCalledWith("users/user-1/image/photo.webp");
   });
 });

@@ -120,7 +120,7 @@ export function MarkdownEditor({
       {shouldShowPreview ? (
         <div
           className={cn(
-            "markdown-preview overflow-auto px-4 py-4 text-sm leading-7 text-zinc-200",
+            "devstash-scrollbar markdown-preview overflow-auto px-4 py-4 text-sm leading-7 text-zinc-200",
             heightClassName,
           )}
         >

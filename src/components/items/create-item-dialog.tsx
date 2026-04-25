@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Check, ChevronDown, LoaderCircle, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -22,7 +22,7 @@ import {
 import { SuccessToast } from "@/components/ui/success-toast";
 import { DashboardItemTypeIcon, getDashboardItemTypeColor } from "@/lib/dashboard-icons";
 import type { DashboardItemTypeKey } from "@/lib/mock-data";
-import { deleteTemporaryUpload } from "@/lib/upload-cleanup";
+import { deleteTemporaryUpload, queueTemporaryUploadCleanup } from "@/lib/upload-cleanup";
 import type { UploadedFileMetadata, UploadItemType } from "@/lib/uploads";
 import { cn } from "@/lib/utils";
 
@@ -99,6 +99,8 @@ export function CreateItemDialog({ initialType = "snippet", onOpenChange, open }
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toastState, setToastState] = useState<CreateItemToastState | null>(null);
   const [uploadedFile, setUploadedFile] = useState<UploadedFileMetadata | null>(null);
+  const isSubmittingRef = useRef(isSubmitting);
+  const uploadedFileRef = useRef(uploadedFile);
 
   const showContentField = ["command", "note", "prompt", "snippet"].includes(selectedType);
   const showCodeEditor = isCodeEditorItemType(selectedType);
@@ -112,6 +114,35 @@ export function CreateItemDialog({ initialType = "snippet", onOpenChange, open }
     (!showFileUpload || Boolean(uploadedFile));
   const selectedTypeOption =
     createItemTypes.find((itemType) => itemType.key === selectedType) ?? createItemTypes[0];
+
+  useEffect(() => {
+    isSubmittingRef.current = isSubmitting;
+  }, [isSubmitting]);
+
+  useEffect(() => {
+    uploadedFileRef.current = uploadedFile;
+  }, [uploadedFile]);
+
+  useEffect(() => {
+    function cleanupPendingUpload() {
+      const pendingUpload = uploadedFileRef.current;
+
+      if (!pendingUpload || isSubmittingRef.current) {
+        return;
+      }
+
+      queueTemporaryUploadCleanup(pendingUpload.fileKey);
+      uploadedFileRef.current = null;
+    }
+
+    window.addEventListener("pagehide", cleanupPendingUpload);
+    window.addEventListener("beforeunload", cleanupPendingUpload);
+
+    return () => {
+      window.removeEventListener("pagehide", cleanupPendingUpload);
+      window.removeEventListener("beforeunload", cleanupPendingUpload);
+    };
+  }, []);
 
   const handleOpenChange = useCallback((nextOpen: boolean) => {
     if (isSubmitting) {
@@ -208,9 +239,9 @@ export function CreateItemDialog({ initialType = "snippet", onOpenChange, open }
   return (
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="max-w-lg overflow-visible">
-          <form onSubmit={handleSubmit} className="flex flex-col">
-            <div className="border-b border-white/8 px-5 py-4">
+        <DialogContent className="max-w-lg">
+          <form onSubmit={handleSubmit} className="flex max-h-[calc(100vh-3rem)] flex-col">
+            <div className="shrink-0 border-b border-white/8 px-5 py-4">
               <div className="flex items-start justify-between gap-4">
                 <DialogHeader>
                   <DialogTitle>New Item</DialogTitle>
@@ -229,7 +260,7 @@ export function CreateItemDialog({ initialType = "snippet", onOpenChange, open }
               </div>
             </div>
 
-            <div className="flex flex-1 items-center px-5 py-4">
+            <div className="devstash-scrollbar min-h-0 flex-1 overflow-y-auto px-5 py-4">
               <div className="w-full space-y-4">
                 {error ? (
                   <div className="rounded-2xl border border-rose-400/20 bg-rose-400/10 p-4 text-sm leading-6 text-rose-100">
@@ -407,7 +438,7 @@ export function CreateItemDialog({ initialType = "snippet", onOpenChange, open }
               </div>
             </div>
 
-            <DialogFooter className="border-t border-white/8 px-5 py-4">
+            <DialogFooter className="shrink-0 border-t border-white/8 px-5 py-4">
               <DialogClose disabled={isSubmitting}>Cancel</DialogClose>
               <Button
                 type="submit"

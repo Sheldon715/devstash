@@ -1,20 +1,32 @@
-# Current Feature
+# Current Feature: Image Gallery View
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Replace the regular item card with an image thumbnail card for image views.
+- Show images in a 3-column grid/gallery layout.
+- Render image thumbnails with a 16:9 aspect ratio using `aspect-video`.
+- Use `object-cover` so images fill thumbnail cards, accepting edge cropping when needed.
+- Add a subtle hover zoom effect using 5% scale and a 300ms transition.
 
 ## Todo List
 
-<!-- Feature-specific checklist -->
+- [x] Locate the image item list/grid rendering path.
+- [x] Create or adapt an image thumbnail card component.
+- [x] Wire image views to use the gallery layout instead of the regular item card.
+- [x] Verify thumbnail aspect ratio, object fit, and hover transition.
+- [x] Keep the create dialog submit button reachable after image upload previews.
+- [x] Match create dialog scrolling with the project scrollbar style.
+- [x] Queue cleanup for temporary uploads when the browser tab closes before item creation.
+- [x] Run `npm run lint` and `npm run build`.
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec source: `context/feature/image-display-spec.md`
+- Feature focuses on image display only; no upload/storage behavior changes are requested.
 
 ## History
 

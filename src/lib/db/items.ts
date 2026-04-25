@@ -21,6 +21,7 @@ export interface DashboardItemRecord {
   typeLabel: string;
   collectionNames: string[];
   tags: string[];
+  fileName: string | null;
   isPinned: boolean;
   isFavorite: boolean;
   updatedAt: Date;
@@ -179,6 +180,7 @@ async function getDashboardItems(
       id: true,
       title: true,
       description: true,
+      fileName: true,
       isPinned: true,
       isFavorite: true,
       updatedAt: true,
@@ -595,6 +597,7 @@ function mapItemToDashboardRecord(item: DashboardItemWithRelations): DashboardIt
     tags: [...new Set(item.tags.map(({ tag }) => tag.name))].sort((left, right) =>
       left.localeCompare(right),
     ),
+    fileName: item.fileName,
     isPinned: item.isPinned,
     isFavorite: item.isFavorite,
     updatedAt: item.updatedAt,
