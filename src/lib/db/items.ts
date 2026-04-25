@@ -1,167 +1,40 @@
 import { prisma } from "@/lib/prisma";
 import { deleteR2Object } from "@/lib/storage/r2";
-import { isUploadKeyOwnedByUser, type UploadedFileMetadata } from "@/lib/uploads";
+import { isUploadKeyOwnedByUser } from "@/lib/uploads";
 import { normalizeDashboardQueryLimit } from "@/lib/dashboard-query";
 import {
   getDashboardItemTypeKeys,
   normalizeDashboardItemTypeKey,
   normalizeDashboardItemTypeRouteKey,
 } from "@/lib/item-types";
-import type { DashboardItemTypeKey } from "@/lib/mock-data";
+import {
+  formatItemTypeLabel,
+  mapItemToDashboardDetailRecord,
+  mapItemToDashboardRecord,
+} from "@/lib/db/item-mappers";
+import { dashboardItemDetailSelect } from "@/lib/db/item-selects";
+import type {
+  CreateItemData,
+  DashboardItemDetailRecord,
+  DashboardItemStats,
+  DashboardItemTypePageRecord,
+  DashboardSidebarItemTypeRecord,
+  DownloadableItemFileRecord,
+  UpdateItemData,
+} from "@/lib/db/item-records";
 
-type DashboardItemWithRelations = Awaited<
-  ReturnType<typeof getDashboardItems>
->[number];
-
-export interface DashboardItemRecord {
-  id: string;
-  title: string;
-  description: string;
-  typeKey: DashboardItemTypeKey;
-  typeLabel: string;
-  collectionNames: string[];
-  tags: string[];
-  fileName: string | null;
-  fileMimeType: string | null;
-  fileSizeBytes: number | null;
-  isPinned: boolean;
-  isFavorite: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface DashboardItemStats {
-  totalItems: number;
-  favoriteItems: number;
-}
-
-export interface DashboardItemDetailTagRecord {
-  color: string | null;
-  name: string;
-}
-
-export interface DashboardItemDetailRecord {
-  id: string;
-  title: string;
-  description: string;
-  contentMode: "TEXT" | "FILE" | "URL";
-  content: string | null;
-  url: string | null;
-  fileName: string | null;
-  fileUrl: string | null;
-  fileMimeType: string | null;
-  fileSizeBytes: number | null;
-  language: string | null;
-  aiSummary: string | null;
-  collectionNames: string[];
-  tags: DashboardItemDetailTagRecord[];
-  isPinned: boolean;
-  isFavorite: boolean;
-  typeKey: DashboardItemTypeKey;
-  typeLabel: string;
-  createdAt: Date;
-  updatedAt: Date;
-  lastAccessedAt: Date | null;
-}
-
-export interface DashboardSidebarItemTypeRecord {
-  id: string;
-  key: string;
-  name: string;
-  icon: string | null;
-  totalItems: number;
-  typeKey: DashboardItemTypeKey;
-}
-
-export interface DashboardItemTypePageRecord {
-  key: string;
-  name: string;
-  icon: string | null;
-  totalItems: number;
-  typeKey: DashboardItemTypeKey;
-}
-
-export interface UpdateItemData {
-  title: string;
-  description: string | null;
-  content: string | null;
-  url: string | null;
-  language: string | null;
-  tags: string[];
-}
-
-export type CreatableItemTypeKey = DashboardItemTypeKey;
-
-export interface CreateItemData {
-  typeKey: CreatableItemTypeKey;
-  title: string;
-  description: string | null;
-  content: string | null;
-  file: UploadedFileMetadata | null;
-  url: string | null;
-  language: string | null;
-  tags: string[];
-}
-
-export interface DownloadableItemFileRecord {
-  fileKey: string;
-  fileMimeType: string;
-  fileName: string;
-  fileSizeBytes: number;
-  typeKey: DashboardItemTypeKey;
-}
-
-const dashboardItemDetailSelect = {
-  id: true,
-  title: true,
-  description: true,
-  contentMode: true,
-  content: true,
-  url: true,
-  fileName: true,
-  fileUrl: true,
-  fileMimeType: true,
-  fileSizeBytes: true,
-  language: true,
-  aiSummary: true,
-  isPinned: true,
-  isFavorite: true,
-  createdAt: true,
-  updatedAt: true,
-  lastAccessedAt: true,
-  type: {
-    select: {
-      key: true,
-      name: true,
-    },
-  },
-  tags: {
-    select: {
-      tag: {
-        select: {
-          color: true,
-          name: true,
-        },
-      },
-    },
-  },
-  collections: {
-    select: {
-      collection: {
-        select: {
-          name: true,
-        },
-      },
-    },
-    orderBy: {
-      sortOrder: "asc",
-    },
-  },
-} as const;
-
-type DashboardItemDetailWithRelations = NonNullable<
-  Awaited<ReturnType<typeof getDashboardItemDetailQuery>>
->;
+export type {
+  CreatableItemTypeKey,
+  CreateItemData,
+  DashboardItemDetailRecord,
+  DashboardItemDetailTagRecord,
+  DashboardItemRecord,
+  DashboardItemStats,
+  DashboardItemTypePageRecord,
+  DashboardSidebarItemTypeRecord,
+  DownloadableItemFileRecord,
+  UpdateItemData,
+} from "@/lib/db/item-records";
 
 async function getDashboardItems(
   userId: string,
@@ -552,71 +425,4 @@ export async function deleteItem(userId: string, itemId: string): Promise<boolea
   });
 
   return true;
-}
-
-function mapItemToDashboardDetailRecord(
-  item: DashboardItemDetailWithRelations,
-): DashboardItemDetailRecord {
-  return {
-    id: item.id,
-    title: item.title,
-    description: item.description ?? "No description yet.",
-    contentMode: item.contentMode,
-    content: item.content,
-    url: item.url,
-    fileName: item.fileName,
-    fileUrl: item.fileUrl,
-    fileMimeType: item.fileMimeType,
-    fileSizeBytes: item.fileSizeBytes,
-    language: item.language,
-    aiSummary: item.aiSummary,
-    collectionNames: [...new Set(item.collections.map(({ collection }) => collection.name))],
-    tags: item.tags
-      .map(({ tag }) => ({
-        color: tag.color,
-        name: tag.name,
-      }))
-      .filter(
-        (tag, index, tags) =>
-          tags.findIndex((candidate) => candidate.name === tag.name) === index,
-      )
-      .sort((left, right) => left.name.localeCompare(right.name)),
-    isPinned: item.isPinned,
-    isFavorite: item.isFavorite,
-    typeKey: normalizeDashboardItemTypeKey(item.type.key),
-    typeLabel: formatItemTypeLabel(item.type.name),
-    createdAt: item.createdAt,
-    updatedAt: item.updatedAt,
-    lastAccessedAt: item.lastAccessedAt,
-  } satisfies DashboardItemDetailRecord;
-}
-
-function mapItemToDashboardRecord(item: DashboardItemWithRelations): DashboardItemRecord {
-  return {
-    id: item.id,
-    title: item.title,
-    description: item.description ?? "No description yet.",
-    typeKey: normalizeDashboardItemTypeKey(item.type.key),
-    typeLabel: formatItemTypeLabel(item.type.name),
-    collectionNames: [...new Set(item.collections.map(({ collection }) => collection.name))]
-      .sort((left, right) => left.localeCompare(right)),
-    tags: [...new Set(item.tags.map(({ tag }) => tag.name))].sort((left, right) =>
-      left.localeCompare(right),
-    ),
-    fileName: item.fileName,
-    fileMimeType: item.fileMimeType,
-    fileSizeBytes: item.fileSizeBytes,
-    isPinned: item.isPinned,
-    isFavorite: item.isFavorite,
-    createdAt: item.createdAt,
-    updatedAt: item.updatedAt,
-  };
-}
-
-function formatItemTypeLabel(typeName: string) {
-  if (!typeName) {
-    return "Item";
-  }
-
-  return typeName.charAt(0).toUpperCase() + typeName.slice(1);
 }
