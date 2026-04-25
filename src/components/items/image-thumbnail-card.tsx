@@ -1,9 +1,11 @@
 "use client";
 
+import type { KeyboardEvent } from "react";
 import { ImageIcon, Pin, Star } from "lucide-react";
 import Image from "next/image";
 
 import { useItemDrawer } from "@/components/items/item-drawer-provider";
+import { QuickCopyButton } from "@/components/items/quick-copy-button";
 import type { DashboardItemRecord } from "@/lib/db/items";
 import { formatDashboardDate } from "@/lib/date";
 
@@ -14,12 +16,28 @@ interface ImageThumbnailCardProps {
 export function ImageThumbnailCard({ item }: ImageThumbnailCardProps) {
   const { openItem } = useItemDrawer();
   const updatedLabel = formatDashboardDate(item.updatedAt);
+  const copyFallback = item.description === "No description yet." ? item.title : item.description;
+
+  function handleOpen() {
+    openItem(item.id);
+  }
+
+  function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key !== "Enter" && event.key !== " ") {
+      return;
+    }
+
+    event.preventDefault();
+    handleOpen();
+  }
 
   return (
-    <button
-      type="button"
-      onClick={() => openItem(item.id)}
-      className="group block w-full overflow-hidden rounded-[24px] border border-white/10 bg-[#08090c] text-left shadow-[0_16px_48px_rgba(0,0,0,0.2)] transition-all duration-300 hover:-translate-y-1 hover:border-white/15 hover:bg-[#0b0d12] hover:shadow-[0_20px_56px_rgba(0,0,0,0.28)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={handleOpen}
+      onKeyDown={handleKeyDown}
+      className="group relative block w-full overflow-hidden rounded-[24px] border border-white/10 bg-[#08090c] text-left shadow-[0_16px_48px_rgba(0,0,0,0.2)] transition-all duration-300 hover:-translate-y-1 hover:border-white/15 hover:bg-[#0b0d12] hover:shadow-[0_20px_56px_rgba(0,0,0,0.28)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
     >
       <div className="relative aspect-video overflow-hidden bg-[#05070b]">
         {item.fileName ? (
@@ -64,6 +82,12 @@ export function ImageThumbnailCard({ item }: ImageThumbnailCardProps) {
           <span className="shrink-0">{updatedLabel}</span>
         </div>
       </div>
-    </button>
+
+      <QuickCopyButton
+        itemId={item.id}
+        fallbackValue={copyFallback}
+        className="pointer-events-none absolute right-4 bottom-4 opacity-0 shadow-[0_10px_24px_rgba(0,0,0,0.25)] group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100"
+      />
+    </div>
   );
 }
