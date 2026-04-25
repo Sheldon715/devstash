@@ -22,6 +22,11 @@ export interface DashboardCollectionStats {
   favoriteCollections: number;
 }
 
+export interface CreateCollectionData {
+  description: string | null;
+  name: string;
+}
+
 export interface DashboardSidebarCollections {
   favoriteCollections: DashboardCollectionCardRecord[];
   recentCollections: DashboardCollectionCardRecord[];
@@ -152,6 +157,38 @@ export async function getDashboardCollectionStats(userId: string): Promise<Dashb
   return {
     totalCollections,
     favoriteCollections,
+  };
+}
+
+export async function createDashboardCollection(
+  userId: string,
+  data: CreateCollectionData,
+): Promise<DashboardCollectionCardRecord> {
+  const collection = await prisma.collection.create({
+    data: {
+      userId,
+      name: data.name,
+      description: data.description,
+    },
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      isFavorite: true,
+      updatedAt: true,
+    },
+  });
+
+  return {
+    id: collection.id,
+    name: collection.name,
+    description: collection.description ?? "No description yet.",
+    isFavorite: collection.isFavorite,
+    itemCount: 0,
+    typeCount: 0,
+    dominantTypeKey: null,
+    typeKeys: [],
+    lastUpdatedAt: collection.updatedAt,
   };
 }
 

@@ -1,20 +1,33 @@
-# Current Feature
+# Current Feature: Collection Create
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Add a top-bar button for creating a collection.
+- Open a modal with collection name and description fields.
+- Persist collections as user-scoped records through shared `lib/db` functions and an API route for client-side creation.
+- Show success and failure toast feedback.
+- Refresh affected collection data after save so the new collection appears in the UI.
 
 ## Todo List
 
-<!-- Feature-specific checklist -->
+- [x] Create feature branch.
+- [x] Trace existing item-create and collection data patterns.
+- [x] Add server-side collection create validation and database helper.
+- [x] Add client API route for collection creation.
+- [x] Build top-bar create collection modal with toast feedback.
+- [x] Refresh UI data after successful create.
+- [x] Add or update focused tests for collection creation.
+- [x] Run lint, tests, and production build.
 
 ## Notes
 
-<!-- Any extra notes -->
+- Follow item-create conventions where possible.
+- Collections must remain scoped to the authenticated user.
+- Server components should continue fetching collection data through `lib/db` helpers.
 
 ## History
 
