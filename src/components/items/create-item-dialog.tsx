@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 
 import { createItem } from "@/actions/items";
 import { CodeEditor } from "@/components/items/code-editor";
+import { MarkdownEditor } from "@/components/items/markdown-editor";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -96,6 +97,7 @@ export function CreateItemDialog({ initialType = "snippet", onOpenChange, open }
 
   const showContentField = ["command", "note", "prompt", "snippet"].includes(selectedType);
   const showCodeEditor = isCodeEditorItemType(selectedType);
+  const showMarkdownEditor = isMarkdownEditorItemType(selectedType);
   const showLanguageField = ["command", "snippet"].includes(selectedType);
   const showUrlField = selectedType === "link";
   const canSubmit =
@@ -330,6 +332,14 @@ export function CreateItemDialog({ initialType = "snippet", onOpenChange, open }
                       value={formState.content}
                       onChange={(value) => updateFormField("content", value)}
                     />
+                  ) : showMarkdownEditor ? (
+                    <CreateMarkdownField
+                      label="Content"
+                      disabled={isSubmitting}
+                      placeholder={getContentPlaceholder(selectedType)}
+                      value={formState.content}
+                      onChange={(value) => updateFormField("content", value)}
+                    />
                   ) : (
                     <CreateTextareaField
                       label="Content"
@@ -482,6 +492,34 @@ function CreateCodeField({
   );
 }
 
+function CreateMarkdownField({
+  disabled = false,
+  label,
+  onChange,
+  placeholder,
+  value,
+}: {
+  disabled?: boolean;
+  label: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  value: string;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <p className="text-xs font-medium uppercase tracking-[0.22em] text-zinc-500">{label}</p>
+      <MarkdownEditor
+        disabled={disabled}
+        maxHeight={400}
+        minHeight={180}
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+      />
+    </div>
+  );
+}
+
 function getContentPlaceholder(typeKey: CreatableItemTypeKey) {
   switch (typeKey) {
     case "command":
@@ -508,6 +546,10 @@ function normalizeCreatableItemType(typeKey: CreatableItemTypeKey) {
 
 function isCodeEditorItemType(typeKey: CreatableItemTypeKey) {
   return typeKey === "command" || typeKey === "snippet";
+}
+
+function isMarkdownEditorItemType(typeKey: CreatableItemTypeKey) {
+  return typeKey === "note" || typeKey === "prompt";
 }
 
 function parseTagsInput(value: string) {

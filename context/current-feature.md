@@ -1,20 +1,38 @@
-# Current Feature
+# Current Feature: Markdown Editor
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Add a `MarkdownEditor` component for notes and prompts.
+- Provide Write and Preview tabs with GitHub Flavored Markdown support via `react-markdown` and `remark-gfm`.
+- Replace plain textareas with `MarkdownEditor` only for note and prompt content.
+- Keep the existing `CodeEditor` behavior unchanged for snippets and commands.
+- Support readonly display mode and editable create/edit modes.
+- Match the existing dark editor styling, including container/header colors and copy button behavior.
+- Style rendered markdown clearly for headings, code, lists, blockquotes, links, and tables.
 
 ## Todo List
 
-<!-- Feature-specific checklist -->
+- [x] Inspect the existing `CodeEditor`, `NewItemDialog`, and `ItemDrawer` integration points.
+- [x] Add Markdown rendering dependencies if they are not already installed.
+- [x] Create the reusable `MarkdownEditor` component with write, preview, readonly, and copy support.
+- [x] Add dark-mode markdown preview styling with a reliable `.markdown-preview` class.
+- [x] Use `MarkdownEditor` for note and prompt content in `NewItemDialog`.
+- [x] Use `MarkdownEditor` for note and prompt content in `ItemDrawer` edit mode.
+- [x] Use `MarkdownEditor` for note and prompt content in `ItemDrawer` readonly view mode.
+- [x] Verify snippets and commands still use `CodeEditor`.
+- [x] Run lint, tests where relevant, and production build.
 
 ## Notes
 
-<!-- Any extra notes -->
+- Loaded from `context/feature/markdown-editor-spec.md`.
+- Readonly mode should show only the Preview tab.
+- Edit mode should default to Write while keeping Preview available.
+- Markdown editor visual shell should match CodeEditor behavior: `bg-[#1e1e1e]` body, `bg-[#2d2d2d]` header, and fluid height with max 400px.
+- Preview styling should cover `h1`-`h6`, fenced and inline code, ordered and unordered lists, blockquotes, links, and tables.
 
 ## History
 

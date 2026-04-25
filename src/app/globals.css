@@ -81,6 +81,168 @@
   }
 }
 
+@layer components {
+  .markdown-preview {
+    color: rgb(228 228 231);
+    word-break: break-word;
+  }
+
+  .markdown-preview > :first-child {
+    margin-top: 0;
+  }
+
+  .markdown-preview > :last-child {
+    margin-bottom: 0;
+  }
+
+  .markdown-preview h1,
+  .markdown-preview h2,
+  .markdown-preview h3,
+  .markdown-preview h4,
+  .markdown-preview h5,
+  .markdown-preview h6 {
+    margin: 1.1rem 0 0.55rem;
+    color: rgb(250 250 250);
+    font-weight: 700;
+    letter-spacing: 0;
+    line-height: 1.25;
+  }
+
+  .markdown-preview h1 {
+    font-size: 1.65rem;
+  }
+
+  .markdown-preview h2 {
+    border-bottom: 1px solid rgb(255 255 255 / 10%);
+    padding-bottom: 0.35rem;
+    font-size: 1.35rem;
+  }
+
+  .markdown-preview h3 {
+    font-size: 1.15rem;
+  }
+
+  .markdown-preview h4,
+  .markdown-preview h5,
+  .markdown-preview h6 {
+    font-size: 1rem;
+  }
+
+  .markdown-preview p {
+    margin: 0.75rem 0;
+  }
+
+  .markdown-preview a {
+    color: rgb(125 211 252);
+    text-decoration: underline;
+    text-decoration-color: rgb(125 211 252 / 35%);
+    text-underline-offset: 0.18em;
+    transition: color 160ms ease, text-decoration-color 160ms ease;
+  }
+
+  .markdown-preview a:hover {
+    color: rgb(186 230 253);
+    text-decoration-color: rgb(186 230 253 / 70%);
+  }
+
+  .markdown-preview strong {
+    color: rgb(244 244 245);
+    font-weight: 700;
+  }
+
+  .markdown-preview ul,
+  .markdown-preview ol {
+    margin: 0.75rem 0;
+    padding-left: 1.35rem;
+  }
+
+  .markdown-preview ul {
+    list-style: disc;
+  }
+
+  .markdown-preview ol {
+    list-style: decimal;
+  }
+
+  .markdown-preview li {
+    margin: 0.3rem 0;
+    padding-left: 0.15rem;
+  }
+
+  .markdown-preview li::marker {
+    color: rgb(161 161 170);
+  }
+
+  .markdown-preview blockquote {
+    margin: 1rem 0;
+    border-left: 3px solid rgb(125 211 252 / 70%);
+    background: rgb(255 255 255 / 4%);
+    padding: 0.7rem 1rem;
+    color: rgb(212 212 216);
+  }
+
+  .markdown-preview code {
+    border: 1px solid rgb(255 255 255 / 8%);
+    border-radius: 0.45rem;
+    background: rgb(5 7 11);
+    padding: 0.12rem 0.35rem;
+    color: rgb(186 230 253);
+    font-family: "JetBrains Mono Variable", "JetBrains Mono", Consolas, monospace;
+    font-size: 0.86em;
+  }
+
+  .markdown-preview pre {
+    margin: 1rem 0;
+    overflow-x: auto;
+    border: 1px solid rgb(255 255 255 / 8%);
+    border-radius: 0.75rem;
+    background: rgb(5 7 11);
+    padding: 1rem;
+  }
+
+  .markdown-preview pre code {
+    border: 0;
+    background: transparent;
+    padding: 0;
+    color: rgb(228 228 231);
+    font-size: 0.9rem;
+    line-height: 1.65;
+  }
+
+  .markdown-preview table {
+    margin: 1rem 0;
+    width: 100%;
+    border-collapse: collapse;
+    overflow: hidden;
+    border-radius: 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  .markdown-preview th,
+  .markdown-preview td {
+    border: 1px solid rgb(255 255 255 / 10%);
+    padding: 0.65rem 0.75rem;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .markdown-preview th {
+    background: rgb(255 255 255 / 7%);
+    color: rgb(244 244 245);
+    font-weight: 700;
+  }
+
+  .markdown-preview tr:nth-child(even) td {
+    background: rgb(255 255 255 / 2.5%);
+  }
+
+  .markdown-preview hr {
+    margin: 1.25rem 0;
+    border: 0;
+    border-top: 1px solid rgb(255 255 255 / 10%);
+  }
+}
+
 @keyframes profile-toast-in {
   0% {
     opacity: 0;

@@ -29,6 +29,7 @@ import { useRouter } from "next/navigation";
 
 import { deleteItem, updateItem } from "@/actions/items";
 import { CodeEditor } from "@/components/items/code-editor";
+import { MarkdownEditor } from "@/components/items/markdown-editor";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -682,6 +683,7 @@ function ItemDrawerEditBody({
 }) {
   const showContentField = ["command", "note", "prompt", "snippet"].includes(item.typeKey);
   const showCodeEditor = isCodeEditorItemType(item.typeKey);
+  const showMarkdownEditor = isMarkdownEditorItemType(item.typeKey);
   const showLanguageField = ["command", "snippet"].includes(item.typeKey);
   const showUrlField = item.typeKey === "link";
 
@@ -728,6 +730,12 @@ function ItemDrawerEditBody({
           <EditCodeField
             label="Content"
             language={formState.language}
+            value={formState.content}
+            onChange={(value) => onChange("content", value)}
+          />
+        ) : showMarkdownEditor ? (
+          <EditMarkdownField
+            label="Content"
             value={formState.content}
             onChange={(value) => onChange("content", value)}
           />
@@ -828,6 +836,39 @@ function EditCodeField({
   );
 }
 
+function EditMarkdownField({
+  label,
+  onChange,
+  value,
+}: {
+  label: string;
+  onChange: (value: string) => void;
+  value: string;
+}) {
+  return (
+    <div className="space-y-2">
+      <p className="text-xs font-medium uppercase tracking-[0.22em] text-zinc-500">{label}</p>
+      <MarkdownEditor
+        maxHeight={400}
+        minHeight={260}
+        value={value}
+        onChange={onChange}
+      />
+    </div>
+  );
+}
+
+function ReadonlyMarkdownContent({ value }: { value: string }) {
+  return (
+    <MarkdownEditor
+      maxHeight={400}
+      minHeight={220}
+      readOnly
+      value={value}
+    />
+  );
+}
+
 function PrimaryContentCard({ item }: { item: SerializedDashboardItemDetailRecord }) {
   if (item.contentMode === "URL") {
     if (!item.url) {
@@ -894,6 +935,10 @@ function PrimaryContentCard({ item }: { item: SerializedDashboardItemDetailRecor
         value={item.content}
       />
     );
+  }
+
+  if (isMarkdownEditorItemType(item.typeKey)) {
+    return <ReadonlyMarkdownContent value={item.content} />;
   }
 
   return (
@@ -1054,6 +1099,10 @@ function getItemCopyValue(item: SerializedDashboardItemDetailRecord) {
 
 function isCodeEditorItemType(typeKey: string) {
   return typeKey === "command" || typeKey === "snippet";
+}
+
+function isMarkdownEditorItemType(typeKey: string) {
+  return typeKey === "note" || typeKey === "prompt";
 }
 
 function createEditItemFormState(
