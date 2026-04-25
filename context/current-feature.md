@@ -1,32 +1,20 @@
-# Current Feature: Component Refactor Candidates
+# Current Feature
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Split large, high-churn files into smaller functions/components without changing behavior.
-- Prioritize readability and maintainability over architectural reshuffling.
-- Keep public imports stable where practical, especially for DB helpers and shared item components.
-- Preserve existing UI, data flow, and test coverage.
+<!-- Goals & requirements -->
 
 ## Todo List
 
-- [x] Refactor `src/components/items/item-drawer-provider.tsx` by extracting drawer content, edit form, readonly content, and drawer utility helpers.
-- [x] Refactor `src/components/items/create-item-dialog.tsx` by extracting the type picker, dynamic fields, create utilities, and upload cleanup hook if useful.
-- [x] Refactor `src/components/layout/sidebar.tsx` by extracting sidebar header, type links, and collections sections.
-- [x] Split `src/lib/db/items.ts` into smaller modules for selects, mappers, exported types, and public DB facade.
-- [x] Refactor `src/components/items/file-upload.tsx` by separating upload state/XHR logic from dropzone rendering.
-- [x] Run `npm run lint`, `npm run test`, and `npm run build` after each meaningful refactor slice or at minimum before completion.
+<!-- Feature-specific checklist -->
 
 ## Notes
 
-- Start with `item-drawer-provider.tsx`, then `create-item-dialog.tsx`; these are the biggest maintainability wins.
-- Leave cohesive UI primitives such as `dialog.tsx`, `sheet.tsx`, and `alert-dialog.tsx` alone for now.
-- Prefer extraction that moves existing code with minimal edits. Avoid visual redesigns, behavioral changes, or unrelated cleanup.
-- Completed extraction slices for item drawer content/edit utilities, create dialog fields/type picker/helpers, sidebar sections, item DB records/selects/mappers, and file upload hook/dropzone rendering.
-- Verification: `npm run lint`, `npm run test` with 9 files / 60 tests, and `npm run build` passed.
+<!-- Any extra notes -->
 
 ## History
 
@@ -66,3 +54,4 @@ In Progress
 - Image Gallery View completed with image-specific thumbnail gallery cards, 16:9 cover thumbnails with hover zoom, scroll-safe image upload dialog styling, tab-close temporary upload cleanup, and passing upload route tests, lint, and production build verification
 - File List View completed with a responsive `/items/files` single-column list, extension-aware file rows, direct download controls, drawer-opening row interactions, file metadata mapping coverage, and passing lint, tests, and production build verification
 - Audit Quick Wins completed with safer upload response headers, SVG upload hardening, generic R2 client errors, shared email/file-size/app-origin utilities, production rate-limit configuration warning, and focused upload header test coverage
+- Component Refactor Candidates completed with extracted item drawer, create dialog, sidebar, file upload, and item DB helper modules while preserving behavior and passing lint, tests, and production build verification
