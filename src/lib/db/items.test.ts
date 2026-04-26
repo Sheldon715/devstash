@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const {
   deleteR2ObjectMock,
   prismaItemCreateMock,
+  prismaItemCountMock,
   prismaItemDeleteMock,
   prismaItemFindManyMock,
   prismaItemFindFirstMock,
@@ -12,6 +13,7 @@ const {
 } = vi.hoisted(() => ({
   deleteR2ObjectMock: vi.fn(),
   prismaItemCreateMock: vi.fn(),
+  prismaItemCountMock: vi.fn(),
   prismaItemDeleteMock: vi.fn(),
   prismaItemFindManyMock: vi.fn(),
   prismaItemFindFirstMock: vi.fn(),
@@ -27,6 +29,7 @@ vi.mock("@/lib/storage/r2", () => ({
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     item: {
+      count: prismaItemCountMock,
       create: prismaItemCreateMock,
       delete: prismaItemDeleteMock,
       findMany: prismaItemFindManyMock,
@@ -55,6 +58,7 @@ import {
 describe("item db queries", () => {
   beforeEach(() => {
     prismaItemCreateMock.mockReset();
+    prismaItemCountMock.mockReset();
     prismaItemDeleteMock.mockReset();
     prismaItemFindManyMock.mockReset();
     prismaItemFindFirstMock.mockReset();
@@ -183,6 +187,7 @@ describe("item db queries", () => {
       name: "file",
       icon: "paperclip",
     });
+    prismaItemCountMock.mockResolvedValue(1);
     prismaItemFindManyMock.mockResolvedValue([
       {
         id: "item-1",
@@ -242,10 +247,28 @@ describe("item db queries", () => {
           updatedAt,
         },
       ],
+      pagination: {
+        currentPage: 1,
+        hasNextPage: false,
+        hasPreviousPage: false,
+        pageSize: 21,
+        totalItems: 1,
+        totalPages: 1,
+      },
     });
 
+    expect(prismaItemCountMock).toHaveBeenCalledWith({
+      where: {
+        userId: "user-1",
+        type: {
+          key: "file",
+        },
+      },
+    });
     expect(prismaItemFindManyMock).toHaveBeenCalledWith(
       expect.objectContaining({
+        skip: 0,
+        take: 21,
         where: {
           userId: "user-1",
           type: {
@@ -257,6 +280,37 @@ describe("item db queries", () => {
           fileMimeType: true,
           fileSizeBytes: true,
         }),
+      }),
+    );
+  });
+
+  it("uses page offsets for item type pages", async () => {
+    prismaItemTypeFindFirstMock.mockResolvedValue({
+      key: "note",
+      name: "note",
+      icon: "file-text",
+    });
+    prismaItemCountMock.mockResolvedValue(42);
+    prismaItemFindManyMock.mockResolvedValue([]);
+
+    await expect(getDashboardItemTypePage("user-1", "notes", { page: 2 })).resolves.toMatchObject({
+      itemType: {
+        totalItems: 42,
+      },
+      pagination: {
+        currentPage: 2,
+        hasNextPage: false,
+        hasPreviousPage: true,
+        pageSize: 21,
+        totalItems: 42,
+        totalPages: 2,
+      },
+    });
+
+    expect(prismaItemFindManyMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        skip: 21,
+        take: 21,
       }),
     );
   });

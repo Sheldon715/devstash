@@ -4,12 +4,14 @@ const {
   prismaCollectionCreateMock,
   prismaCollectionDeleteManyMock,
   prismaCollectionFindFirstMock,
+  prismaCollectionItemCountMock,
   prismaCollectionItemFindManyMock,
   prismaCollectionUpdateManyMock,
 } = vi.hoisted(() => ({
   prismaCollectionCreateMock: vi.fn(),
   prismaCollectionDeleteManyMock: vi.fn(),
   prismaCollectionFindFirstMock: vi.fn(),
+  prismaCollectionItemCountMock: vi.fn(),
   prismaCollectionItemFindManyMock: vi.fn(),
   prismaCollectionUpdateManyMock: vi.fn(),
 }));
@@ -23,6 +25,7 @@ vi.mock("@/lib/prisma", () => ({
       updateMany: prismaCollectionUpdateManyMock,
     },
     collectionItem: {
+      count: prismaCollectionItemCountMock,
       findMany: prismaCollectionItemFindManyMock,
     },
   },
@@ -32,6 +35,7 @@ import {
   createDashboardCollection,
   deleteDashboardCollection,
   getDashboardCollectionItems,
+  getDashboardCollectionItemsPage,
   updateDashboardCollection,
 } from "@/lib/db/collections";
 
@@ -40,6 +44,7 @@ describe("collection db queries", () => {
     prismaCollectionCreateMock.mockReset();
     prismaCollectionDeleteManyMock.mockReset();
     prismaCollectionFindFirstMock.mockReset();
+    prismaCollectionItemCountMock.mockReset();
     prismaCollectionItemFindManyMock.mockReset();
     prismaCollectionUpdateManyMock.mockReset();
   });
@@ -184,6 +189,8 @@ describe("collection db queries", () => {
         },
       },
       orderBy: [{ sortOrder: "asc" }, { addedAt: "asc" }],
+      skip: undefined,
+      take: undefined,
       select: {
         item: {
           select: {
@@ -225,6 +232,44 @@ describe("collection db queries", () => {
         },
       },
     });
+  });
+
+  it("returns a paginated collection item page", async () => {
+    prismaCollectionItemCountMock.mockResolvedValue(44);
+    prismaCollectionItemFindManyMock.mockResolvedValue([]);
+
+    await expect(
+      getDashboardCollectionItemsPage("user-1", "collection-1", { page: 3 }),
+    ).resolves.toEqual({
+      items: [],
+      pagination: {
+        currentPage: 3,
+        hasNextPage: false,
+        hasPreviousPage: true,
+        pageSize: 21,
+        totalItems: 44,
+        totalPages: 3,
+      },
+    });
+
+    const where = {
+      collectionId: "collection-1",
+      collection: {
+        userId: "user-1",
+      },
+      item: {
+        userId: "user-1",
+      },
+    };
+
+    expect(prismaCollectionItemCountMock).toHaveBeenCalledWith({ where });
+    expect(prismaCollectionItemFindManyMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        skip: 42,
+        take: 21,
+        where,
+      }),
+    );
   });
 
   it("updates collection metadata within the signed-in user's scope", async () => {
