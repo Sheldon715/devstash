@@ -11,9 +11,13 @@ import { formatDashboardDate } from "@/lib/date";
 
 interface ImageThumbnailCardProps {
   item: DashboardItemRecord;
+  preserveAspectRatio?: boolean;
 }
 
-export function ImageThumbnailCard({ item }: ImageThumbnailCardProps) {
+export function ImageThumbnailCard({
+  item,
+  preserveAspectRatio = false,
+}: ImageThumbnailCardProps) {
   const { openItem } = useItemDrawer();
   const updatedLabel = formatDashboardDate(item.updatedAt);
   const copyFallback = item.description === "No description yet." ? item.title : item.description;
@@ -39,8 +43,15 @@ export function ImageThumbnailCard({ item }: ImageThumbnailCardProps) {
       onKeyDown={handleKeyDown}
       className="group relative block w-full overflow-hidden rounded-[24px] border border-white/10 bg-[#08090c] text-left shadow-[0_16px_48px_rgba(0,0,0,0.2)] transition-all duration-300 hover:-translate-y-1 hover:border-white/15 hover:bg-[#0b0d12] hover:shadow-[0_20px_56px_rgba(0,0,0,0.28)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
     >
-      <div className="relative aspect-video overflow-hidden bg-[#05070b]">
-        {item.fileName ? (
+      <div className={preserveAspectRatio ? "overflow-hidden bg-[#05070b]" : "relative aspect-video overflow-hidden bg-[#05070b]"}>
+        {item.fileName && preserveAspectRatio ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={`/api/uploads/${item.id}`}
+            alt=""
+            className="h-auto max-h-[36rem] w-full bg-[#05070b] object-contain transition-transform duration-300 group-hover:scale-[1.02]"
+          />
+        ) : item.fileName ? (
           <Image
             src={`/api/uploads/${item.id}`}
             alt=""

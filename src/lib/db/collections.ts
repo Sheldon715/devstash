@@ -3,6 +3,8 @@ import { Prisma } from "../../../generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { normalizeDashboardQueryLimit } from "@/lib/dashboard-query";
 import { normalizeDashboardItemTypeKey } from "@/lib/item-types";
+import { mapItemToDashboardRecord } from "@/lib/db/item-mappers";
+import type { DashboardItemRecord } from "@/lib/db/item-records";
 import type { DashboardItemTypeKey } from "@/lib/mock-data";
 
 export interface DashboardCollectionCardRecord {
@@ -137,6 +139,66 @@ export async function getDashboardSidebarCollections(
       .slice(0, normalizedLimit),
     recentCollections: collections.slice(0, normalizedLimit),
   };
+}
+
+export async function getDashboardCollectionItems(
+  userId: string,
+  collectionId: string,
+): Promise<DashboardItemRecord[]> {
+  const collectionItems = await prisma.collectionItem.findMany({
+    where: {
+      collectionId,
+      collection: {
+        userId,
+      },
+      item: {
+        userId,
+      },
+    },
+    orderBy: [{ sortOrder: "asc" }, { addedAt: "asc" }],
+    select: {
+      item: {
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          fileName: true,
+          fileMimeType: true,
+          fileSizeBytes: true,
+          isPinned: true,
+          isFavorite: true,
+          createdAt: true,
+          updatedAt: true,
+          type: {
+            select: {
+              key: true,
+              name: true,
+            },
+          },
+          tags: {
+            select: {
+              tag: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+          collections: {
+            select: {
+              collection: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return collectionItems.map(({ item }) => mapItemToDashboardRecord(item));
 }
 
 export async function getDashboardCollectionStats(userId: string): Promise<DashboardCollectionStats> {

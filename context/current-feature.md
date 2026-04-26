@@ -1,23 +1,33 @@
-# Current Feature
+# Current Feature: Collections Pages
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+Completed
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Create the `/collections` page and show the authenticated user's collections.
+- Create the `/collections/[id]` page and show the items in that collection.
+- Reuse the existing collection and item cards.
+- Link "View all collections" in the sidebar to `/collections`.
+- Link all collection cards to their specific collection page.
 
 ## Todo List
 
-<!-- Feature-specific checklist -->
+- [x] Review existing collection, sidebar, and item card patterns.
+- [x] Add or finish data helpers for all collections and collection detail items.
+- [x] Implement `/collections` and `/collections/[id]` with existing cards.
+- [x] Wire sidebar and collection card navigation.
+- [x] Run lint and production build verification.
 
 ## Notes
 
-<!-- Any extra notes -->
+- Loaded from inline request on 2026-04-26.
+- Follow-up: show image thumbnails inside collection item grids and allow wider layouts on large monitors.
 
 ## History
 
+- Collections Pages completed with dashboard-shell `/collections`, dynamic `/collections/[id]` item grids, linked collection cards, sidebar collection links, and passing lint/build verification.
 - Initial Next.js app scaffold created from Create Next App
 - Initial framework setup completed, including project context files and boilerplate cleanup
 - Dashboard UI Phase 1 completed with a `/dashboard` route, dark-mode dashboard shell, ShadCN-style UI primitives, and placeholder `Sidebar` and `Main` sections based on the phase 1 spec

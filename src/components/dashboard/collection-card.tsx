@@ -1,4 +1,5 @@
-import { MoreHorizontal, Star } from "lucide-react";
+import Link from "next/link";
+import { ArrowUpRight, Star } from "lucide-react";
 
 import {
   DashboardItemTypeIcon,
@@ -24,7 +25,11 @@ export function CollectionCard({ collection }: CollectionCardProps) {
       : "No items yet";
 
   return (
-    <article className="group relative flex min-h-[14.125rem] overflow-hidden rounded-[24px] border border-white/10 bg-[#08090c] p-5 shadow-[0_18px_56px_rgba(0,0,0,0.22)] transition-transform duration-200 hover:-translate-y-0.5">
+    <Link
+      href={`/collections/${collection.id}`}
+      className="group relative flex min-h-[14.125rem] overflow-hidden rounded-[24px] border border-white/10 bg-[#08090c] p-5 text-left shadow-[0_18px_56px_rgba(0,0,0,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:border-white/15 hover:bg-[#0b0d12] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      aria-label={`Open ${collection.name} collection`}
+    >
       <div
         className={`absolute inset-y-0 left-0 w-1 rounded-l-[24px] bg-current ${accentColor}`}
       />
@@ -45,13 +50,9 @@ export function CollectionCard({ collection }: CollectionCardProps) {
             </p>
           </div>
 
-          <button
-            type="button"
-            className="rounded-lg border border-transparent p-1.5 text-muted-foreground transition-colors hover:border-white/8 hover:bg-white/[0.03] hover:text-zinc-50"
-          >
-            <MoreHorizontal className="size-4.5" />
-            <span className="sr-only">Open collection actions</span>
-          </button>
+          <span className="rounded-lg border border-transparent p-1.5 text-muted-foreground transition-colors group-hover:border-white/8 group-hover:bg-white/[0.03] group-hover:text-zinc-50">
+            <ArrowUpRight className="size-4.5" />
+          </span>
         </div>
 
         <p className="line-clamp-2 max-w-lg text-sm leading-7 text-muted-foreground">
@@ -79,6 +80,6 @@ export function CollectionCard({ collection }: CollectionCardProps) {
           ) : null}
         </div>
       </div>
-    </article>
+    </Link>
   );
 }
