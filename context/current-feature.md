@@ -1,29 +1,20 @@
-# Current Feature: Settings Page
+# Current Feature
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Create a protected `/settings` page.
-- Add a Settings link to the user icon dropdown at the bottom of the sidebar.
-- Move account actions from the profile page to the settings page.
-- Keep delete account and password actions protected and user-scoped.
+<!-- Goals & requirements -->
 
 ## Todo List
 
-- [x] Create and switch to a feature branch.
-- [x] Add the protected settings route using the existing dashboard shell.
-- [x] Move account action UI from profile to settings.
-- [x] Add the settings dropdown link in the sidebar user menu.
-- [x] Run lint, tests, and production build.
+<!-- Feature-specific checklist -->
 
 ## Notes
 
-- Account actions are the password action and delete account flow currently shown on `/profile`.
-- The existing forgot password flow remains available from auth pages; settings should expose the account security action currently implemented as password change.
-- Checks passed: `npm run lint`, `npm run test`, and `npm run build`.
+<!-- Any extra notes -->
 
 ## History
 
@@ -70,3 +61,4 @@ In Progress
 - Collection Actions completed with ownership-safe collection edit/delete actions, collection metadata edit modal, delete confirmation that preserves items, hover-revealed animated card action menus, icon-only detail actions, and passing test/lint/build verification
 - Global Search / Command Palette completed with a Cmd/Ctrl+K palette, client-side grouped item and collection search, top-bar search trigger integration, item drawer and collection navigation, cmdk UI wiring, and focused search test coverage
 - Pagination completed with shared pagination constants/helpers, numbered controls, server-side paged item type and collection detail queries, dashboard limit constants, and passing lint/test/build verification
+- Settings Page completed with a protected `/settings` route, sidebar user-menu link, account actions moved from profile, profile type icons, aligned settings action rows, animated account dialogs, and passing lint/test/build verification
