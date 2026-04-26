@@ -44,9 +44,12 @@ export function SidebarCollections({
             {favoriteCollections.map((collection) => (
               <CollectionLink
                 key={collection.id}
+                collectionId={collection.id}
                 itemCount={collection.itemCount}
                 name={collection.name}
                 isCollapsed={isCollapsed}
+                onCloseMobile={onCloseMobile}
+                pathname={pathname}
                 showStar
               />
             ))}
@@ -58,10 +61,13 @@ export function SidebarCollections({
             {recentCollections.map((collection) => (
               <CollectionLink
                 key={collection.id}
+                collectionId={collection.id}
                 dominantTypeKey={collection.dominantTypeKey}
                 itemCount={collection.itemCount}
                 name={collection.name}
                 isCollapsed={isCollapsed}
+                onCloseMobile={onCloseMobile}
+                pathname={pathname}
               />
             ))}
 
@@ -167,23 +173,34 @@ function SidebarSection({
 }
 
 function CollectionLink({
+  collectionId,
   dominantTypeKey,
   isCollapsed,
   itemCount,
   name,
+  onCloseMobile,
+  pathname,
   showStar = false,
 }: {
+  collectionId: string;
   dominantTypeKey?: DashboardCollectionCardRecord["dominantTypeKey"];
   isCollapsed: boolean;
   itemCount: number;
   name: string;
+  onCloseMobile: () => void;
+  pathname: string;
   showStar?: boolean;
 }) {
+  const href = `/collections/${collectionId}`;
+
   return (
-    <div
+    <Link
+      href={href}
+      onClick={onCloseMobile}
       className={cn(
         "group flex items-center gap-2.5 rounded-xl border border-transparent px-2.5 py-[clamp(6px,0.85vh,9px)] transition-all duration-300 hover:border-white/8 hover:bg-white/[0.04] hover:text-white",
         isCollapsed && "justify-center",
+        pathname === href && "border-white/8 bg-white/[0.06] text-white",
       )}
     >
       <div className="flex size-[clamp(22px,2.8vh,28px)] shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-all duration-300 group-hover:bg-white/[0.04]">
@@ -218,6 +235,6 @@ function CollectionLink({
           </span>
         )}
       </div>
-    </div>
+    </Link>
   );
 }

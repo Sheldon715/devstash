@@ -110,14 +110,16 @@ export default async function ItemTypePage({ params }: ItemTypePageProps) {
         {items.length ? (
           isFileList ? (
             <FileListView items={items} />
-          ) : (
-            <section className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,28rem),1fr))] gap-5">
+          ) : isImageGallery ? (
+            <section className="grid grid-cols-1 gap-5 sm:grid-cols-2 2xl:grid-cols-3">
               {items.map((item) => (
-                isImageGallery ? (
-                  <ImageThumbnailCard key={item.id} item={item} />
-                ) : (
-                  <ItemCard key={item.id} item={item} variant="compact" />
-                )
+                <ImageThumbnailCard key={item.id} item={item} preserveAspectRatio />
+              ))}
+            </section>
+          ) : (
+            <section className="grid grid-cols-1 gap-5 lg:grid-cols-2 2xl:grid-cols-3">
+              {items.map((item) => (
+                <ItemCard key={item.id} item={item} variant="compact" />
               ))}
             </section>
           )

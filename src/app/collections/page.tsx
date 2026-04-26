@@ -4,22 +4,43 @@ import { ChevronRight } from "lucide-react";
 
 import { auth } from "@/auth";
 import { CollectionCard } from "@/components/dashboard/collection-card";
+import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { getAllDashboardCollections } from "@/lib/db/collections";
+import { getDashboardSidebarItemTypes } from "@/lib/db/items";
 
 export const dynamic = "force-dynamic";
 
 export default async function CollectionsPage() {
   const session = await auth();
 
-  if (!session?.user?.id) {
+  if (!session?.user?.id || !session.user.email) {
     redirect("/sign-in");
   }
 
-  const collections = await getAllDashboardCollections(session.user.id);
+  const [collections, sidebarItemTypes] = await Promise.all([
+    getAllDashboardCollections(session.user.id),
+    getDashboardSidebarItemTypes(session.user.id),
+  ]);
+  const favoriteCollections = collections.filter((collection) => collection.isFavorite).slice(0, 4);
+  const recentCollections = collections.slice(0, 4);
+  const collectionOptions = collections.map((collection) => ({
+    id: collection.id,
+    name: collection.name,
+  }));
 
   return (
-    <main className="min-h-screen bg-background px-4 py-8 text-foreground sm:px-6 lg:px-8">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
+    <DashboardShell
+      collectionOptions={collectionOptions}
+      currentUser={{
+        email: session.user.email,
+        image: session.user.image,
+        name: session.user.name,
+      }}
+      favoriteCollections={favoriteCollections}
+      recentCollections={recentCollections}
+      sidebarItemTypes={sidebarItemTypes}
+    >
+      <div className="mx-auto flex w-full flex-col gap-8">
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <Link href="/dashboard" className="transition-colors hover:text-foreground">
             Dashboard
@@ -40,12 +61,26 @@ export default async function CollectionsPage() {
           </p>
         </header>
 
-        <section className="grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
-          {collections.map((collection) => (
-            <CollectionCard key={collection.id} collection={collection} />
-          ))}
-        </section>
+        {collections.length ? (
+          <section className="grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
+            {collections.map((collection) => (
+              <CollectionCard key={collection.id} collection={collection} />
+            ))}
+          </section>
+        ) : (
+          <section className="rounded-[24px] border border-white/10 bg-[#08090c] p-8 shadow-[0_16px_48px_rgba(0,0,0,0.2)]">
+            <p className="text-sm uppercase tracking-[0.22em] text-muted-foreground">
+              Empty Workspace
+            </p>
+            <h2 className="mt-3 text-2xl font-semibold tracking-tight text-zinc-50">
+              No collections yet
+            </h2>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+              Collections will appear here as soon as you create them from the top bar.
+            </p>
+          </section>
+        )}
       </div>
-    </main>
+    </DashboardShell>
   );
 }
