@@ -1,36 +1,20 @@
-# Current Feature: Collection Actions
+# Current Feature
 
 ## Status
 
-Completed
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Add edit, delete, and favorite icon/button actions on `/collections/[id]`.
-- Implement collection metadata editing in a modal.
-- Add a delete confirmation for collections.
-- Ensure deleting a collection only removes the collection relationship; items themselves must remain.
-- Add a three-dot menu to collection cards on `/collections` and `/dashboard` with edit, delete, and favorite actions.
-- Keep favorite as a visible icon/button only for now; do not implement favorite behavior yet.
-- Make collection cards navigate to the collection detail page when clicking anywhere except the action menu.
+<!-- Goals & requirements -->
 
 ## Todo List
 
-- [x] Review existing collection pages, cards, routes, and collection server/data helpers.
-- [x] Add collection update and delete mutations with ownership checks and metadata validation.
-- [x] Add edit collection modal for metadata on collection detail and collection cards.
-- [x] Add delete confirmation that deletes only the collection, not its items.
-- [x] Add favorite icon/button surfaces without favorite behavior.
-- [x] Add three-dot dropdown actions on `/collections` and `/dashboard` cards while preserving card navigation.
-- [x] Add or update focused tests for collection actions.
-- [x] Run `npm run lint` and `npm run build`.
-- [x] Refine collection card menu visibility/animation and icon-only detail actions.
+<!-- Feature-specific checklist -->
 
 ## Notes
 
-- Favorite action is intentionally UI-only in this feature.
-- Collection deletion should rely on collection membership cleanup and must not delete `Item` records.
-- Card-level action controls must stop propagation so regular card clicks still navigate to `/collections/[id]`.
+<!-- Any extra notes -->
 
 ## History
 
@@ -74,3 +58,4 @@ Completed
 - Collection Create completed with an authenticated `/api/collections` create route, user-scoped collection DB helper, top-bar create collection modal with success/error toast feedback, refreshed server-rendered collection data, and passing lint/test/build verification
 - Add Items To Collections completed with reusable collection selection in new/edit item forms, ownership-safe collection membership persistence, aligned selector/card/dashboard polish, focused item action/db test coverage, and passing lint/test/build verification
 - Collections Pages completed with dashboard-shell `/collections`, dynamic `/collections/[id]` item grids, linked collection cards, sidebar collection links, native file/image collection sections, wider type grids, and passing lint/test/build verification
+- Collection Actions completed with ownership-safe collection edit/delete actions, collection metadata edit modal, delete confirmation that preserves items, hover-revealed animated card action menus, icon-only detail actions, and passing test/lint/build verification
