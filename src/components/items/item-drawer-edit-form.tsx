@@ -1,6 +1,10 @@
 "use client";
 
 import { CodeEditor } from "@/components/items/code-editor";
+import {
+  CollectionMultiSelect,
+  type CollectionOption,
+} from "@/components/items/collection-multi-select";
 import { MarkdownEditor } from "@/components/items/markdown-editor";
 import type {
   EditItemFormState,
@@ -15,17 +19,23 @@ import {
   ItemDrawerFooterMeta,
 } from "@/components/items/item-drawer-readonly-content";
 
+type EditItemTextField = Exclude<keyof EditItemFormState, "collectionIds">;
+
 interface ItemDrawerEditBodyProps {
+  collectionOptions: CollectionOption[];
   editError: string | null;
   formState: EditItemFormState;
   item: SerializedDashboardItemDetailRecord;
-  onChange: (field: keyof EditItemFormState, value: string) => void;
+  onCollectionIdsChange: (collectionIds: string[]) => void;
+  onChange: (field: EditItemTextField, value: string) => void;
 }
 
 export function ItemDrawerEditBody({
+  collectionOptions,
   editError,
   formState,
   item,
+  onCollectionIdsChange,
   onChange,
 }: ItemDrawerEditBodyProps) {
   const showContentField = ["command", "note", "prompt", "snippet"].includes(item.typeKey);
@@ -100,6 +110,12 @@ export function ItemDrawerEditBody({
         label="Tags"
         value={formState.tags}
         onChange={(value) => onChange("tags", value)}
+      />
+
+      <CollectionMultiSelect
+        options={collectionOptions}
+        selectedIds={formState.collectionIds}
+        onChange={onCollectionIdsChange}
       />
 
       <ItemDrawerCompactMeta item={item} />

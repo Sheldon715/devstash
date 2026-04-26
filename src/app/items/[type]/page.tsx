@@ -49,9 +49,14 @@ export default async function ItemTypePage({ params }: ItemTypePageProps) {
   const isImageGallery = itemType.typeKey === "image";
   const favoriteCollections = collections.filter((collection) => collection.isFavorite).slice(0, 4);
   const recentCollections = collections.slice(0, 4);
+  const collectionOptions = collections.map((collection) => ({
+    id: collection.id,
+    name: collection.name,
+  }));
 
   return (
     <DashboardShell
+      collectionOptions={collectionOptions}
       currentUser={{
         email: session.user.email,
         image: session.user.image,
@@ -93,7 +98,11 @@ export default async function ItemTypePage({ params }: ItemTypePageProps) {
             </div>
 
             <div className="sm:self-start">
-              <TypePageCreateButton typeKey={itemType.typeKey} typeName={itemType.name} />
+              <TypePageCreateButton
+                collectionOptions={collectionOptions}
+                typeKey={itemType.typeKey}
+                typeName={itemType.name}
+              />
             </div>
           </div>
         </header>

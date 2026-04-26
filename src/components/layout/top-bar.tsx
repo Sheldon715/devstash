@@ -9,12 +9,14 @@ import { CreateItemDialog } from "@/components/items/create-item-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { normalizeDashboardItemTypeRouteKey } from "@/lib/item-types";
+import type { CollectionOption } from "@/components/items/collection-multi-select";
 
 interface TopBarProps {
+  collectionOptions: CollectionOption[];
   onOpenMobileSidebar: () => void;
 }
 
-export function TopBar({ onOpenMobileSidebar }: TopBarProps) {
+export function TopBar({ collectionOptions, onOpenMobileSidebar }: TopBarProps) {
   const [isCreateCollectionDialogOpen, setIsCreateCollectionDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const pathname = usePathname();
@@ -81,6 +83,7 @@ export function TopBar({ onOpenMobileSidebar }: TopBarProps) {
 
       <CreateItemDialog
         key={routeType ?? "default"}
+        collectionOptions={collectionOptions}
         initialType={routeType ?? "snippet"}
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}

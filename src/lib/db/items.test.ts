@@ -8,6 +8,7 @@ const {
   prismaItemFindFirstMock,
   prismaItemTypeFindFirstMock,
   prismaItemUpdateMock,
+  prismaCollectionFindManyMock,
 } = vi.hoisted(() => ({
   deleteR2ObjectMock: vi.fn(),
   prismaItemCreateMock: vi.fn(),
@@ -16,6 +17,7 @@ const {
   prismaItemFindFirstMock: vi.fn(),
   prismaItemTypeFindFirstMock: vi.fn(),
   prismaItemUpdateMock: vi.fn(),
+  prismaCollectionFindManyMock: vi.fn(),
 }));
 
 vi.mock("@/lib/storage/r2", () => ({
@@ -34,6 +36,9 @@ vi.mock("@/lib/prisma", () => ({
     itemType: {
       findMany: vi.fn(),
       findFirst: prismaItemTypeFindFirstMock,
+    },
+    collection: {
+      findMany: prismaCollectionFindManyMock,
     },
   },
 }));
@@ -55,6 +60,7 @@ describe("item db queries", () => {
     prismaItemFindFirstMock.mockReset();
     prismaItemTypeFindFirstMock.mockReset();
     prismaItemUpdateMock.mockReset();
+    prismaCollectionFindManyMock.mockReset();
     deleteR2ObjectMock.mockReset();
   });
 
@@ -114,16 +120,19 @@ describe("item db queries", () => {
       collections: [
         {
           collection: {
+            id: "collection-backend",
             name: "Backend",
           },
         },
         {
           collection: {
+            id: "collection-snippets",
             name: "Snippets",
           },
         },
         {
           collection: {
+            id: "collection-backend",
             name: "Backend",
           },
         },
@@ -143,6 +152,7 @@ describe("item db queries", () => {
       fileSizeBytes: null,
       language: "typescript",
       aiSummary: "Utilities for guarding authenticated requests.",
+      collectionIds: ["collection-backend", "collection-snippets"],
       collectionNames: ["Backend", "Snippets"],
       tags: [
         {
@@ -264,6 +274,7 @@ describe("item db queries", () => {
         url: null,
         language: null,
         tags: [],
+        collectionIds: [],
       }),
     ).resolves.toBeNull();
 
@@ -321,6 +332,7 @@ describe("item db queries", () => {
         url: null,
         language: "shell",
         tags: ["cli", "cli"],
+        collectionIds: [],
       }),
     ).resolves.toEqual({
       id: "item-1",
@@ -335,6 +347,7 @@ describe("item db queries", () => {
       fileSizeBytes: null,
       language: "shell",
       aiSummary: null,
+      collectionIds: [],
       collectionNames: [],
       tags: [
         {
@@ -385,6 +398,117 @@ describe("item db queries", () => {
                     },
                   },
                 },
+              },
+            ],
+          },
+        }),
+      }),
+    );
+  });
+
+  it("creates collection memberships for owned collections", async () => {
+    const createdAt = new Date("2026-04-22T03:12:00.000Z");
+    const updatedAt = new Date("2026-04-24T08:30:00.000Z");
+
+    prismaItemTypeFindFirstMock.mockResolvedValue({
+      id: "type-note",
+      contentMode: "TEXT",
+    });
+    prismaCollectionFindManyMock.mockResolvedValue([
+      {
+        id: "collection-1",
+      },
+      {
+        id: "collection-2",
+      },
+    ]);
+    prismaItemCreateMock.mockResolvedValue({
+      id: "item-1",
+      title: "Launch notes",
+      description: null,
+      contentMode: "TEXT",
+      content: "Ship it.",
+      url: null,
+      fileName: null,
+      fileUrl: null,
+      fileMimeType: null,
+      fileSizeBytes: null,
+      language: null,
+      aiSummary: null,
+      isPinned: false,
+      isFavorite: false,
+      createdAt,
+      updatedAt,
+      lastAccessedAt: null,
+      type: {
+        key: "note",
+        name: "note",
+      },
+      tags: [],
+      collections: [
+        {
+          collection: {
+            id: "collection-1",
+            name: "Planning",
+          },
+        },
+        {
+          collection: {
+            id: "collection-2",
+            name: "Launch",
+          },
+        },
+      ],
+    });
+
+    await expect(
+      createItem("user-1", {
+        typeKey: "note",
+        title: "Launch notes",
+        description: null,
+        content: "Ship it.",
+        file: null,
+        url: null,
+        language: null,
+        tags: [],
+        collectionIds: ["collection-1", "collection-2", "collection-1", "other-user"],
+      }),
+    ).resolves.toMatchObject({
+      collectionIds: ["collection-1", "collection-2"],
+      collectionNames: ["Planning", "Launch"],
+    });
+
+    expect(prismaCollectionFindManyMock).toHaveBeenCalledWith({
+      where: {
+        id: {
+          in: ["collection-1", "collection-2", "other-user"],
+        },
+        userId: "user-1",
+      },
+      select: {
+        id: true,
+      },
+    });
+    expect(prismaItemCreateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          collections: {
+            create: [
+              {
+                collection: {
+                  connect: {
+                    id: "collection-1",
+                  },
+                },
+                sortOrder: 0,
+              },
+              {
+                collection: {
+                  connect: {
+                    id: "collection-2",
+                  },
+                },
+                sortOrder: 1,
               },
             ],
           },
@@ -472,6 +596,7 @@ describe("item db queries", () => {
       fileSizeBytes: null,
       language: "typescript",
       aiSummary: null,
+      collectionIds: [],
       collectionNames: [],
       tags: [
         {
@@ -514,6 +639,87 @@ describe("item db queries", () => {
                     },
                   },
                 },
+              },
+            ],
+          },
+        }),
+      }),
+    );
+  });
+
+  it("replaces collection memberships for owned items", async () => {
+    const createdAt = new Date("2026-04-22T03:12:00.000Z");
+    const updatedAt = new Date("2026-04-24T08:30:00.000Z");
+
+    prismaItemFindFirstMock.mockResolvedValue({
+      id: "item-1",
+    });
+    prismaCollectionFindManyMock.mockResolvedValue([
+      {
+        id: "collection-2",
+      },
+    ]);
+    prismaItemUpdateMock.mockResolvedValue({
+      id: "item-1",
+      title: "Updated auth helper",
+      description: null,
+      contentMode: "TEXT",
+      content: "Auth notes",
+      url: null,
+      fileName: null,
+      fileUrl: null,
+      fileMimeType: null,
+      fileSizeBytes: null,
+      language: null,
+      aiSummary: null,
+      isPinned: false,
+      isFavorite: false,
+      createdAt,
+      updatedAt,
+      lastAccessedAt: null,
+      type: {
+        key: "note",
+        name: "note",
+      },
+      tags: [],
+      collections: [
+        {
+          collection: {
+            id: "collection-2",
+            name: "Backend",
+          },
+        },
+      ],
+    });
+
+    await expect(
+      updateItem("user-1", "item-1", {
+        title: "Updated auth helper",
+        description: null,
+        content: "Auth notes",
+        url: null,
+        language: null,
+        tags: [],
+        collectionIds: ["collection-2", "collection-2", "other-user"],
+      }),
+    ).resolves.toMatchObject({
+      collectionIds: ["collection-2"],
+      collectionNames: ["Backend"],
+    });
+
+    expect(prismaItemUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          collections: {
+            deleteMany: {},
+            create: [
+              {
+                collection: {
+                  connect: {
+                    id: "collection-2",
+                  },
+                },
+                sortOrder: 0,
               },
             ],
           },

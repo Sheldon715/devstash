@@ -41,6 +41,7 @@ export interface DashboardItemDetailRecord {
   fileSizeBytes: number | null;
   language: string | null;
   aiSummary: string | null;
+  collectionIds: string[];
   collectionNames: string[];
   tags: DashboardItemDetailTagRecord[];
   isPinned: boolean;
@@ -76,6 +77,7 @@ export interface UpdateItemData {
   url: string | null;
   language: string | null;
   tags: string[];
+  collectionIds?: string[];
 }
 
 export type CreatableItemTypeKey = DashboardItemTypeKey;
@@ -89,6 +91,7 @@ export interface CreateItemData {
   url: string | null;
   language: string | null;
   tags: string[];
+  collectionIds: string[];
 }
 
 export interface DownloadableItemFileRecord {

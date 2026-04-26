@@ -1,20 +1,30 @@
-# Current Feature
+# Current Feature: Add Items To Collections
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Add collection selection to the new item form.
+- Add collection selection to the edit item form.
+- Allow an item to be added to one or multiple existing collections.
+- Persist collection membership when creating or updating an item.
+- Keep collection page display out of scope for this feature.
 
 ## Todo List
 
-<!-- Feature-specific checklist -->
+- [x] Review item create/edit form data flow and existing collection helpers.
+- [x] Load available user collections for item create/edit UI.
+- [x] Add multi-select collection input to new and edit item forms.
+- [x] Persist collection memberships through item create/update actions.
+- [x] Add or update focused tests for collection membership writes.
+- [x] Run lint and build verification.
 
 ## Notes
 
-<!-- Any extra notes -->
+- Collection pages do not need to be displayed or implemented yet.
+- Use existing user-scoped collections only; do not create collections from the item form in this feature.
 
 ## History
 

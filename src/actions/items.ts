@@ -103,6 +103,12 @@ const updateItemSchema = z.object({
   tags: z
     .array(z.string().trim().min(1, "Tags cannot be empty."))
     .transform((tags) => [...new Set(tags)]),
+  collectionIds: z
+    .array(z.string().trim().min(1, "Collections cannot be empty."))
+    .optional()
+    .transform((collectionIds) =>
+      collectionIds ? [...new Set(collectionIds)] : undefined,
+    ),
 });
 
 const creatableItemTypeKeys = [
@@ -309,6 +315,7 @@ function normalizeCreateItemPayload(data: z.infer<typeof createItemSchema>, user
     url: data.typeKey === "link" ? data.url : null,
     language: languageTypes.includes(data.typeKey) ? data.language : null,
     tags: data.tags,
+    collectionIds: data.collectionIds ?? [],
   };
 }
 

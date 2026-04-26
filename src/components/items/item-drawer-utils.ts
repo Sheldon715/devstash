@@ -23,6 +23,7 @@ export function createEditItemFormState(
     description: item.description === "No description yet." ? "" : item.description,
     tags: item.tags.map((tag) => tag.name).join(", "),
     content: item.content ?? "",
+    collectionIds: item.collectionIds,
     language: item.language ?? "",
     url: item.url ?? "",
   };

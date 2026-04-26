@@ -25,6 +25,7 @@ import {
 import { useRouter } from "next/navigation";
 
 import { deleteItem, updateItem } from "@/actions/items";
+import type { CollectionOption } from "@/components/items/collection-multi-select";
 import { ItemDrawerEditBody } from "@/components/items/item-drawer-edit-form";
 import {
   DrawerActionBarSkeleton,
@@ -77,6 +78,7 @@ interface ItemDrawerContextValue {
 }
 
 const ItemDrawerContext = createContext<ItemDrawerContextValue | null>(null);
+type EditItemTextField = Exclude<keyof EditItemFormState, "collectionIds">;
 
 function useItemDrawerContext() {
   const context = useContext(ItemDrawerContext);
@@ -88,7 +90,13 @@ function useItemDrawerContext() {
   return context;
 }
 
-export function ItemDrawerProvider({ children }: { children: ReactNode }) {
+export function ItemDrawerProvider({
+  children,
+  collectionOptions,
+}: {
+  children: ReactNode;
+  collectionOptions: CollectionOption[];
+}) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
@@ -376,9 +384,11 @@ export function ItemDrawerProvider({ children }: { children: ReactNode }) {
             <div className="devstash-scrollbar min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6 sm:py-6">
               {selectedItem && isEditing && editFormState ? (
                 <ItemDrawerEditBody
+                  collectionOptions={collectionOptions}
                   editError={editError}
                   formState={editFormState}
                   item={selectedItem}
+                  onCollectionIdsChange={updateEditCollectionIds}
                   onChange={updateEditFormField}
                 />
               ) : selectedItem ? (
@@ -476,12 +486,24 @@ export function ItemDrawerProvider({ children }: { children: ReactNode }) {
     setIsEditing(false);
   }
 
-  function updateEditFormField(field: keyof EditItemFormState, value: string) {
+  function updateEditFormField(field: EditItemTextField, value: string) {
     setEditFormState((current) =>
       current
         ? {
             ...current,
             [field]: value,
+          }
+        : current,
+    );
+    setEditError(null);
+  }
+
+  function updateEditCollectionIds(collectionIds: string[]) {
+    setEditFormState((current) =>
+      current
+        ? {
+            ...current,
+            collectionIds,
           }
         : current,
     );
@@ -506,6 +528,7 @@ export function ItemDrawerProvider({ children }: { children: ReactNode }) {
         language: editFormState.language,
         url: editFormState.url,
         tags: parseTagsInput(editFormState.tags),
+        collectionIds: editFormState.collectionIds,
       });
     } catch {
       const message = "We couldn't save this item right now.";

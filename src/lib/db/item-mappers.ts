@@ -13,6 +13,7 @@ interface ItemTypeRelation {
 
 interface ItemCollectionRelation {
   collection: {
+    id?: string;
     name: string;
   };
 }
@@ -85,6 +86,13 @@ export function mapItemToDashboardDetailRecord(
     fileSizeBytes: item.fileSizeBytes,
     language: item.language,
     aiSummary: item.aiSummary,
+    collectionIds: [
+      ...new Set(
+        item.collections
+          .map(({ collection }) => collection.id)
+          .filter((id): id is string => Boolean(id)),
+      ),
+    ],
     collectionNames: [...new Set(item.collections.map(({ collection }) => collection.name))],
     tags: item.tags
       .map(({ tag }) => ({

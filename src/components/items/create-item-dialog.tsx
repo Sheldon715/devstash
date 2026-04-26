@@ -5,6 +5,10 @@ import { LoaderCircle, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { createItem } from "@/actions/items";
+import {
+  CollectionMultiSelect,
+  type CollectionOption,
+} from "@/components/items/collection-multi-select";
 import { FileUpload } from "@/components/items/file-upload";
 import { CreateItemTypePicker } from "@/components/items/create-item-type-picker";
 import {
@@ -38,6 +42,7 @@ import { deleteTemporaryUpload, queueTemporaryUploadCleanup } from "@/lib/upload
 import type { UploadedFileMetadata } from "@/lib/uploads";
 
 interface CreateItemDialogProps {
+  collectionOptions: CollectionOption[];
   initialType?: CreatableItemTypeKey;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -48,6 +53,7 @@ interface CreateItemFormState {
   description: string;
   tags: string;
   content: string;
+  collectionIds: string[];
   language: string;
   url: string;
 }
@@ -58,16 +64,24 @@ interface CreateItemToastState {
   variant: "error" | "success";
 }
 
+type CreateItemTextField = Exclude<keyof CreateItemFormState, "collectionIds">;
+
 const emptyFormState: CreateItemFormState = {
   title: "",
   description: "",
   tags: "",
   content: "",
+  collectionIds: [],
   language: "",
   url: "",
 };
 
-export function CreateItemDialog({ initialType = "snippet", onOpenChange, open }: CreateItemDialogProps) {
+export function CreateItemDialog({
+  collectionOptions,
+  initialType = "snippet",
+  onOpenChange,
+  open,
+}: CreateItemDialogProps) {
   const router = useRouter();
   const defaultType = useMemo(() => normalizeCreatableItemType(initialType), [initialType]);
   const [selectedType, setSelectedType] = useState<CreatableItemTypeKey>(defaultType);
@@ -144,7 +158,7 @@ export function CreateItemDialog({ initialType = "snippet", onOpenChange, open }
     }
   }, [showFileUpload, uploadedFile]);
 
-  function updateFormField(field: keyof CreateItemFormState, value: string) {
+  function updateFormField(field: CreateItemTextField, value: string) {
     setFormState((current) => ({
       ...current,
       [field]: value,
@@ -174,6 +188,7 @@ export function CreateItemDialog({ initialType = "snippet", onOpenChange, open }
         language: formState.language,
         url: formState.url,
         tags: parseTagsInput(formState.tags),
+        collectionIds: formState.collectionIds,
       });
     } catch {
       const message = "We couldn't create this item right now.";
@@ -340,6 +355,13 @@ export function CreateItemDialog({ initialType = "snippet", onOpenChange, open }
                   value={formState.tags}
                   onChange={(value) => updateFormField("tags", value)}
                 />
+
+                <CollectionMultiSelect
+                  disabled={isSubmitting}
+                  options={collectionOptions}
+                  selectedIds={formState.collectionIds}
+                  onChange={handleCollectionIdsChange}
+                />
               </div>
             </div>
 
@@ -394,6 +416,14 @@ export function CreateItemDialog({ initialType = "snippet", onOpenChange, open }
     }
 
     setIsTypeMenuOpen(false);
+    setError(null);
+  }
+
+  function handleCollectionIdsChange(collectionIds: string[]) {
+    setFormState((current) => ({
+      ...current,
+      collectionIds,
+    }));
     setError(null);
   }
 
