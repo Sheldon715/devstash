@@ -12,6 +12,10 @@ import {
   getRecentDashboardItems,
   getDashboardSidebarItemTypes,
 } from "@/lib/db/items";
+import {
+  getDashboardSearchItems,
+  mapCollectionsToDashboardSearchRecords,
+} from "@/lib/db/search";
 
 export const dynamic = "force-dynamic";
 
@@ -24,11 +28,12 @@ export default async function DashboardPage() {
     redirect("/sign-in");
   }
 
-  const [collections, sidebarItemTypes, pinnedItems, recentItems] = await Promise.all([
+  const [collections, sidebarItemTypes, pinnedItems, recentItems, searchItems] = await Promise.all([
     getAllDashboardCollections(session.user.id),
     getDashboardSidebarItemTypes(session.user.id),
     getPinnedDashboardItems(session.user.id),
     getRecentDashboardItems(session.user.id, DASHBOARD_RECENT_ITEM_LIMIT),
+    getDashboardSearchItems(session.user.id),
   ]);
   const favoriteCollections = collections.filter((collection) => collection.isFavorite).slice(0, 4);
   const recentCollections = collections.slice(0, 4);
@@ -36,6 +41,10 @@ export default async function DashboardPage() {
     id: collection.id,
     name: collection.name,
   }));
+  const searchData = {
+    items: searchItems,
+    collections: mapCollectionsToDashboardSearchRecords(collections),
+  };
 
   return (
     <DashboardShell
@@ -47,6 +56,7 @@ export default async function DashboardPage() {
       }}
       favoriteCollections={favoriteCollections}
       recentCollections={recentCollections}
+      searchData={searchData}
       sidebarItemTypes={sidebarItemTypes}
     >
       <div className="mx-auto w-full space-y-8 xl:space-y-9">

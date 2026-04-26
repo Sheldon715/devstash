@@ -17,6 +17,10 @@ import {
   getDashboardItemTypePage,
   getDashboardSidebarItemTypes,
 } from "@/lib/db/items";
+import {
+  getDashboardSearchItems,
+  mapCollectionsToDashboardSearchRecords,
+} from "@/lib/db/search";
 
 export const dynamic = "force-dynamic";
 
@@ -34,10 +38,11 @@ export default async function ItemTypePage({ params }: ItemTypePageProps) {
   }
 
   const { type } = await params;
-  const [collections, sidebarItemTypes, itemTypePage] = await Promise.all([
+  const [collections, sidebarItemTypes, itemTypePage, searchItems] = await Promise.all([
     getAllDashboardCollections(session.user.id),
     getDashboardSidebarItemTypes(session.user.id),
     getDashboardItemTypePage(session.user.id, type),
+    getDashboardSearchItems(session.user.id),
   ]);
 
   if (!itemTypePage) {
@@ -53,6 +58,10 @@ export default async function ItemTypePage({ params }: ItemTypePageProps) {
     id: collection.id,
     name: collection.name,
   }));
+  const searchData = {
+    items: searchItems,
+    collections: mapCollectionsToDashboardSearchRecords(collections),
+  };
 
   return (
     <DashboardShell
@@ -64,6 +73,7 @@ export default async function ItemTypePage({ params }: ItemTypePageProps) {
       }}
       favoriteCollections={favoriteCollections}
       recentCollections={recentCollections}
+      searchData={searchData}
       sidebarItemTypes={sidebarItemTypes}
     >
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">

@@ -14,9 +14,14 @@ import type { CollectionOption } from "@/components/items/collection-multi-selec
 interface TopBarProps {
   collectionOptions: CollectionOption[];
   onOpenMobileSidebar: () => void;
+  onOpenSearchPalette: () => void;
 }
 
-export function TopBar({ collectionOptions, onOpenMobileSidebar }: TopBarProps) {
+export function TopBar({
+  collectionOptions,
+  onOpenMobileSidebar,
+  onOpenSearchPalette,
+}: TopBarProps) {
   const [isCreateCollectionDialogOpen, setIsCreateCollectionDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const pathname = usePathname();
@@ -41,8 +46,10 @@ export function TopBar({ collectionOptions, onOpenMobileSidebar }: TopBarProps) 
             <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               aria-label="Search items"
-              placeholder="Search items..."
-              className="h-11 rounded-xl border-border/80 bg-card pl-9 pr-20"
+              placeholder="Search items, collections..."
+              readOnly
+              className="h-11 cursor-pointer rounded-xl border-border/80 bg-card pl-9 pr-20"
+              onClick={onOpenSearchPalette}
             />
             <span className="pointer-events-none absolute top-1/2 right-3 hidden -translate-y-1/2 rounded-md border border-border/80 bg-background px-2 py-1 text-[10px] font-medium tracking-[0.2em] text-muted-foreground uppercase sm:inline-flex">
               Ctrl K
