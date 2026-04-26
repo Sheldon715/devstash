@@ -1,10 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import { getDashboardItemTypeKeys, normalizeDashboardItemTypeKey } from "@/lib/item-types";
+import type { DashboardItemTypeKey } from "@/lib/mock-data";
 
 export interface ProfileItemTypeStat {
   count: number;
   key: string;
   label: string;
+  typeKey: DashboardItemTypeKey;
 }
 
 export interface ProfilePageData {
@@ -127,10 +129,11 @@ export async function getProfilePageData(userId: string): Promise<ProfilePageDat
       (left, right) =>
         itemTypeOrder.indexOf(left.normalizedKey) - itemTypeOrder.indexOf(right.normalizedKey),
     )
-    .map(({ count, key, label }) => ({
+    .map(({ count, key, label, normalizedKey }) => ({
       count,
       key,
       label,
+      typeKey: normalizedKey,
     }));
 
   return {

@@ -26,17 +26,17 @@ export function ChangePasswordCard() {
 
   return (
     <>
-      <div className="rounded-[1.5rem] border border-white/8 bg-white/[0.03] p-5">
+      <div className="account-action-row rounded-[1.5rem] border border-white/8 bg-white/[0.03] p-5">
         <p className="text-sm font-semibold text-zinc-50">Change password</p>
         <p className="mt-2 text-sm leading-6 text-zinc-300">
-          Update your email-password credential without leaving your profile.
+          Update your email-password credential without leaving settings.
         </p>
 
         <div className="mt-4 flex flex-wrap gap-3">
           <button
             type="button"
             onClick={() => setIsOpen(true)}
-            className="inline-flex h-11 items-center justify-center rounded-2xl bg-white px-4 text-sm font-semibold text-black transition-colors hover:bg-zinc-200"
+            className="inline-flex h-11 items-center justify-center rounded-2xl bg-white px-4 text-sm font-semibold text-black transition-all duration-200 hover:-translate-y-0.5 hover:bg-zinc-200 active:translate-y-0 active:scale-[0.98]"
           >
             <KeyRound className="mr-2 size-4" />
             Change password
@@ -106,12 +106,12 @@ function ChangePasswordModal({
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-[rgba(5,6,10,0.78)] px-4 py-8 backdrop-blur-md">
+    <div className="account-dialog-overlay-enter fixed inset-0 z-[120] flex items-center justify-center bg-[rgba(5,6,10,0.78)] px-4 py-8 backdrop-blur-md">
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="change-password-title"
-        className="w-full max-w-3xl rounded-[2rem] border border-white/10 bg-[#090a0e] p-6 shadow-[0_40px_140px_rgba(0,0,0,0.7)] sm:p-8"
+        className="account-dialog-panel-enter w-full max-w-3xl rounded-[2rem] border border-white/10 bg-[#090a0e] p-6 shadow-[0_40px_140px_rgba(0,0,0,0.7)] sm:p-8"
       >
         <div className="flex items-start justify-between gap-4">
           <div>

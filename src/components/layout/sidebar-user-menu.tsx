@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { LogOut, UserCircle2 } from "lucide-react";
+import { LogOut, Settings2, UserCircle2 } from "lucide-react";
 
 import { signOutAction } from "@/actions/auth";
 import { UserAvatar } from "@/components/auth/user-avatar";
@@ -123,6 +123,21 @@ export function SidebarUserMenu({ currentUser, isCollapsed }: SidebarUserMenuPro
               Profile
             </Link>
 
+            <Link
+              href="/settings"
+              onClick={() => setIsOpen(false)}
+              tabIndex={isOpen ? 0 : -1}
+              className={cn(
+                buttonVariants({ variant: "outline" }),
+                "h-10 w-full justify-start rounded-xl border-transparent bg-transparent px-3 text-sm text-zinc-200 transition-all duration-200 hover:bg-white/[0.05] hover:text-white",
+                isOpen ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0",
+              )}
+              style={{ transitionDelay: isOpen ? "80ms" : "0ms" }}
+            >
+              <Settings2 className="size-4" />
+              Settings
+            </Link>
+
             <form action={signOutAction}>
               <Button
                 type="submit"
@@ -132,7 +147,7 @@ export function SidebarUserMenu({ currentUser, isCollapsed }: SidebarUserMenuPro
                   "h-10 w-full justify-start rounded-xl border-transparent bg-transparent px-3 text-sm text-zinc-200 transition-all duration-200 hover:bg-white/[0.05] hover:text-white",
                   isOpen ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0",
                 )}
-                style={{ transitionDelay: isOpen ? "80ms" : "0ms" }}
+                style={{ transitionDelay: isOpen ? "120ms" : "0ms" }}
               >
                 <LogOut className="size-4" />
                 Sign out

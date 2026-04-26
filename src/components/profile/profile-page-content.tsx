@@ -1,10 +1,13 @@
 import Link from "next/link";
-import { ChevronRight, KeyRound, Sparkles } from "lucide-react";
+import { ChevronRight, Sparkles } from "lucide-react";
 
 import { UserAvatar } from "@/components/auth/user-avatar";
-import { ChangePasswordCard } from "@/components/profile/change-password-card";
-import { DeleteAccountCard } from "@/components/profile/delete-account-card";
+import {
+  DashboardItemTypeIcon,
+  getDashboardItemTypeColor,
+} from "@/lib/dashboard-icons";
 import type { ProfilePageData } from "@/lib/db/profile";
+import { cn } from "@/lib/utils";
 
 interface ProfilePageContentProps {
   profile: ProfilePageData;
@@ -49,7 +52,7 @@ export function ProfilePageContent({
               Profile
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-zinc-300 sm:text-base">
-              Manage your DevStash identity, review your usage footprint, and control access to your account.
+              Review your DevStash identity and usage footprint.
             </p>
           </div>
 
@@ -98,8 +101,7 @@ export function ProfilePageContent({
           <StatCard label="Tracked types" value={profile.itemTypeBreakdown.length} />
         </section>
 
-        <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-          <div className="rounded-[2rem] border border-border/70 bg-card/70 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.22)] backdrop-blur sm:p-8">
+        <section className="rounded-[2rem] border border-border/70 bg-card/70 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.22)] backdrop-blur sm:p-8">
             <div className="flex items-center gap-3">
               <div className="flex size-11 items-center justify-center rounded-[1rem] bg-sky-400/10 text-sky-200">
                 <Sparkles className="size-5" />
@@ -114,58 +116,37 @@ export function ProfilePageContent({
               </div>
             </div>
 
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               {profile.itemTypeBreakdown.map((itemType) => (
                 <div
                   key={itemType.key}
                   className="rounded-[1.35rem] border border-white/8 bg-background/50 px-4 py-4"
                 >
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm font-medium text-zinc-200">{itemType.label}</p>
-                    <span className="text-xs font-medium tracking-[0.18em] text-zinc-500 uppercase">
-                      Count
-                    </span>
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div
+                        className={cn(
+                          "flex size-10 shrink-0 items-center justify-center rounded-[0.9rem] bg-white/[0.04]",
+                          getDashboardItemTypeColor(itemType.typeKey),
+                        )}
+                      >
+                        <DashboardItemTypeIcon typeKey={itemType.typeKey} className="size-5" />
+                      </div>
+
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-zinc-200">
+                          {itemType.label}
+                        </p>
+                      </div>
+                    </div>
+
+                    <p className="shrink-0 text-2xl font-semibold tracking-tight text-zinc-50">
+                      {itemType.count}
+                    </p>
                   </div>
-                  <p className="mt-3 text-2xl font-semibold tracking-tight text-zinc-50">
-                    {itemType.count}
-                  </p>
                 </div>
               ))}
             </div>
-          </div>
-
-          <div className="space-y-6">
-            <section className="rounded-[2rem] border border-border/70 bg-card/70 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.22)] backdrop-blur sm:p-8">
-              <div className="flex items-center gap-3">
-                <div className="flex size-11 items-center justify-center rounded-[1rem] bg-amber-300/10 text-amber-200">
-                  <KeyRound className="size-5" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium tracking-[0.2em] text-muted-foreground uppercase">
-                    Account actions
-                  </p>
-                  <h3 className="mt-1 text-xl font-semibold tracking-tight text-zinc-50">
-                    Access and security
-                  </h3>
-                </div>
-              </div>
-
-              <div className="mt-6 space-y-4">
-                {profile.hasPassword ? (
-                  <ChangePasswordCard />
-                ) : (
-                  <div className="rounded-[1.5rem] border border-white/8 bg-white/[0.03] p-5">
-                    <p className="text-sm font-semibold text-zinc-50">Password settings</p>
-                    <p className="mt-2 text-sm leading-6 text-zinc-300">
-                      This account currently signs in through OAuth only, so there is no email-password credential to update.
-                    </p>
-                  </div>
-                )}
-              </div>
-            </section>
-
-            <DeleteAccountCard email={profile.email} />
-          </div>
         </section>
       </div>
   );

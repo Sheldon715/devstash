@@ -1,20 +1,29 @@
-# Current Feature
+# Current Feature: Settings Page
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Create a protected `/settings` page.
+- Add a Settings link to the user icon dropdown at the bottom of the sidebar.
+- Move account actions from the profile page to the settings page.
+- Keep delete account and password actions protected and user-scoped.
 
 ## Todo List
 
-<!-- Feature-specific checklist -->
+- [x] Create and switch to a feature branch.
+- [x] Add the protected settings route using the existing dashboard shell.
+- [x] Move account action UI from profile to settings.
+- [x] Add the settings dropdown link in the sidebar user menu.
+- [x] Run lint, tests, and production build.
 
 ## Notes
 
-<!-- Any extra notes -->
+- Account actions are the password action and delete account flow currently shown on `/profile`.
+- The existing forgot password flow remains available from auth pages; settings should expose the account security action currently implemented as password change.
+- Checks passed: `npm run lint`, `npm run test`, and `npm run build`.
 
 ## History
 
