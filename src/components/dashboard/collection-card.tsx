@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { ArrowUpRight, Star } from "lucide-react";
+import { Star } from "lucide-react";
 
+import { CollectionActions } from "@/components/collections/collection-actions";
 import {
   DashboardItemTypeIcon,
   getDashboardItemTypeColor,
@@ -25,16 +26,18 @@ export function CollectionCard({ collection }: CollectionCardProps) {
       : "No items yet";
 
   return (
-    <Link
-      href={`/collections/${collection.id}`}
-      className="group relative flex min-h-[14.125rem] overflow-hidden rounded-[24px] border border-white/10 bg-[#08090c] p-5 text-left shadow-[0_18px_56px_rgba(0,0,0,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:border-white/15 hover:bg-[#0b0d12] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-      aria-label={`Open ${collection.name} collection`}
-    >
+    <article className="group relative flex min-h-[14.125rem] overflow-hidden rounded-[24px] border border-white/10 bg-[#08090c] p-5 text-left shadow-[0_18px_56px_rgba(0,0,0,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:border-white/15 hover:bg-[#0b0d12]">
+      <Link
+        href={`/collections/${collection.id}`}
+        className="absolute inset-0 z-0 rounded-[24px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        aria-label={`Open ${collection.name} collection`}
+      />
+
       <div
         className={`absolute inset-y-0 left-0 w-1 rounded-l-[24px] bg-current ${accentColor}`}
       />
 
-      <div className="relative flex w-full flex-col gap-5 pl-1.5">
+      <div className="pointer-events-none relative z-10 flex w-full flex-col gap-5 pl-1.5">
         <div className="flex items-start justify-between gap-3">
           <div className="space-y-2">
             <div className="flex items-center gap-2.5">
@@ -50,9 +53,17 @@ export function CollectionCard({ collection }: CollectionCardProps) {
             </p>
           </div>
 
-          <span className="rounded-lg border border-transparent p-1.5 text-muted-foreground transition-colors group-hover:border-white/8 group-hover:bg-white/[0.03] group-hover:text-zinc-50">
-            <ArrowUpRight className="size-4.5" />
-          </span>
+          <div className="pointer-events-auto">
+            <CollectionActions
+              collection={{
+                id: collection.id,
+                name: collection.name,
+                descriptionValue: collection.descriptionValue,
+                isFavorite: collection.isFavorite,
+              }}
+              variant="menu"
+            />
+          </div>
         </div>
 
         <p className="line-clamp-2 max-w-lg text-sm leading-7 text-muted-foreground">
@@ -80,6 +91,6 @@ export function CollectionCard({ collection }: CollectionCardProps) {
           ) : null}
         </div>
       </div>
-    </Link>
+    </article>
   );
 }

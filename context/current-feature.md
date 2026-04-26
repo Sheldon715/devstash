@@ -1,20 +1,36 @@
-# Current Feature
+# Current Feature: Collection Actions
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+Completed
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Add edit, delete, and favorite icon/button actions on `/collections/[id]`.
+- Implement collection metadata editing in a modal.
+- Add a delete confirmation for collections.
+- Ensure deleting a collection only removes the collection relationship; items themselves must remain.
+- Add a three-dot menu to collection cards on `/collections` and `/dashboard` with edit, delete, and favorite actions.
+- Keep favorite as a visible icon/button only for now; do not implement favorite behavior yet.
+- Make collection cards navigate to the collection detail page when clicking anywhere except the action menu.
 
 ## Todo List
 
-<!-- Feature-specific checklist -->
+- [x] Review existing collection pages, cards, routes, and collection server/data helpers.
+- [x] Add collection update and delete mutations with ownership checks and metadata validation.
+- [x] Add edit collection modal for metadata on collection detail and collection cards.
+- [x] Add delete confirmation that deletes only the collection, not its items.
+- [x] Add favorite icon/button surfaces without favorite behavior.
+- [x] Add three-dot dropdown actions on `/collections` and `/dashboard` cards while preserving card navigation.
+- [x] Add or update focused tests for collection actions.
+- [x] Run `npm run lint` and `npm run build`.
+- [x] Refine collection card menu visibility/animation and icon-only detail actions.
 
 ## Notes
 
-<!-- Any extra notes -->
+- Favorite action is intentionally UI-only in this feature.
+- Collection deletion should rely on collection membership cleanup and must not delete `Item` records.
+- Card-level action controls must stop propagation so regular card clicks still navigate to `/collections/[id]`.
 
 ## History
 
