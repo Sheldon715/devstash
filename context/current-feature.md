@@ -1,20 +1,43 @@
-# Current Feature
+# Current Feature: Editor Preferences Settings
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Add an editor preferences section to the settings page.
+- Persist editor preferences to the database on the `User` model.
+- Create and run a Prisma migration for the database change.
+- Add a server action to update editor preferences.
+- Apply saved preferences to the Monaco editor component.
+- Auto-save preference changes without a save button.
+- Show a success toast when preferences save successfully.
+- Create an `EditorPreferencesContext` for client components.
 
 ## Todo List
 
-<!-- Feature-specific checklist -->
+- [x] Create feature branch.
+- [x] Add `editorPreferences` JSON field to the `User` model.
+- [x] Create and run a Prisma migration with `prisma migrate dev`.
+- [x] Add shared editor preference types, defaults, and validation.
+- [x] Create server action to update editor preferences for the authenticated user.
+- [x] Add `EditorPreferencesContext` for client components.
+- [x] Add editor preferences controls to the settings page.
+- [x] Auto-save preference changes and show success/error toast feedback.
+- [x] Apply saved preferences to the Monaco editor component.
+- [x] Add focused unit tests for preference utilities and server action behavior.
+- [x] Run `npm run lint`.
+- [x] Run `npm run build`.
 
 ## Notes
 
-<!-- Any extra notes -->
+- Source spec: `context/feature/editor-settings-spec.md`
+- Preferences: font size dropdown, tab size dropdown, word wrap toggle, minimap toggle, and theme dropdown.
+- Defaults: word wrap on, minimap off, theme `vs-dark`.
+- Supported themes: `vs-dark`, `monokai`, `github-dark`.
+- Store preferences in a JSON column named `editorPreferences` on `User`.
+- Use `prisma migrate dev`; never use `db push`.
 
 ## History
 

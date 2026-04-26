@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { ChevronRight, KeyRound, Mail, ShieldCheck } from "lucide-react";
+import { ChevronRight, KeyRound, Mail } from "lucide-react";
 
 import { ChangePasswordCard } from "@/components/profile/change-password-card";
 import { DeleteAccountCard } from "@/components/profile/delete-account-card";
+import { EditorPreferencesCard } from "@/components/settings/editor-preferences-card";
 import { buttonVariants } from "@/components/ui/button";
 import type { ProfilePageData } from "@/lib/db/profile";
 import { cn } from "@/lib/utils";
@@ -36,37 +37,9 @@ export function SettingsPageContent({ profile }: SettingsPageContentProps) {
             Manage security and account-level actions for your DevStash workspace.
           </p>
         </div>
-
-        <div className="grid gap-4 px-6 py-6 sm:px-8 sm:py-8 lg:grid-cols-2">
-          <div className="rounded-[1.5rem] border border-white/8 bg-white/[0.03] p-5">
-            <div className="flex items-start gap-4">
-              <div className="flex size-11 shrink-0 items-center justify-center rounded-[1rem] bg-sky-400/10 text-sky-200">
-                <ShieldCheck className="size-5" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-zinc-50">Signed in as</p>
-                <p className="mt-2 break-all text-sm leading-6 text-zinc-300">{profile.email}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-[1.5rem] border border-white/8 bg-white/[0.03] p-5">
-            <div className="flex items-start gap-4">
-              <div className="flex size-11 shrink-0 items-center justify-center rounded-[1rem] bg-amber-300/10 text-amber-200">
-                <KeyRound className="size-5" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-zinc-50">Password access</p>
-                <p className="mt-2 text-sm leading-6 text-zinc-300">
-                  {profile.hasPassword
-                    ? "This account has an email-password credential."
-                    : "This account currently signs in through OAuth only."}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
       </header>
+
+      <EditorPreferencesCard />
 
       <section className="rounded-[2rem] border border-border/70 bg-card/70 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.22)] backdrop-blur sm:p-8">
           <div className="flex items-center gap-3">

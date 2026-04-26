@@ -13,6 +13,7 @@ import {
   getAllDashboardCollections,
   getDashboardCollectionItemsPage,
 } from "@/lib/db/collections";
+import { getUserEditorPreferences } from "@/lib/db/editor-preferences";
 import { getDashboardSidebarItemTypes } from "@/lib/db/items";
 import {
   getDashboardSearchItems,
@@ -43,11 +44,18 @@ export default async function CollectionDetailPage({
 
   const [{ id }, resolvedSearchParams] = await Promise.all([params, searchParams]);
   const page = normalizePage(resolvedSearchParams.page);
-  const [collections, sidebarItemTypes, collectionItemsPage, searchItems] = await Promise.all([
+  const [
+    collections,
+    sidebarItemTypes,
+    collectionItemsPage,
+    searchItems,
+    editorPreferences,
+  ] = await Promise.all([
     getAllDashboardCollections(session.user.id),
     getDashboardSidebarItemTypes(session.user.id),
     getDashboardCollectionItemsPage(session.user.id, id, { page }),
     getDashboardSearchItems(session.user.id),
+    getUserEditorPreferences(session.user.id),
   ]);
   const collection = collections.find((candidate) => candidate.id === id);
 
@@ -80,6 +88,7 @@ export default async function CollectionDetailPage({
         image: session.user.image,
         name: session.user.name,
       }}
+      editorPreferences={editorPreferences}
       favoriteCollections={favoriteCollections}
       recentCollections={recentCollections}
       searchData={searchData}

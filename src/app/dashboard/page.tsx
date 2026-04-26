@@ -7,6 +7,7 @@ import { RecentItems } from "@/components/dashboard/recent-items";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { getAllDashboardCollections } from "@/lib/db/collections";
+import { getUserEditorPreferences } from "@/lib/db/editor-preferences";
 import {
   getPinnedDashboardItems,
   getRecentDashboardItems,
@@ -30,12 +31,20 @@ export default async function DashboardPage() {
     redirect("/sign-in");
   }
 
-  const [collections, sidebarItemTypes, pinnedItems, recentItems, searchItems] = await Promise.all([
+  const [
+    collections,
+    sidebarItemTypes,
+    pinnedItems,
+    recentItems,
+    searchItems,
+    editorPreferences,
+  ] = await Promise.all([
     getAllDashboardCollections(session.user.id),
     getDashboardSidebarItemTypes(session.user.id),
     getPinnedDashboardItems(session.user.id),
     getRecentDashboardItems(session.user.id, DASHBOARD_RECENT_ITEMS_LIMIT),
     getDashboardSearchItems(session.user.id),
+    getUserEditorPreferences(session.user.id),
   ]);
   const favoriteCollections = collections.filter((collection) => collection.isFavorite).slice(0, 4);
   const recentCollections = collections.slice(0, 4);
@@ -56,6 +65,7 @@ export default async function DashboardPage() {
         image: session.user.image,
         name: session.user.name,
       }}
+      editorPreferences={editorPreferences}
       favoriteCollections={favoriteCollections}
       recentCollections={recentCollections}
       searchData={searchData}
