@@ -3,6 +3,12 @@ import { Prisma } from "../../../generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { normalizeDashboardQueryLimit } from "@/lib/dashboard-query";
 import { normalizeDashboardItemTypeKey } from "@/lib/item-types";
+import {
+  COLLECTIONS_PER_PAGE,
+  DASHBOARD_COLLECTIONS_LIMIT,
+  getPaginationOffset,
+  getPaginationState,
+} from "@/lib/pagination";
 import { mapItemToDashboardRecord } from "@/lib/db/item-mappers";
 import type { DashboardItemRecord } from "@/lib/db/item-records";
 import type { DashboardItemTypeKey } from "@/lib/mock-data";
@@ -134,7 +140,10 @@ export async function getAllDashboardCollections(userId: string) {
   return collections.map(mapCollectionToCardRecord);
 }
 
-export async function getRecentDashboardCollections(userId: string, limit = 6) {
+export async function getRecentDashboardCollections(
+  userId: string,
+  limit = DASHBOARD_COLLECTIONS_LIMIT,
+) {
   const collections = await getAllDashboardCollections(userId);
 
   return collections.slice(0, normalizeDashboardQueryLimit(limit));
@@ -158,7 +167,12 @@ export async function getDashboardSidebarCollections(
 export async function getDashboardCollectionItems(
   userId: string,
   collectionId: string,
+  options?: {
+    page?: number;
+    pageSize?: number;
+  },
 ): Promise<DashboardItemRecord[]> {
+  const pageSize = normalizeDashboardQueryLimit(options?.pageSize);
   const collectionItems = await prisma.collectionItem.findMany({
     where: {
       collectionId,
@@ -170,6 +184,11 @@ export async function getDashboardCollectionItems(
       },
     },
     orderBy: [{ sortOrder: "asc" }, { addedAt: "asc" }],
+    skip:
+      options?.page === undefined || pageSize === undefined
+        ? undefined
+        : getPaginationOffset(options.page, pageSize),
+    take: pageSize,
     select: {
       item: {
         select: {
@@ -213,6 +232,40 @@ export async function getDashboardCollectionItems(
   });
 
   return collectionItems.map(({ item }) => mapItemToDashboardRecord(item));
+}
+
+export async function getDashboardCollectionItemsPage(
+  userId: string,
+  collectionId: string,
+  options?: {
+    page?: number;
+    pageSize?: number;
+  },
+) {
+  const where = {
+    collectionId,
+    collection: {
+      userId,
+    },
+    item: {
+      userId,
+    },
+  };
+  const totalItems = await prisma.collectionItem.count({ where });
+  const pagination = getPaginationState(
+    totalItems,
+    options?.page ?? 1,
+    options?.pageSize ?? COLLECTIONS_PER_PAGE,
+  );
+  const items = await getDashboardCollectionItems(userId, collectionId, {
+    page: pagination.currentPage,
+    pageSize: pagination.pageSize,
+  });
+
+  return {
+    items,
+    pagination,
+  };
 }
 
 export async function getDashboardCollectionStats(userId: string): Promise<DashboardCollectionStats> {

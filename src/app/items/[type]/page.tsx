@@ -9,6 +9,7 @@ import { ImageThumbnailCard } from "@/components/items/image-thumbnail-card";
 import { TypePageCreateButton } from "@/components/items/type-page-create-button";
 import { getAllDashboardCollections } from "@/lib/db/collections";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
+import { PaginationControls } from "@/components/layout/pagination-controls";
 import {
   DashboardNamedIcon,
   getDashboardItemTypeColor,
@@ -21,6 +22,7 @@ import {
   getDashboardSearchItems,
   mapCollectionsToDashboardSearchRecords,
 } from "@/lib/db/search";
+import { normalizePage } from "@/lib/pagination";
 
 export const dynamic = "force-dynamic";
 
@@ -28,20 +30,24 @@ interface ItemTypePageProps {
   params: Promise<{
     type: string;
   }>;
+  searchParams: Promise<{
+    page?: string | string[];
+  }>;
 }
 
-export default async function ItemTypePage({ params }: ItemTypePageProps) {
+export default async function ItemTypePage({ params, searchParams }: ItemTypePageProps) {
   const session = await auth();
 
   if (!session?.user?.id || !session.user.email) {
     redirect("/sign-in");
   }
 
-  const { type } = await params;
+  const [{ type }, resolvedSearchParams] = await Promise.all([params, searchParams]);
+  const page = normalizePage(resolvedSearchParams.page);
   const [collections, sidebarItemTypes, itemTypePage, searchItems] = await Promise.all([
     getAllDashboardCollections(session.user.id),
     getDashboardSidebarItemTypes(session.user.id),
-    getDashboardItemTypePage(session.user.id, type),
+    getDashboardItemTypePage(session.user.id, type, { page }),
     getDashboardSearchItems(session.user.id),
   ]);
 
@@ -49,7 +55,7 @@ export default async function ItemTypePage({ params }: ItemTypePageProps) {
     notFound();
   }
 
-  const { itemType, items } = itemTypePage;
+  const { itemType, items, pagination } = itemTypePage;
   const isFileList = itemType.typeKey === "file";
   const isImageGallery = itemType.typeKey === "image";
   const favoriteCollections = collections.filter((collection) => collection.isFavorite).slice(0, 4);
@@ -102,7 +108,8 @@ export default async function ItemTypePage({ params }: ItemTypePageProps) {
                   {itemType.name}
                 </h1>
                 <p className="mt-2 text-base text-muted-foreground">
-                  {items.length} saved items in this category
+                  {itemType.totalItems} saved{" "}
+                  {itemType.totalItems === 1 ? "item" : "items"} in this category
                 </p>
               </div>
             </div>
@@ -118,21 +125,25 @@ export default async function ItemTypePage({ params }: ItemTypePageProps) {
         </header>
 
         {items.length ? (
-          isFileList ? (
-            <FileListView items={items} />
-          ) : isImageGallery ? (
-            <section className="grid grid-cols-1 gap-5 sm:grid-cols-2 2xl:grid-cols-3">
-              {items.map((item) => (
-                <ImageThumbnailCard key={item.id} item={item} preserveAspectRatio />
-              ))}
-            </section>
-          ) : (
-            <section className="grid grid-cols-1 gap-5 lg:grid-cols-2 2xl:grid-cols-3">
-              {items.map((item) => (
-                <ItemCard key={item.id} item={item} variant="compact" />
-              ))}
-            </section>
-          )
+          <div className="space-y-6">
+            {isFileList ? (
+              <FileListView items={items} />
+            ) : isImageGallery ? (
+              <section className="grid grid-cols-1 gap-5 sm:grid-cols-2 2xl:grid-cols-3">
+                {items.map((item) => (
+                  <ImageThumbnailCard key={item.id} item={item} preserveAspectRatio />
+                ))}
+              </section>
+            ) : (
+              <section className="grid grid-cols-1 gap-5 lg:grid-cols-2 2xl:grid-cols-3">
+                {items.map((item) => (
+                  <ItemCard key={item.id} item={item} variant="compact" />
+                ))}
+              </section>
+            )}
+
+            <PaginationControls basePath={`/items/${type}`} pagination={pagination} />
+          </div>
         ) : (
           <section className="rounded-[24px] border border-white/10 bg-[#08090c] p-8 shadow-[0_16px_48px_rgba(0,0,0,0.2)]">
             <p className="text-sm uppercase tracking-[0.22em] text-muted-foreground">

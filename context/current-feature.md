@@ -1,20 +1,35 @@
-# Current Feature
+# Current Feature: Pagination
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+Complete
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Add pagination to `/items/[type]` pages.
+- Add pagination to `/collections/[id]` pages.
+- Show numbered page links plus previous and next controls at the bottom of paginated listings.
+- Disable and grey out previous or next controls when there is no available page.
+- Use `ITEMS_PER_PAGE = 21` and `COLLECTIONS_PER_PAGE = 21`.
+- Keep dashboard query limits at `DASHBOARD_COLLECTIONS_LIMIT = 6` and `DASHBOARD_RECENT_ITEMS_LIMIT = 10`.
+- Fetch only the resources required for the active page instead of fetching all resources at once.
 
 ## Todo List
 
-<!-- Feature-specific checklist -->
+- [x] Review current item and collection page data loading.
+- [x] Add shared pagination constants and helpers where appropriate.
+- [x] Update item listing queries to fetch one page plus total count.
+- [x] Update collection detail queries to fetch one page plus total count.
+- [x] Build reusable pagination controls with numbered pages and prev/next states.
+- [x] Wire page query params into `/items/[type]` and `/collections/[id]`.
+- [x] Add or update focused tests for pagination helpers/query behavior.
+- [x] Run `npm run lint`, `npm run test`, and `npm run build`.
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec source: `context/feature/pagination-spec.md`.
+- Pagination controls should appear at the bottom of item and collection listings.
+- Avoid loading all items or collections just to paginate client-side.
 
 ## History
 

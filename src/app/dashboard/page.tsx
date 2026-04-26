@@ -16,10 +16,12 @@ import {
   getDashboardSearchItems,
   mapCollectionsToDashboardSearchRecords,
 } from "@/lib/db/search";
+import {
+  DASHBOARD_COLLECTIONS_LIMIT,
+  DASHBOARD_RECENT_ITEMS_LIMIT,
+} from "@/lib/pagination";
 
 export const dynamic = "force-dynamic";
-
-const DASHBOARD_RECENT_ITEM_LIMIT = 6;
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -32,7 +34,7 @@ export default async function DashboardPage() {
     getAllDashboardCollections(session.user.id),
     getDashboardSidebarItemTypes(session.user.id),
     getPinnedDashboardItems(session.user.id),
-    getRecentDashboardItems(session.user.id, DASHBOARD_RECENT_ITEM_LIMIT),
+    getRecentDashboardItems(session.user.id, DASHBOARD_RECENT_ITEMS_LIMIT),
     getDashboardSearchItems(session.user.id),
   ]);
   const favoriteCollections = collections.filter((collection) => collection.isFavorite).slice(0, 4);
@@ -70,7 +72,7 @@ export default async function DashboardPage() {
         </header>
 
         <StatsCards userId={session.user.id} />
-        <CollectionsSection collections={collections.slice(0, 6)} />
+        <CollectionsSection collections={collections.slice(0, DASHBOARD_COLLECTIONS_LIMIT)} />
         <PinnedItems items={pinnedItems} />
         <RecentItems items={recentItems} />
       </div>

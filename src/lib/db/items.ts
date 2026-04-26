@@ -3,6 +3,12 @@ import { deleteR2Object } from "@/lib/storage/r2";
 import { isUploadKeyOwnedByUser } from "@/lib/uploads";
 import { normalizeDashboardQueryLimit } from "@/lib/dashboard-query";
 import {
+  getPaginationOffset,
+  getPaginationState,
+  DASHBOARD_RECENT_ITEMS_LIMIT,
+  ITEMS_PER_PAGE,
+} from "@/lib/pagination";
+import {
   getDashboardItemTypeKeys,
   normalizeDashboardItemTypeKey,
   normalizeDashboardItemTypeRouteKey,
@@ -41,9 +47,16 @@ async function getDashboardItems(
   options?: {
     isPinned?: boolean;
     limit?: number;
+    page?: number;
+    pageSize?: number;
     typeKey?: string;
   },
 ) {
+  const pageSize =
+    options?.pageSize === undefined
+      ? normalizeDashboardQueryLimit(options?.limit)
+      : normalizeDashboardQueryLimit(options.pageSize);
+
   return prisma.item.findMany({
     where: {
       userId,
@@ -51,7 +64,11 @@ async function getDashboardItems(
       ...(options?.typeKey ? { type: { key: options.typeKey } } : {}),
     },
     orderBy: [{ updatedAt: "desc" }, { title: "asc" }],
-    take: normalizeDashboardQueryLimit(options?.limit),
+    skip:
+      options?.page === undefined || pageSize === undefined
+        ? undefined
+        : getPaginationOffset(options.page, pageSize),
+    take: pageSize,
     select: {
       id: true,
       title: true,
@@ -110,7 +127,7 @@ export async function getPinnedDashboardItems(userId: string, limit = 4) {
   return items.map(mapItemToDashboardRecord);
 }
 
-export async function getRecentDashboardItems(userId: string, limit = 10) {
+export async function getRecentDashboardItems(userId: string, limit = DASHBOARD_RECENT_ITEMS_LIMIT) {
   const items = await getDashboardItems(userId, {
     limit,
   });
@@ -179,7 +196,14 @@ export async function getDashboardSidebarItemTypes(userId: string) {
     );
 }
 
-export async function getDashboardItemTypePage(userId: string, typeKey: string) {
+export async function getDashboardItemTypePage(
+  userId: string,
+  typeKey: string,
+  options?: {
+    page?: number;
+    pageSize?: number;
+  },
+) {
   const normalizedTypeKey = normalizeDashboardItemTypeRouteKey(typeKey);
 
   if (!normalizedTypeKey) {
@@ -202,7 +226,22 @@ export async function getDashboardItemTypePage(userId: string, typeKey: string) 
     return null;
   }
 
+  const totalItems = await prisma.item.count({
+    where: {
+      userId,
+      type: {
+        key: itemType.key,
+      },
+    },
+  });
+  const pagination = getPaginationState(
+    totalItems,
+    options?.page ?? 1,
+    options?.pageSize ?? ITEMS_PER_PAGE,
+  );
   const items = await getDashboardItems(userId, {
+    page: pagination.currentPage,
+    pageSize: pagination.pageSize,
     typeKey: itemType.key,
   });
 
@@ -211,10 +250,11 @@ export async function getDashboardItemTypePage(userId: string, typeKey: string) 
       key: itemType.key,
       name: formatItemTypeLabel(itemType.name),
       icon: itemType.icon,
-      totalItems: items.length,
+      totalItems,
       typeKey: normalizeDashboardItemTypeKey(itemType.key),
     } satisfies DashboardItemTypePageRecord,
     items: items.map(mapItemToDashboardRecord),
+    pagination,
   };
 }
 

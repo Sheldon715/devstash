@@ -8,15 +8,17 @@ import { ItemCard } from "@/components/dashboard/item-card";
 import { FileListView } from "@/components/items/file-list-view";
 import { ImageThumbnailCard } from "@/components/items/image-thumbnail-card";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
+import { PaginationControls } from "@/components/layout/pagination-controls";
 import {
   getAllDashboardCollections,
-  getDashboardCollectionItems,
+  getDashboardCollectionItemsPage,
 } from "@/lib/db/collections";
 import { getDashboardSidebarItemTypes } from "@/lib/db/items";
 import {
   getDashboardSearchItems,
   mapCollectionsToDashboardSearchRecords,
 } from "@/lib/db/search";
+import { normalizePage } from "@/lib/pagination";
 
 export const dynamic = "force-dynamic";
 
@@ -24,10 +26,14 @@ interface CollectionDetailPageProps {
   params: Promise<{
     id: string;
   }>;
+  searchParams: Promise<{
+    page?: string | string[];
+  }>;
 }
 
 export default async function CollectionDetailPage({
   params,
+  searchParams,
 }: CollectionDetailPageProps) {
   const session = await auth();
 
@@ -35,11 +41,12 @@ export default async function CollectionDetailPage({
     redirect("/sign-in");
   }
 
-  const { id } = await params;
-  const [collections, sidebarItemTypes, items, searchItems] = await Promise.all([
+  const [{ id }, resolvedSearchParams] = await Promise.all([params, searchParams]);
+  const page = normalizePage(resolvedSearchParams.page);
+  const [collections, sidebarItemTypes, collectionItemsPage, searchItems] = await Promise.all([
     getAllDashboardCollections(session.user.id),
     getDashboardSidebarItemTypes(session.user.id),
-    getDashboardCollectionItems(session.user.id, id),
+    getDashboardCollectionItemsPage(session.user.id, id, { page }),
     getDashboardSearchItems(session.user.id),
   ]);
   const collection = collections.find((candidate) => candidate.id === id);
@@ -58,6 +65,7 @@ export default async function CollectionDetailPage({
     items: searchItems,
     collections: mapCollectionsToDashboardSearchRecords(collections),
   };
+  const { items, pagination } = collectionItemsPage;
   const fileItems = items.filter((item) => item.typeKey === "file");
   const imageItems = items.filter((item) => item.typeKey === "image");
   const standardItems = items.filter(
@@ -116,8 +124,8 @@ export default async function CollectionDetailPage({
 
             <div className="flex shrink-0 flex-col items-start gap-3 sm:items-end">
               <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-muted-foreground">
-                <span className="font-medium text-zinc-50">{items.length}</span>{" "}
-                {items.length === 1 ? "item" : "items"}
+                <span className="font-medium text-zinc-50">{pagination.totalItems}</span>{" "}
+                {pagination.totalItems === 1 ? "item" : "items"}
               </div>
               <CollectionActions
                 collection={{
@@ -176,6 +184,8 @@ export default async function CollectionDetailPage({
                 </div>
               </section>
             ) : null}
+
+            <PaginationControls basePath={`/collections/${id}`} pagination={pagination} />
           </div>
         ) : (
           <section className="rounded-[24px] border border-white/10 bg-[#08090c] p-8 shadow-[0_16px_48px_rgba(0,0,0,0.2)]">
