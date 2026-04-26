@@ -1,30 +1,20 @@
-# Current Feature: Add Items To Collections
+# Current Feature
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Add collection selection to the new item form.
-- Add collection selection to the edit item form.
-- Allow an item to be added to one or multiple existing collections.
-- Persist collection membership when creating or updating an item.
-- Keep collection page display out of scope for this feature.
+<!-- Goals & requirements -->
 
 ## Todo List
 
-- [x] Review item create/edit form data flow and existing collection helpers.
-- [x] Load available user collections for item create/edit UI.
-- [x] Add multi-select collection input to new and edit item forms.
-- [x] Persist collection memberships through item create/update actions.
-- [x] Add or update focused tests for collection membership writes.
-- [x] Run lint and build verification.
+<!-- Feature-specific checklist -->
 
 ## Notes
 
-- Collection pages do not need to be displayed or implemented yet.
-- Use existing user-scoped collections only; do not create collections from the item form in this feature.
+<!-- Any extra notes -->
 
 ## History
 
@@ -66,3 +56,4 @@ In Progress
 - Audit Quick Wins completed with safer upload response headers, SVG upload hardening, generic R2 client errors, shared email/file-size/app-origin utilities, production rate-limit configuration warning, and focused upload header test coverage
 - Component Refactor Candidates completed with extracted item drawer, create dialog, sidebar, file upload, and item DB helper modules while preserving behavior and passing lint, tests, and production build verification
 - Collection Create completed with an authenticated `/api/collections` create route, user-scoped collection DB helper, top-bar create collection modal with success/error toast feedback, refreshed server-rendered collection data, and passing lint/test/build verification
+- Add Items To Collections completed with reusable collection selection in new/edit item forms, ownership-safe collection membership persistence, aligned selector/card/dashboard polish, focused item action/db test coverage, and passing lint/test/build verification
