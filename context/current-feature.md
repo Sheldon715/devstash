@@ -1,43 +1,20 @@
-# Current Feature: Editor Preferences Settings
+# Current Feature
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Add an editor preferences section to the settings page.
-- Persist editor preferences to the database on the `User` model.
-- Create and run a Prisma migration for the database change.
-- Add a server action to update editor preferences.
-- Apply saved preferences to the Monaco editor component.
-- Auto-save preference changes without a save button.
-- Show a success toast when preferences save successfully.
-- Create an `EditorPreferencesContext` for client components.
+<!-- Goals & requirements -->
 
 ## Todo List
 
-- [x] Create feature branch.
-- [x] Add `editorPreferences` JSON field to the `User` model.
-- [x] Create and run a Prisma migration with `prisma migrate dev`.
-- [x] Add shared editor preference types, defaults, and validation.
-- [x] Create server action to update editor preferences for the authenticated user.
-- [x] Add `EditorPreferencesContext` for client components.
-- [x] Add editor preferences controls to the settings page.
-- [x] Auto-save preference changes and show success/error toast feedback.
-- [x] Apply saved preferences to the Monaco editor component.
-- [x] Add focused unit tests for preference utilities and server action behavior.
-- [x] Run `npm run lint`.
-- [x] Run `npm run build`.
+<!-- Feature-specific checklist -->
 
 ## Notes
 
-- Source spec: `context/feature/editor-settings-spec.md`
-- Preferences: font size dropdown, tab size dropdown, word wrap toggle, minimap toggle, and theme dropdown.
-- Defaults: word wrap on, minimap off, theme `vs-dark`.
-- Supported themes: `vs-dark`, `monokai`, `github-dark`.
-- Store preferences in a JSON column named `editorPreferences` on `User`.
-- Use `prisma migrate dev`; never use `db push`.
+<!-- Any extra notes -->
 
 ## History
 
@@ -85,3 +62,4 @@ In Progress
 - Global Search / Command Palette completed with a Cmd/Ctrl+K palette, client-side grouped item and collection search, top-bar search trigger integration, item drawer and collection navigation, cmdk UI wiring, and focused search test coverage
 - Pagination completed with shared pagination constants/helpers, numbered controls, server-side paged item type and collection detail queries, dashboard limit constants, and passing lint/test/build verification
 - Settings Page completed with a protected `/settings` route, sidebar user-menu link, account actions moved from profile, profile type icons, aligned settings action rows, animated account dialogs, and passing lint/test/build verification
+- Editor Preferences Settings completed with persisted user editor preferences, auto-saving settings controls, Monaco font/tab/wrap/minimap/theme wiring, a Prisma migration, and focused action/utility test coverage
