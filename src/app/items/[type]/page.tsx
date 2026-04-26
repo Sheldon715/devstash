@@ -7,13 +7,14 @@ import { ItemCard } from "@/components/dashboard/item-card";
 import { FileListView } from "@/components/items/file-list-view";
 import { ImageThumbnailCard } from "@/components/items/image-thumbnail-card";
 import { TypePageCreateButton } from "@/components/items/type-page-create-button";
-import { getAllDashboardCollections } from "@/lib/db/collections";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { PaginationControls } from "@/components/layout/pagination-controls";
 import {
   DashboardNamedIcon,
   getDashboardItemTypeColor,
 } from "@/lib/dashboard-icons";
+import { getAllDashboardCollections } from "@/lib/db/collections";
+import { getUserEditorPreferences } from "@/lib/db/editor-preferences";
 import {
   getDashboardItemTypePage,
   getDashboardSidebarItemTypes,
@@ -44,12 +45,14 @@ export default async function ItemTypePage({ params, searchParams }: ItemTypePag
 
   const [{ type }, resolvedSearchParams] = await Promise.all([params, searchParams]);
   const page = normalizePage(resolvedSearchParams.page);
-  const [collections, sidebarItemTypes, itemTypePage, searchItems] = await Promise.all([
-    getAllDashboardCollections(session.user.id),
-    getDashboardSidebarItemTypes(session.user.id),
-    getDashboardItemTypePage(session.user.id, type, { page }),
-    getDashboardSearchItems(session.user.id),
-  ]);
+  const [collections, sidebarItemTypes, itemTypePage, searchItems, editorPreferences] =
+    await Promise.all([
+      getAllDashboardCollections(session.user.id),
+      getDashboardSidebarItemTypes(session.user.id),
+      getDashboardItemTypePage(session.user.id, type, { page }),
+      getDashboardSearchItems(session.user.id),
+      getUserEditorPreferences(session.user.id),
+    ]);
 
   if (!itemTypePage) {
     notFound();
@@ -77,6 +80,7 @@ export default async function ItemTypePage({ params, searchParams }: ItemTypePag
         image: session.user.image,
         name: session.user.name,
       }}
+      editorPreferences={editorPreferences}
       favoriteCollections={favoriteCollections}
       recentCollections={recentCollections}
       searchData={searchData}

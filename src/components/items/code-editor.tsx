@@ -12,6 +12,8 @@ import {
 } from "react";
 import type { BeforeMount, EditorProps, OnChange } from "@monaco-editor/react";
 
+import { useEditorPreferences } from "@/components/items/editor-preferences-context";
+import { getEditorLineHeight } from "@/lib/editor-preferences";
 import { cn } from "@/lib/utils";
 
 const MonacoEditor = dynamic(
@@ -37,8 +39,6 @@ interface CodeEditorProps {
   value: string;
 }
 
-const CODE_EDITOR_THEME = "devstash-dark";
-
 export function CodeEditor({
   className,
   disabled = false,
@@ -49,14 +49,16 @@ export function CodeEditor({
   readOnly = false,
   value,
 }: CodeEditorProps) {
+  const { preferences } = useEditorPreferences();
   const [isCopied, setIsCopied] = useState(false);
   const copyResetTimeoutRef = useRef<number | null>(null);
   const normalizedLanguage = normalizeEditorLanguage(language);
   const displayLanguage = getDisplayLanguage(language);
   const isReadOnly = readOnly || disabled || !onChange;
+  const lineHeight = getEditorLineHeight(preferences.fontSize);
   const editorHeight = useMemo(
-    () => getFluidEditorHeight(value, minHeight, maxHeight),
-    [maxHeight, minHeight, value],
+    () => getFluidEditorHeight(value, minHeight, maxHeight, lineHeight),
+    [lineHeight, maxHeight, minHeight, value],
   );
 
   useEffect(() => {
@@ -74,11 +76,11 @@ export function CodeEditor({
       cursorBlinking: "smooth",
       fontFamily: '"JetBrains Mono Variable", "JetBrains Mono", Consolas, monospace',
       fontLigatures: true,
-      fontSize: 13,
-      lineHeight: 21,
+      fontSize: preferences.fontSize,
+      lineHeight,
       lineNumbers: "on",
       minimap: {
-        enabled: false,
+        enabled: preferences.minimap,
       },
       overviewRulerBorder: false,
       padding: {
@@ -94,35 +96,60 @@ export function CodeEditor({
         verticalScrollbarSize: 9,
       },
       smoothScrolling: true,
-      tabSize: 2,
-      wordWrap: "on",
+      tabSize: preferences.tabSize,
+      wordWrap: preferences.wordWrap ? "on" : "off",
     }),
-    [isReadOnly],
+    [isReadOnly, lineHeight, preferences],
   );
 
   const handleBeforeMount = useCallback<BeforeMount>((monaco) => {
-    monaco.editor.defineTheme(CODE_EDITOR_THEME, {
+    monaco.editor.defineTheme("monokai", {
       base: "vs-dark",
       inherit: true,
       colors: {
-        "editor.background": "#05070b",
-        "editor.foreground": "#d4d4d8",
-        "editor.lineHighlightBackground": "#11182780",
-        "editorLineNumber.activeForeground": "#bae6fd",
-        "editorLineNumber.foreground": "#52525b",
-        "editor.selectionBackground": "#0ea5e966",
-        "editorCursor.foreground": "#bae6fd",
+        "editor.background": "#272822",
+        "editor.foreground": "#f8f8f2",
+        "editor.lineHighlightBackground": "#3e3d32",
+        "editorLineNumber.activeForeground": "#f8f8f2",
+        "editorLineNumber.foreground": "#75715e",
+        "editor.selectionBackground": "#49483e",
+        "editorCursor.foreground": "#f8f8f0",
         "scrollbar.shadow": "#00000000",
-        "scrollbarSlider.activeBackground": "#71717a80",
-        "scrollbarSlider.background": "#3f3f4666",
-        "scrollbarSlider.hoverBackground": "#52525b80",
+        "scrollbarSlider.activeBackground": "#75715e90",
+        "scrollbarSlider.background": "#75715e55",
+        "scrollbarSlider.hoverBackground": "#75715e75",
       },
       rules: [
-        { token: "comment", foreground: "71717a", fontStyle: "italic" },
-        { token: "keyword", foreground: "7dd3fc" },
-        { token: "number", foreground: "fda4af" },
-        { token: "string", foreground: "86efac" },
-        { token: "type", foreground: "c4b5fd" },
+        { token: "comment", foreground: "75715e", fontStyle: "italic" },
+        { token: "keyword", foreground: "f92672" },
+        { token: "number", foreground: "ae81ff" },
+        { token: "string", foreground: "e6db74" },
+        { token: "type", foreground: "66d9ef" },
+      ],
+    });
+
+    monaco.editor.defineTheme("github-dark", {
+      base: "vs-dark",
+      inherit: true,
+      colors: {
+        "editor.background": "#0d1117",
+        "editor.foreground": "#e6edf3",
+        "editor.lineHighlightBackground": "#161b22",
+        "editorLineNumber.activeForeground": "#e6edf3",
+        "editorLineNumber.foreground": "#6e7681",
+        "editor.selectionBackground": "#2f81f766",
+        "editorCursor.foreground": "#58a6ff",
+        "scrollbar.shadow": "#00000000",
+        "scrollbarSlider.activeBackground": "#6e768190",
+        "scrollbarSlider.background": "#6e768155",
+        "scrollbarSlider.hoverBackground": "#6e768175",
+      },
+      rules: [
+        { token: "comment", foreground: "8b949e", fontStyle: "italic" },
+        { token: "keyword", foreground: "ff7b72" },
+        { token: "number", foreground: "79c0ff" },
+        { token: "string", foreground: "a5d6ff" },
+        { token: "type", foreground: "d2a8ff" },
       ],
     });
   }, []);
@@ -197,7 +224,7 @@ export function CodeEditor({
           onChange={handleEditorChange}
           beforeMount={handleBeforeMount}
           options={editorOptions}
-          theme={CODE_EDITOR_THEME}
+          theme={preferences.theme}
           value={value}
           width="100%"
         />
@@ -206,9 +233,14 @@ export function CodeEditor({
   );
 }
 
-function getFluidEditorHeight(value: string, minHeight: number, maxHeight: number) {
+function getFluidEditorHeight(
+  value: string,
+  minHeight: number,
+  maxHeight: number,
+  lineHeight: number,
+) {
   const lineCount = Math.max(1, value.split("\n").length);
-  const contentHeight = lineCount * 21 + 34;
+  const contentHeight = lineCount * lineHeight + 34;
 
   return Math.min(maxHeight, Math.max(minHeight, contentHeight));
 }
