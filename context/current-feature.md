@@ -1,35 +1,20 @@
-# Current Feature: Pagination
+# Current Feature
 
 ## Status
 
-Complete
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Add pagination to `/items/[type]` pages.
-- Add pagination to `/collections/[id]` pages.
-- Show numbered page links plus previous and next controls at the bottom of paginated listings.
-- Disable and grey out previous or next controls when there is no available page.
-- Use `ITEMS_PER_PAGE = 21` and `COLLECTIONS_PER_PAGE = 21`.
-- Keep dashboard query limits at `DASHBOARD_COLLECTIONS_LIMIT = 6` and `DASHBOARD_RECENT_ITEMS_LIMIT = 10`.
-- Fetch only the resources required for the active page instead of fetching all resources at once.
+<!-- Goals & requirements -->
 
 ## Todo List
 
-- [x] Review current item and collection page data loading.
-- [x] Add shared pagination constants and helpers where appropriate.
-- [x] Update item listing queries to fetch one page plus total count.
-- [x] Update collection detail queries to fetch one page plus total count.
-- [x] Build reusable pagination controls with numbered pages and prev/next states.
-- [x] Wire page query params into `/items/[type]` and `/collections/[id]`.
-- [x] Add or update focused tests for pagination helpers/query behavior.
-- [x] Run `npm run lint`, `npm run test`, and `npm run build`.
+<!-- Feature-specific checklist -->
 
 ## Notes
 
-- Spec source: `context/feature/pagination-spec.md`.
-- Pagination controls should appear at the bottom of item and collection listings.
-- Avoid loading all items or collections just to paginate client-side.
+<!-- Any extra notes -->
 
 ## History
 
@@ -75,3 +60,4 @@ Complete
 - Collections Pages completed with dashboard-shell `/collections`, dynamic `/collections/[id]` item grids, linked collection cards, sidebar collection links, native file/image collection sections, wider type grids, and passing lint/test/build verification
 - Collection Actions completed with ownership-safe collection edit/delete actions, collection metadata edit modal, delete confirmation that preserves items, hover-revealed animated card action menus, icon-only detail actions, and passing test/lint/build verification
 - Global Search / Command Palette completed with a Cmd/Ctrl+K palette, client-side grouped item and collection search, top-bar search trigger integration, item drawer and collection navigation, cmdk UI wiring, and focused search test coverage
+- Pagination completed with shared pagination constants/helpers, numbered controls, server-side paged item type and collection detail queries, dashboard limit constants, and passing lint/test/build verification
