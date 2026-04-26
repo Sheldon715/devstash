@@ -6,6 +6,10 @@ import { ProfilePageContent } from "@/components/profile/profile-page-content";
 import { getAllDashboardCollections } from "@/lib/db/collections";
 import { getDashboardSidebarItemTypes } from "@/lib/db/items";
 import { getProfilePageData } from "@/lib/db/profile";
+import {
+  getDashboardSearchItems,
+  mapCollectionsToDashboardSearchRecords,
+} from "@/lib/db/search";
 
 function formatProfileDate(date: Date) {
   return new Intl.DateTimeFormat("en-US", {
@@ -24,10 +28,11 @@ export default async function ProfilePage() {
     redirect("/sign-in");
   }
 
-  const [profile, collections, sidebarItemTypes] = await Promise.all([
+  const [profile, collections, sidebarItemTypes, searchItems] = await Promise.all([
     getProfilePageData(session.user.id),
     getAllDashboardCollections(session.user.id),
     getDashboardSidebarItemTypes(session.user.id),
+    getDashboardSearchItems(session.user.id),
   ]);
 
   if (!profile) {
@@ -40,6 +45,10 @@ export default async function ProfilePage() {
     id: collection.id,
     name: collection.name,
   }));
+  const searchData = {
+    items: searchItems,
+    collections: mapCollectionsToDashboardSearchRecords(collections),
+  };
 
   return (
     <DashboardShell
@@ -51,6 +60,7 @@ export default async function ProfilePage() {
       }}
       favoriteCollections={favoriteCollections}
       recentCollections={recentCollections}
+      searchData={searchData}
       sidebarItemTypes={sidebarItemTypes}
     >
       <ProfilePageContent

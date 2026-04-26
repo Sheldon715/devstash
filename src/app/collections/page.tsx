@@ -7,6 +7,10 @@ import { CollectionCard } from "@/components/dashboard/collection-card";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { getAllDashboardCollections } from "@/lib/db/collections";
 import { getDashboardSidebarItemTypes } from "@/lib/db/items";
+import {
+  getDashboardSearchItems,
+  mapCollectionsToDashboardSearchRecords,
+} from "@/lib/db/search";
 
 export const dynamic = "force-dynamic";
 
@@ -17,9 +21,10 @@ export default async function CollectionsPage() {
     redirect("/sign-in");
   }
 
-  const [collections, sidebarItemTypes] = await Promise.all([
+  const [collections, sidebarItemTypes, searchItems] = await Promise.all([
     getAllDashboardCollections(session.user.id),
     getDashboardSidebarItemTypes(session.user.id),
+    getDashboardSearchItems(session.user.id),
   ]);
   const favoriteCollections = collections.filter((collection) => collection.isFavorite).slice(0, 4);
   const recentCollections = collections.slice(0, 4);
@@ -27,6 +32,10 @@ export default async function CollectionsPage() {
     id: collection.id,
     name: collection.name,
   }));
+  const searchData = {
+    items: searchItems,
+    collections: mapCollectionsToDashboardSearchRecords(collections),
+  };
 
   return (
     <DashboardShell
@@ -38,6 +47,7 @@ export default async function CollectionsPage() {
       }}
       favoriteCollections={favoriteCollections}
       recentCollections={recentCollections}
+      searchData={searchData}
       sidebarItemTypes={sidebarItemTypes}
     >
       <div className="mx-auto flex w-full flex-col gap-8">

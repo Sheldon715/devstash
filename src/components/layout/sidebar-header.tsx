@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronsLeft, ChevronsRight, X } from "lucide-react";
+import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { getSidebarContentVisibilityClass } from "@/components/layout/sidebar-utils";
@@ -24,9 +25,10 @@ export function SidebarHeader({
         isCollapsed ? "justify-center px-2.5" : "justify-between px-3.5",
       )}
     >
-      <div
+      <Link
+        href="/dashboard"
         className={cn(
-          "flex items-center gap-2.5 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          "flex items-center gap-2.5 overflow-hidden rounded-2xl transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring/70 focus-visible:outline-none",
           isCollapsed && "justify-center",
         )}
       >
@@ -50,7 +52,7 @@ export function SidebarHeader({
             </div>
           </>
         ) : null}
-      </div>
+      </Link>
 
       {isCollapsed ? (
         <Button

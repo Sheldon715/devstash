@@ -13,6 +13,10 @@ import {
   getDashboardCollectionItems,
 } from "@/lib/db/collections";
 import { getDashboardSidebarItemTypes } from "@/lib/db/items";
+import {
+  getDashboardSearchItems,
+  mapCollectionsToDashboardSearchRecords,
+} from "@/lib/db/search";
 
 export const dynamic = "force-dynamic";
 
@@ -32,10 +36,11 @@ export default async function CollectionDetailPage({
   }
 
   const { id } = await params;
-  const [collections, sidebarItemTypes, items] = await Promise.all([
+  const [collections, sidebarItemTypes, items, searchItems] = await Promise.all([
     getAllDashboardCollections(session.user.id),
     getDashboardSidebarItemTypes(session.user.id),
     getDashboardCollectionItems(session.user.id, id),
+    getDashboardSearchItems(session.user.id),
   ]);
   const collection = collections.find((candidate) => candidate.id === id);
 
@@ -49,6 +54,10 @@ export default async function CollectionDetailPage({
     id: candidate.id,
     name: candidate.name,
   }));
+  const searchData = {
+    items: searchItems,
+    collections: mapCollectionsToDashboardSearchRecords(collections),
+  };
   const fileItems = items.filter((item) => item.typeKey === "file");
   const imageItems = items.filter((item) => item.typeKey === "image");
   const standardItems = items.filter(
@@ -65,6 +74,7 @@ export default async function CollectionDetailPage({
       }}
       favoriteCollections={favoriteCollections}
       recentCollections={recentCollections}
+      searchData={searchData}
       sidebarItemTypes={sidebarItemTypes}
     >
       <div className="mx-auto flex w-full flex-col gap-8">

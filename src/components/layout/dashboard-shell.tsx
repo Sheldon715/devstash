@@ -5,11 +5,13 @@ import { useEffect, useState } from "react";
 
 import { ItemDrawerProvider } from "@/components/items/item-drawer-provider";
 import type { CollectionOption } from "@/components/items/collection-multi-select";
+import { GlobalSearchCommandPalette } from "@/components/layout/global-search-command-palette";
 import { Sidebar } from "@/components/layout/sidebar";
 import type { SidebarCurrentUser } from "@/components/layout/sidebar-user-menu";
 import { TopBar } from "@/components/layout/top-bar";
 import type { DashboardCollectionCardRecord } from "@/lib/db/collections";
 import type { DashboardSidebarItemTypeRecord } from "@/lib/db/items";
+import type { DashboardSearchData } from "@/lib/db/search";
 
 interface DashboardShellProps {
   children: ReactNode;
@@ -17,6 +19,7 @@ interface DashboardShellProps {
   currentUser: SidebarCurrentUser;
   favoriteCollections: DashboardCollectionCardRecord[];
   recentCollections: DashboardCollectionCardRecord[];
+  searchData: DashboardSearchData;
   sidebarItemTypes: DashboardSidebarItemTypeRecord[];
 }
 
@@ -26,10 +29,12 @@ export function DashboardShell({
   currentUser,
   favoriteCollections,
   recentCollections,
+  searchData,
   sidebarItemTypes,
 }: DashboardShellProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSearchPaletteOpen, setIsSearchPaletteOpen] = useState(false);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(min-width: 1024px)");
@@ -75,16 +80,24 @@ export function DashboardShell({
         />
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <TopBar
-            collectionOptions={collectionOptions}
-            onOpenMobileSidebar={handleSidebarOpen}
-          />
+          <ItemDrawerProvider collectionOptions={collectionOptions}>
+            <TopBar
+              collectionOptions={collectionOptions}
+              onOpenMobileSidebar={handleSidebarOpen}
+              onOpenSearchPalette={() => setIsSearchPaletteOpen(true)}
+            />
 
-          <div className="flex-1 px-4 py-6 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
-            <div className="mx-auto w-full max-w-[980px] xl:max-w-[1180px] 2xl:max-w-[1480px]">
-              <ItemDrawerProvider collectionOptions={collectionOptions}>{children}</ItemDrawerProvider>
+            <div className="flex-1 px-4 py-6 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
+              <div className="mx-auto w-full max-w-[980px] xl:max-w-[1180px] 2xl:max-w-[1480px]">
+                {children}
+              </div>
             </div>
-          </div>
+            <GlobalSearchCommandPalette
+              open={isSearchPaletteOpen}
+              searchData={searchData}
+              onOpenChange={setIsSearchPaletteOpen}
+            />
+          </ItemDrawerProvider>
         </div>
       </div>
     </main>
