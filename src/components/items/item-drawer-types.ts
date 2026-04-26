@@ -14,6 +14,7 @@ export interface EditItemFormState {
   description: string;
   tags: string;
   content: string;
+  collectionIds: string[];
   language: string;
   url: string;
 }

@@ -5,14 +5,20 @@ import { Plus } from "lucide-react";
 
 import { CreateItemDialog } from "@/components/items/create-item-dialog";
 import { Button } from "@/components/ui/button";
+import type { CollectionOption } from "@/components/items/collection-multi-select";
 import type { DashboardItemTypeKey } from "@/lib/mock-data";
 
 interface TypePageCreateButtonProps {
+  collectionOptions: CollectionOption[];
   typeKey: DashboardItemTypeKey;
   typeName: string;
 }
 
-export function TypePageCreateButton({ typeKey, typeName }: TypePageCreateButtonProps) {
+export function TypePageCreateButton({
+  collectionOptions,
+  typeKey,
+  typeName,
+}: TypePageCreateButtonProps) {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   return (
@@ -29,6 +35,7 @@ export function TypePageCreateButton({ typeKey, typeName }: TypePageCreateButton
       {isCreateDialogOpen ? (
         <CreateItemDialog
           key={typeKey}
+          collectionOptions={collectionOptions}
           initialType={typeKey}
           open={isCreateDialogOpen}
           onOpenChange={setIsCreateDialogOpen}

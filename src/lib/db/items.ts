@@ -301,6 +301,7 @@ export async function createItem(
   }
 
   const tagNames = [...new Set(data.tags)];
+  const collectionIds = await getOwnedCollectionIds(userId, data.collectionIds);
   const createdItem = await prisma.item.create({
     data: {
       userId,
@@ -334,6 +335,20 @@ export async function createItem(
           },
         })),
       },
+      ...(collectionIds.length
+        ? {
+            collections: {
+              create: collectionIds.map((collectionId, index) => ({
+                collection: {
+                  connect: {
+                    id: collectionId,
+                  },
+                },
+                sortOrder: index,
+              })),
+            },
+          }
+        : {}),
     },
     select: dashboardItemDetailSelect,
   });
@@ -362,6 +377,10 @@ export async function updateItem(
   }
 
   const tagNames = [...new Set(data.tags)];
+  const collectionIds =
+    data.collectionIds === undefined
+      ? undefined
+      : await getOwnedCollectionIds(userId, data.collectionIds);
   const updatedItem = await prisma.item.update({
     where: {
       id: itemId,
@@ -391,6 +410,21 @@ export async function updateItem(
           },
         })),
       },
+      ...(collectionIds === undefined
+        ? {}
+        : {
+            collections: {
+              deleteMany: {},
+              create: collectionIds.map((collectionId, index) => ({
+                collection: {
+                  connect: {
+                    id: collectionId,
+                  },
+                },
+                sortOrder: index,
+              })),
+            },
+          }),
     },
     select: dashboardItemDetailSelect,
   });
@@ -425,4 +459,27 @@ export async function deleteItem(userId: string, itemId: string): Promise<boolea
   });
 
   return true;
+}
+
+async function getOwnedCollectionIds(userId: string, collectionIds: string[]) {
+  const uniqueCollectionIds = [...new Set(collectionIds)];
+
+  if (!uniqueCollectionIds.length) {
+    return [];
+  }
+
+  const collections = await prisma.collection.findMany({
+    where: {
+      id: {
+        in: uniqueCollectionIds,
+      },
+      userId,
+    },
+    select: {
+      id: true,
+    },
+  });
+  const ownedCollectionIds = new Set(collections.map((collection) => collection.id));
+
+  return uniqueCollectionIds.filter((collectionId) => ownedCollectionIds.has(collectionId));
 }

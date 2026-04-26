@@ -36,6 +36,7 @@ export const dashboardItemDetailSelect = {
     select: {
       collection: {
         select: {
+          id: true,
           name: true,
         },
       },

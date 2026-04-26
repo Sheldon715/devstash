@@ -15,6 +15,8 @@ import {
 
 export const dynamic = "force-dynamic";
 
+const DASHBOARD_RECENT_ITEM_LIMIT = 6;
+
 export default async function DashboardPage() {
   const session = await auth();
 
@@ -26,13 +28,18 @@ export default async function DashboardPage() {
     getAllDashboardCollections(session.user.id),
     getDashboardSidebarItemTypes(session.user.id),
     getPinnedDashboardItems(session.user.id),
-    getRecentDashboardItems(session.user.id),
+    getRecentDashboardItems(session.user.id, DASHBOARD_RECENT_ITEM_LIMIT),
   ]);
   const favoriteCollections = collections.filter((collection) => collection.isFavorite).slice(0, 4);
   const recentCollections = collections.slice(0, 4);
+  const collectionOptions = collections.map((collection) => ({
+    id: collection.id,
+    name: collection.name,
+  }));
 
   return (
     <DashboardShell
+      collectionOptions={collectionOptions}
       currentUser={{
         email: session.user.email,
         image: session.user.image,

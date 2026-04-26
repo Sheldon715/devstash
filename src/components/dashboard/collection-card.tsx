@@ -24,12 +24,12 @@ export function CollectionCard({ collection }: CollectionCardProps) {
       : "No items yet";
 
   return (
-    <article className="group relative overflow-hidden rounded-[24px] border border-white/10 bg-[#08090c] p-5 shadow-[0_18px_56px_rgba(0,0,0,0.22)] transition-transform duration-200 hover:-translate-y-0.5">
+    <article className="group relative flex min-h-[14.125rem] overflow-hidden rounded-[24px] border border-white/10 bg-[#08090c] p-5 shadow-[0_18px_56px_rgba(0,0,0,0.22)] transition-transform duration-200 hover:-translate-y-0.5">
       <div
         className={`absolute inset-y-0 left-0 w-1 rounded-l-[24px] bg-current ${accentColor}`}
       />
 
-      <div className="relative flex h-full flex-col gap-5 pl-1.5">
+      <div className="relative flex w-full flex-col gap-5 pl-1.5">
         <div className="flex items-start justify-between gap-3">
           <div className="space-y-2">
             <div className="flex items-center gap-2.5">
@@ -54,7 +54,7 @@ export function CollectionCard({ collection }: CollectionCardProps) {
           </button>
         </div>
 
-        <p className="max-w-lg text-sm leading-7 text-muted-foreground">
+        <p className="line-clamp-2 max-w-lg text-sm leading-7 text-muted-foreground">
           {collection.description}
         </p>
 

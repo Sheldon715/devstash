@@ -78,6 +78,7 @@ describe("item actions", () => {
       url: "",
       language: "shell",
       tags: ["cli"],
+      collectionIds: [],
     });
 
     expect(result).toEqual({
@@ -110,6 +111,7 @@ describe("item actions", () => {
       fileSizeBytes: null,
       language: "shell",
       aiSummary: null,
+      collectionIds: ["collection-1", "collection-2"],
       collectionNames: [],
       tags: [
         {
@@ -134,6 +136,7 @@ describe("item actions", () => {
       url: "https://example.com/ignored",
       language: " shell ",
       tags: [" cli ", "cli"],
+      collectionIds: [" collection-1 ", "collection-1", "collection-2"],
     });
 
     expect(createItemRecordMock).toHaveBeenCalledWith("user-1", {
@@ -145,6 +148,7 @@ describe("item actions", () => {
       url: null,
       language: "shell",
       tags: ["cli"],
+      collectionIds: ["collection-1", "collection-2"],
     });
     expect(result).toEqual({
       success: true,
@@ -161,6 +165,7 @@ describe("item actions", () => {
         fileSizeBytes: null,
         language: "shell",
         aiSummary: null,
+        collectionIds: ["collection-1", "collection-2"],
         collectionNames: [],
         tags: [
           {
@@ -307,6 +312,7 @@ describe("item actions", () => {
       url: null,
       language: null,
       tags: [],
+      collectionIds: [],
     });
     expect(createItemRecordMock).toHaveBeenNthCalledWith(2, "user-1", {
       typeKey: "image",
@@ -323,6 +329,7 @@ describe("item actions", () => {
       url: null,
       language: null,
       tags: [],
+      collectionIds: [],
     });
   });
 
@@ -510,6 +517,7 @@ describe("item actions", () => {
       fileSizeBytes: null,
       language: "shell",
       aiSummary: null,
+      collectionIds: ["collection-build"],
       collectionNames: ["Build"],
       tags: [
         {
@@ -533,6 +541,7 @@ describe("item actions", () => {
       url: "",
       language: " shell ",
       tags: [" cli ", "cli"],
+      collectionIds: [" collection-build ", "collection-build"],
     });
 
     expect(updateItemRecordMock).toHaveBeenCalledWith("user-1", "item-1", {
@@ -542,6 +551,7 @@ describe("item actions", () => {
       url: null,
       language: "shell",
       tags: ["cli"],
+      collectionIds: ["collection-build"],
     });
     expect(result).toEqual({
       success: true,
@@ -558,6 +568,7 @@ describe("item actions", () => {
         fileSizeBytes: null,
         language: "shell",
         aiSummary: null,
+        collectionIds: ["collection-build"],
         collectionNames: ["Build"],
         tags: [
           {
