@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { ChevronRight, FolderOpen, Star } from "lucide-react";
 
 import { auth } from "@/auth";
+import { CollectionActions } from "@/components/collections/collection-actions";
 import { ItemCard } from "@/components/dashboard/item-card";
 import { FileListView } from "@/components/items/file-list-view";
 import { ImageThumbnailCard } from "@/components/items/image-thumbnail-card";
@@ -103,9 +104,21 @@ export default async function CollectionDetailPage({
               </div>
             </div>
 
-            <div className="shrink-0 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-muted-foreground">
-              <span className="font-medium text-zinc-50">{items.length}</span>{" "}
-              {items.length === 1 ? "item" : "items"}
+            <div className="flex shrink-0 flex-col items-start gap-3 sm:items-end">
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-muted-foreground">
+                <span className="font-medium text-zinc-50">{items.length}</span>{" "}
+                {items.length === 1 ? "item" : "items"}
+              </div>
+              <CollectionActions
+                collection={{
+                  id: collection.id,
+                  name: collection.name,
+                  descriptionValue: collection.descriptionValue,
+                  isFavorite: collection.isFavorite,
+                }}
+                deleteRedirectHref="/collections"
+                variant="toolbar"
+              />
             </div>
           </div>
         </header>

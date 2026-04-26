@@ -11,6 +11,7 @@ export interface DashboardCollectionCardRecord {
   id: string;
   name: string;
   description: string;
+  descriptionValue: string | null;
   isFavorite: boolean;
   itemCount: number;
   typeCount: number;
@@ -27,6 +28,19 @@ export interface DashboardCollectionStats {
 export interface CreateCollectionData {
   description: string | null;
   name: string;
+}
+
+export interface UpdateCollectionData {
+  description: string | null;
+  name: string;
+}
+
+export interface DashboardCollectionMetadataRecord {
+  id: string;
+  name: string;
+  description: string | null;
+  isFavorite: boolean;
+  updatedAt: Date;
 }
 
 export interface DashboardSidebarCollections {
@@ -245,6 +259,7 @@ export async function createDashboardCollection(
     id: collection.id,
     name: collection.name,
     description: collection.description ?? "No description yet.",
+    descriptionValue: collection.description,
     isFavorite: collection.isFavorite,
     itemCount: 0,
     typeCount: 0,
@@ -252,6 +267,55 @@ export async function createDashboardCollection(
     typeKeys: [],
     lastUpdatedAt: collection.updatedAt,
   };
+}
+
+export async function updateDashboardCollection(
+  userId: string,
+  collectionId: string,
+  data: UpdateCollectionData,
+): Promise<DashboardCollectionMetadataRecord | null> {
+  const updatedCollection = await prisma.collection.updateMany({
+    where: {
+      id: collectionId,
+      userId,
+    },
+    data: {
+      name: data.name,
+      description: data.description,
+    },
+  });
+
+  if (updatedCollection.count === 0) {
+    return null;
+  }
+
+  return prisma.collection.findFirst({
+    where: {
+      id: collectionId,
+      userId,
+    },
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      isFavorite: true,
+      updatedAt: true,
+    },
+  });
+}
+
+export async function deleteDashboardCollection(
+  userId: string,
+  collectionId: string,
+): Promise<boolean> {
+  const deletedCollection = await prisma.collection.deleteMany({
+    where: {
+      id: collectionId,
+      userId,
+    },
+  });
+
+  return deletedCollection.count > 0;
 }
 
 function mapCollectionToCardRecord(
@@ -263,6 +327,7 @@ function mapCollectionToCardRecord(
     id: collection.id,
     name: collection.name,
     description: collection.description ?? "No description yet.",
+    descriptionValue: collection.description,
     isFavorite: collection.isFavorite,
     itemCount: collection.itemCount,
     typeCount: typeStats.length,
