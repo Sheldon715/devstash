@@ -194,7 +194,7 @@ describe("collection db queries", () => {
           userId: "user-1",
         },
       },
-      orderBy: [{ sortOrder: "asc" }, { addedAt: "asc" }],
+      orderBy: [{ item: { isPinned: "desc" } }, { sortOrder: "asc" }, { addedAt: "asc" }],
       skip: undefined,
       take: undefined,
       select: {

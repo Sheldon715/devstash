@@ -192,7 +192,7 @@ export async function getDashboardCollectionItems(
         userId,
       },
     },
-    orderBy: [{ sortOrder: "asc" }, { addedAt: "asc" }],
+    orderBy: [{ item: { isPinned: "desc" } }, { sortOrder: "asc" }, { addedAt: "asc" }],
     skip:
       options?.page === undefined || pageSize === undefined
         ? undefined

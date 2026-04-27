@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import { deleteItem, toggleItemFavorite, updateItem } from "@/actions/items";
+import { deleteItem, toggleItemFavorite, toggleItemPin, updateItem } from "@/actions/items";
 import type { CollectionOption } from "@/components/items/collection-multi-select";
 import { ItemDrawerEditBody } from "@/components/items/item-drawer-edit-form";
 import {
@@ -108,6 +108,7 @@ export function ItemDrawerProvider({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
+  const [isTogglingPin, setIsTogglingPin] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
   const [toastState, setToastState] = useState<ItemDrawerToastState | null>(null);
   const [editFormState, setEditFormState] = useState<EditItemFormState | null>(null);
@@ -359,8 +360,16 @@ export function ItemDrawerProvider({
                       activeClassName="border-[#facc15]/30 bg-[#facc15]/10 text-[#facc15]"
                     />
                     <DrawerActionButton
-                      icon={Pin}
-                      label="Pin"
+                      icon={isTogglingPin ? LoaderCircle : Pin}
+                      label={
+                        isTogglingPin
+                          ? "Saving"
+                          : selectedItem.isPinned
+                            ? "Pinned"
+                            : "Pin"
+                      }
+                      onClick={handlePinToggle}
+                      disabled={isTogglingPin}
                       active={selectedItem.isPinned}
                       activeClassName="border-sky-300/30 bg-sky-300/10 text-sky-200"
                     />
@@ -621,6 +630,71 @@ export function ItemDrawerProvider({
         ? "Item added to favorites."
         : "Item removed from favorites.",
       title: result.data.isFavorite ? "Favorited" : "Unfavorited",
+      variant: "success",
+    });
+    router.refresh();
+  }
+
+  async function handlePinToggle() {
+    if (!selectedItem || isTogglingPin) {
+      return;
+    }
+
+    const itemBeforeToggle = selectedItem;
+
+    setIsTogglingPin(true);
+    setDetailsById((current) => ({
+      ...current,
+      [itemBeforeToggle.id]: {
+        ...itemBeforeToggle,
+        isPinned: !itemBeforeToggle.isPinned,
+      },
+    }));
+
+    let result: Awaited<ReturnType<typeof toggleItemPin>>;
+
+    try {
+      result = await toggleItemPin(itemBeforeToggle.id);
+    } catch {
+      const message = "We couldn't update this pin right now.";
+
+      setDetailsById((current) => ({
+        ...current,
+        [itemBeforeToggle.id]: itemBeforeToggle,
+      }));
+      setToastState({
+        message,
+        title: "Pin failed",
+        variant: "error",
+      });
+      setIsTogglingPin(false);
+      return;
+    }
+
+    setIsTogglingPin(false);
+
+    if (!result.success) {
+      setDetailsById((current) => ({
+        ...current,
+        [itemBeforeToggle.id]: itemBeforeToggle,
+      }));
+      setToastState({
+        message: result.error,
+        title: "Pin failed",
+        variant: "error",
+      });
+      return;
+    }
+
+    setDetailsById((current) => ({
+      ...current,
+      [result.data.id]: result.data,
+    }));
+    setToastState({
+      message: result.data.isPinned
+        ? "Item pinned to the top of listings."
+        : "Item removed from pinned items.",
+      title: result.data.isPinned ? "Pinned" : "Unpinned",
       variant: "success",
     });
     router.refresh();

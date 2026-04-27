@@ -1,20 +1,36 @@
-# Current Feature
+# Current Feature: Pinned Items
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Make the existing Pin button in `ItemDrawer` functional.
+- Add an authenticated `toggleItemPin` server action for items.
+- Update the drawer optimistically so pin state changes feel instant.
+- Show success and error toast notifications for pin toggles.
+- Sort pinned items to the top of item listings.
+- Follow the existing Favorite Button pattern.
+- Keep pinning item-only; collections are not in scope.
+- Preserve the `ItemCard` pin icon as a static indicator.
 
 ## Todo List
 
-<!-- Feature-specific checklist -->
+- [x] Review the existing favorite toggle implementation and item drawer wiring.
+- [x] Create `toggleItemPin` with ownership-safe item-only updates.
+- [x] Wire the `ItemDrawer` Pin button with optimistic state and toast feedback.
+- [x] Ensure item listing queries sort pinned items first.
+- [x] Confirm dashboard pinned items continue to use pinned item data correctly.
+- [x] Add focused unit coverage for pin toggle logic and sorting helpers/actions where applicable.
+- [x] Run `npm run lint`.
+- [x] Run `npm run build`.
 
 ## Notes
 
-<!-- Any extra notes -->
+- Source spec: `context/feature/pinned-spec.md`
+- Pinned items should appear at the top of listings and in the dashboard pinned items section.
+- The card-level pin icon is display-only for this feature.
 
 ## History
 

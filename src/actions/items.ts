@@ -7,6 +7,7 @@ import {
   createItem as createItemRecord,
   deleteItem as deleteItemRecord,
   toggleItemFavorite as toggleItemFavoriteRecord,
+  toggleItemPin as toggleItemPinRecord,
   updateItem as updateItemRecord,
   type CreatableItemTypeKey,
   type DashboardItemDetailRecord,
@@ -39,6 +40,7 @@ interface UpdateItemFailure {
 
 export type UpdateItemResult = UpdateItemSuccess | UpdateItemFailure;
 export type ToggleItemFavoriteResult = UpdateItemResult;
+export type ToggleItemPinResult = UpdateItemResult;
 
 interface CreateItemSuccess {
   success: true;
@@ -282,6 +284,46 @@ export async function toggleItemFavorite(
   }
 
   const updatedItem = await toggleItemFavoriteRecord(session.user.id, parsedItemId.data);
+
+  if (!updatedItem) {
+    return {
+      success: false,
+      data: null,
+      error: "Item not found.",
+    };
+  }
+
+  return {
+    success: true,
+    data: serializeItemDetail(updatedItem),
+    error: null,
+  };
+}
+
+export async function toggleItemPin(
+  itemId: string,
+): Promise<ToggleItemPinResult> {
+  const parsedItemId = z.string().trim().min(1).safeParse(itemId);
+
+  if (!parsedItemId.success) {
+    return {
+      success: false,
+      data: null,
+      error: "Item not found.",
+    };
+  }
+
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return {
+      success: false,
+      data: null,
+      error: "You need to be signed in to update items.",
+    };
+  }
+
+  const updatedItem = await toggleItemPinRecord(session.user.id, parsedItemId.data);
 
   if (!updatedItem) {
     return {
