@@ -1,33 +1,20 @@
-# Current Feature: Add Favorite Toggle Buttons
+# Current Feature
 
 ## Status
 
-Completed
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Add favorite toggle buttons to the item drawer.
-- Add favorite toggle buttons to collection detail pages.
-- Keep card surfaces as passive favorite indicators without card-level toggle buttons.
-- Keep favorite state visually clear and synchronized after toggling.
-- Persist favorite changes through existing authenticated, ownership-safe data flows.
+<!-- Goals & requirements -->
 
 ## Todo List
 
-- [x] Review existing favorite data helpers, item cards, drawer actions, and collection page components.
-- [x] Add or reuse an authenticated favorite toggle action.
-- [x] Wire favorite controls into the drawer, collection page, and item card surfaces.
-- [x] Refresh affected UI state after toggling so cards, lists, and drawer content stay in sync.
-- [x] Add or update focused tests for favorite toggle behavior where logic lives.
-- [x] Run `npm run lint` and `npm run build`.
+<!-- Feature-specific checklist -->
 
 ## Notes
 
-- User requested: "Add a favourite button to the drawer, collection page and cards to toggle".
-- Use the existing `isFavorite` item field and current Favorites Page patterns where possible.
-- Keep controls compact and consistent with existing icon-button UI.
-- Card surfaces show passive favorite indicators only; favorite toggles remain in the drawer and collection detail toolbar.
-- Verification passed: focused Vitest favorite-toggle coverage, full `npm test`, `npm run lint`, and `npm run build`.
+<!-- Any extra notes -->
 
 ## History
 
@@ -77,3 +64,4 @@ Completed
 - Settings Page completed with a protected `/settings` route, sidebar user-menu link, account actions moved from profile, profile type icons, aligned settings action rows, animated account dialogs, and passing lint/test/build verification
 - Editor Preferences Settings completed with persisted user editor preferences, auto-saving settings controls, Monaco font/tab/wrap/minimap/theme wiring, a Prisma migration, and focused action/utility test coverage
 - Favorites Page completed with a protected `/favorites` route, compact item and collection favorite lists, top-bar star navigation, drawer/navigation row interactions, favorite DB helpers, focused DB test coverage, and passing lint/build verification
+- Favorite Toggle Buttons completed with authenticated item and collection favorite toggle actions, drawer and collection detail toolbar controls, passive card favorite indicators, removed decorative Favorites page header star, focused toggle tests, and passing full test/lint/build verification
