@@ -1,6 +1,6 @@
 "use client";
 
-import { Star, type LucideIcon } from "lucide-react";
+import { LoaderCircle, Star, type LucideIcon } from "lucide-react";
 
 export function DrawerActionButton({
   active = false,
@@ -32,7 +32,13 @@ export function DrawerActionButton({
         danger && !disabled ? "text-rose-200 hover:border-rose-300/30 hover:bg-rose-400/10" : "",
       ].join(" ")}
     >
-      <Icon className={`size-4 ${active && Icon === Star ? "fill-current" : ""}`} />
+      <Icon
+        className={[
+          "size-4",
+          active && Icon === Star ? "fill-current" : "",
+          Icon === LoaderCircle ? "animate-spin" : "",
+        ].join(" ")}
+      />
       <span>{label}</span>
     </button>
   );

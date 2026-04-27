@@ -482,6 +482,37 @@ export async function updateItem(
   return mapItemToDashboardDetailRecord(updatedItem);
 }
 
+export async function toggleItemFavorite(
+  userId: string,
+  itemId: string,
+): Promise<DashboardItemDetailRecord | null> {
+  const item = await prisma.item.findFirst({
+    where: {
+      id: itemId,
+      userId,
+    },
+    select: {
+      isFavorite: true,
+    },
+  });
+
+  if (!item) {
+    return null;
+  }
+
+  const updatedItem = await prisma.item.update({
+    where: {
+      id: itemId,
+    },
+    data: {
+      isFavorite: !item.isFavorite,
+    },
+    select: dashboardItemDetailSelect,
+  });
+
+  return mapItemToDashboardDetailRecord(updatedItem);
+}
+
 export async function deleteItem(userId: string, itemId: string): Promise<boolean> {
   const item = await prisma.item.findFirst({
     where: {

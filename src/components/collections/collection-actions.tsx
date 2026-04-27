@@ -19,7 +19,11 @@ import {
   X,
 } from "lucide-react";
 
-import { deleteCollection, updateCollection } from "@/actions/collections";
+import {
+  deleteCollection,
+  toggleCollectionFavorite,
+  updateCollection,
+} from "@/actions/collections";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -88,12 +92,15 @@ export function CollectionActions({
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(collection.isFavorite);
+  const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [toastState, setToastState] = useState<CollectionToastState | null>(null);
   const canSubmit = Boolean(formState.name.trim());
 
   useEffect(() => {
     setFormState(createFormState(collection));
+    setIsFavorite(collection.isFavorite);
   }, [collection]);
 
   useEffect(() => {
@@ -237,6 +244,52 @@ export function CollectionActions({
     router.refresh();
   }
 
+  async function handleToggleFavorite() {
+    if (isTogglingFavorite) {
+      return;
+    }
+
+    const previousFavorite = isFavorite;
+
+    setIsFavorite(!previousFavorite);
+    setIsTogglingFavorite(true);
+    setIsMenuOpen(false);
+
+    let result: Awaited<ReturnType<typeof toggleCollectionFavorite>>;
+
+    try {
+      result = await toggleCollectionFavorite(collection.id);
+    } catch {
+      result = {
+        success: false,
+        data: null,
+        error: "We couldn't update this favorite right now.",
+      };
+    }
+
+    setIsTogglingFavorite(false);
+
+    if (!result.success) {
+      setIsFavorite(previousFavorite);
+      setToastState({
+        message: result.error,
+        title: "Favorite failed",
+        variant: "error",
+      });
+      return;
+    }
+
+    setIsFavorite(result.data.isFavorite);
+    setToastState({
+      message: result.data.isFavorite
+        ? "Collection added to favorites."
+        : "Collection removed from favorites.",
+      title: result.data.isFavorite ? "Favorited" : "Unfavorited",
+      variant: "success",
+    });
+    router.refresh();
+  }
+
   return (
     <div className={variant === "menu" ? "relative z-20" : "relative"}>
       {variant === "menu" ? (
@@ -260,17 +313,17 @@ export function CollectionActions({
             <div className="collection-action-menu-enter absolute right-0 top-12 z-30 w-44 overflow-hidden rounded-2xl border border-white/10 bg-[#0c0d12] p-1.5 shadow-[0_20px_70px_rgba(0,0,0,0.48)]">
               <MenuAction icon={Pencil} label="Edit" onClick={openEditDialog} />
               <MenuAction icon={Trash2} label="Delete" onClick={openDeleteDialog} danger />
-              <MenuAction icon={Star} label="Favorite" disabled active={collection.isFavorite} />
             </div>
           ) : null}
         </div>
       ) : (
         <div className="flex flex-wrap items-center gap-3">
           <ActionButton
-            icon={Star}
-            label="Favorite"
-            active={collection.isFavorite}
-            disabled
+            icon={isTogglingFavorite ? LoaderCircle : Star}
+            label={isFavorite ? "Unfavorite" : "Favorite"}
+            active={isFavorite}
+            disabled={isTogglingFavorite}
+            onClick={handleToggleFavorite}
             iconOnly
           />
           <ActionButton
@@ -441,7 +494,7 @@ function ActionButton({
       type="button"
       disabled={disabled}
       onClick={onClick}
-      title={disabled ? `${label} coming soon` : label}
+      title={label}
       aria-label={label}
       className={[
         "inline-flex h-11 items-center justify-center gap-2 rounded-2xl border text-sm font-medium transition-colors",
@@ -452,7 +505,13 @@ function ActionButton({
         disabled ? "cursor-not-allowed opacity-60 hover:bg-white/[0.04]" : "",
       ].join(" ")}
     >
-      <Icon className={`size-4 ${active ? "fill-current" : ""}`} />
+      <Icon
+        className={[
+          "size-4",
+          active && Icon === Star ? "fill-current" : "",
+          Icon === LoaderCircle ? "animate-spin" : "",
+        ].join(" ")}
+      />
       <span className={iconOnly ? "sr-only" : undefined}>{label}</span>
     </button>
   );
@@ -478,7 +537,7 @@ function MenuAction({
       type="button"
       disabled={disabled}
       onClick={onClick}
-      title={disabled ? `${label} coming soon` : label}
+      title={label}
       className={[
         "collection-action-menu-item",
         "flex h-10 w-full items-center gap-2 rounded-xl px-3 text-left text-sm transition-colors",
@@ -488,7 +547,13 @@ function MenuAction({
         disabled ? "cursor-not-allowed opacity-60 hover:bg-transparent" : "",
       ].join(" ")}
     >
-      <Icon className={`size-4 ${active ? "fill-current" : ""}`} />
+      <Icon
+        className={[
+          "size-4",
+          active && Icon === Star ? "fill-current" : "",
+          Icon === LoaderCircle ? "animate-spin" : "",
+        ].join(" ")}
+      />
       <span>{label}</span>
     </button>
   );
