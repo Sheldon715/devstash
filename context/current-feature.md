@@ -1,39 +1,20 @@
-# Current Feature: Add Client-side Sorting to Favorites Page
+# Current Feature
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Add client-side sorting controls to the favorites page.
-- Allow favorite items to be sorted by name.
-- Allow favorite items to be sorted by date.
-- Allow favorite items to be sorted by item type.
-- Show sorting options in an animated click-to-open dropdown.
-- Include Newest, Oldest, A-Z, and Z-A sorting options.
-- Keep sorting responsive without requiring a page reload or server refetch.
-- Preserve existing favorite page item interactions, including opening item details and navigating collections.
+<!-- Goals & requirements -->
 
 ## Todo List
 
-- [x] Inspect the current favorites page structure and data shape.
-- [x] Add a client-side sorting control that matches existing DevStash UI patterns.
-- [x] Implement stable sorting for name, date, and item type.
-- [x] Convert the sort control into an animated dropdown.
-- [x] Add Newest, Oldest, A-Z, and Z-A sort options.
-- [x] Verify item rows/cards keep their existing drawer and navigation behavior.
-- [x] Review testable logic scope for server actions and utilities.
-- [x] Run `npm test`.
-- [x] Run `npm run lint`.
-- [x] Run `npm run build`.
+<!-- Feature-specific checklist -->
 
 ## Notes
 
-- User requested: "Add client-side sorting to the favourite page. We should be able to sort by name, date and item type."
-- Scope is the existing `/favorites` page.
-- Prefer existing shared item/date/type utilities and components where possible.
-- Feature test review found no new server actions or shared utilities requiring unit tests; sorting logic is private client-component behavior.
+<!-- Any extra notes -->
 
 ## History
 
@@ -84,3 +65,4 @@ In Progress
 - Editor Preferences Settings completed with persisted user editor preferences, auto-saving settings controls, Monaco font/tab/wrap/minimap/theme wiring, a Prisma migration, and focused action/utility test coverage
 - Favorites Page completed with a protected `/favorites` route, compact item and collection favorite lists, top-bar star navigation, drawer/navigation row interactions, favorite DB helpers, focused DB test coverage, and passing lint/build verification
 - Favorite Toggle Buttons completed with authenticated item and collection favorite toggle actions, drawer and collection detail toolbar controls, passive card favorite indicators, removed decorative Favorites page header star, focused toggle tests, and passing full test/lint/build verification
+- Favorites client-side sorting completed with an animated dropdown on the favorites item list, Newest/Oldest/A-Z/Z-A/type sort options, stable client-side ordering, preserved drawer row interactions, and passing test/lint/build verification
