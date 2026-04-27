@@ -1,20 +1,72 @@
-# Current Feature
+# Current Feature: Homepage
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Replace the root redirect with a public marketing homepage at `/`.
+- Keep the homepage auth-aware, showing Sign In/Get Started for signed-out users and Dashboard for signed-in users.
+- Recreate the standalone homepage prototype as production Next.js app code.
+- Preserve the mockup sections: fixed top navigation, hero and CTAs, chaos-to-dashboard visual, features grid, AI/pro section, pricing with billing toggle, final CTA, and footer.
+- Use Tailwind v4 and existing ShadCN-style UI primitives where useful.
+- Keep `src/app/page.tsx` thin by extracting reusable homepage sections into `src/components/homepage/`.
+- Share repeated homepage data for nav links, feature cards, pricing details, and preview cards.
+- Ensure every button and link points to a real route or section anchor.
+- Preserve responsive behavior and respect reduced-motion preferences.
+- Pass `npm run lint` and `npm run build`.
 
 ## Todo List
 
-<!-- Feature-specific checklist -->
+- [x] Review `prototypes/homepage/index.html` for section structure, copy, and link intent.
+- [x] Review `prototypes/homepage/styles.css` for visual language, responsive behavior, and motion details.
+- [x] Review `prototypes/homepage/script.js` for chaos visual behavior, pricing toggle behavior, and reduced-motion handling.
+- [x] Inspect existing app homepage, auth helpers, route protection, global styles, and ShadCN-style primitives.
+- [x] Replace the current `/` redirect in `src/app/page.tsx` with an auth-aware server component homepage.
+- [x] Fetch session/auth state on the server and derive the signed-in vs signed-out CTA labels and destinations.
+- [x] Create `src/components/homepage/homepage-data.ts` for shared nav links, feature cards, pricing details, preview cards, and item-type accents.
+- [x] Create `src/components/homepage/homepage-nav.tsx` with fixed navigation, real links, and auth-aware actions.
+- [x] Create `src/components/homepage/homepage-hero.tsx` with hero copy, CTA buttons, and the chaos-to-dashboard visual placement.
+- [x] Create `src/components/homepage/chaos-flow.tsx` as a client component for the interactive chaos icon animation and pointer repulsion.
+- [x] Create `src/components/homepage/features-section.tsx` for the feature grid.
+- [x] Create `src/components/homepage/ai-section.tsx` for the AI/pro section.
+- [x] Create `src/components/homepage/pricing-section.tsx` as a client component for monthly/yearly billing toggle.
+- [x] Add pricing card hover states.
+- [x] Show yearly savings percentage when the pricing toggle is enabled.
+- [x] Narrow pricing cards and move fuller feature lists higher in each card.
+- [x] Mark unavailable Free plan features with cross icons.
+- [x] Keep Get Started and Sign In visible in the top-right homepage navigation.
+- [x] Keep the central homepage CTA labeled Get Started.
+- [x] Enrich the final CTA section so it feels less empty and less plain.
+- [x] Remove the final CTA container and keep the section visually integrated.
+- [x] Add smooth scrolling for homepage section navigation.
+- [x] Soften homepage accent borders and fills so feature/preview/chip sections feel less heavy.
+- [x] Align sign-in and register pages with the homepage visual style.
+- [x] Create `src/components/homepage/homepage-footer.tsx` with real route and section links.
+- [x] Recreate the final CTA section in the homepage composition.
+- [x] Use existing buttons, badges, icons, typography, and dark theme conventions where they fit.
+- [x] Ensure no placeholder `href="#"` links remain.
+- [x] Confirm signed-out users see Sign In and Get Started actions.
+- [x] Confirm signed-in users see Dashboard as the primary app action.
+- [x] Verify desktop responsive layout against the prototype intent.
+- [x] Verify mobile layout stacks cleanly with no CTA text overflow.
+- [x] Verify reduced-motion preferences are respected for animations.
+- [x] Run `npm test`.
+- [x] Run `npm run lint`.
+- [x] Run `npm run build`.
 
 ## Notes
 
-<!-- Any extra notes -->
+- Prototype source: `prototypes/homepage/index.html`.
+- Prototype styles: `prototypes/homepage/styles.css`.
+- Prototype interactions: `prototypes/homepage/script.js`.
+- Existing route to replace: `src/app/page.tsx`.
+- Suggested component files: `homepage-nav.tsx`, `homepage-hero.tsx`, `chaos-flow.tsx`, `features-section.tsx`, `ai-section.tsx`, `pricing-section.tsx`, `homepage-footer.tsx`, and `homepage-data.ts`.
+- Route/link targets: brand `/`, features `#features`, pricing `#pricing`, sign in `/sign-in`, get started/register CTAs `/register`, dashboard `/dashboard`.
+- Match the app dark theme and typography from `src/app/globals.css`.
+- Use item-type accent colors consistently for snippets, prompts, commands, notes, files, images, and URLs.
+- Avoid placeholder `href="#"` links, oversized nested cards, and mobile CTA overflow.
 
 ## History
 
