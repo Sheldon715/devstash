@@ -1,13 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { FolderPlus, LayoutPanelLeft, Plus, Search } from "lucide-react";
+import { FolderPlus, LayoutPanelLeft, Plus, Search, Star } from "lucide-react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { CreateCollectionDialog } from "@/components/collections/create-collection-dialog";
 import { CreateItemDialog } from "@/components/items/create-item-dialog";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import { normalizeDashboardItemTypeRouteKey } from "@/lib/item-types";
 import type { CollectionOption } from "@/components/items/collection-multi-select";
 
@@ -26,6 +28,7 @@ export function TopBar({
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const pathname = usePathname();
   const routeType = getCurrentItemType(pathname);
+  const isFavoritesRoute = pathname === "/favorites";
 
   return (
     <>
@@ -55,6 +58,20 @@ export function TopBar({
               Ctrl K
             </span>
           </div>
+
+          <Link
+            href="/favorites"
+            aria-label="Favorites"
+            className={cn(
+              buttonVariants({ variant: "outline", size: "icon" }),
+              "shrink-0 rounded-xl border-border/80 bg-card",
+              isFavoritesRoute
+                ? "border-yellow-300/30 bg-yellow-300/10 text-yellow-200 hover:bg-yellow-300/15 hover:text-yellow-100"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            <Star className={cn("size-4", isFavoritesRoute ? "fill-current" : "")} />
+          </Link>
 
           <Button
             type="button"

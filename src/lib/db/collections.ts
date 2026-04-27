@@ -31,6 +31,15 @@ export interface DashboardCollectionStats {
   favoriteCollections: number;
 }
 
+export interface DashboardFavoriteCollectionRecord {
+  id: string;
+  name: string;
+  description: string;
+  isFavorite: boolean;
+  itemCount: number;
+  updatedAt: Date;
+}
+
 export interface CreateCollectionData {
   description: string | null;
   name: string;
@@ -287,6 +296,39 @@ export async function getDashboardCollectionStats(userId: string): Promise<Dashb
     totalCollections,
     favoriteCollections,
   };
+}
+
+export async function getFavoriteDashboardCollections(
+  userId: string,
+): Promise<DashboardFavoriteCollectionRecord[]> {
+  const collections = await prisma.collection.findMany({
+    where: {
+      userId,
+      isFavorite: true,
+    },
+    orderBy: [{ updatedAt: "desc" }, { name: "asc" }],
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      isFavorite: true,
+      updatedAt: true,
+      _count: {
+        select: {
+          items: true,
+        },
+      },
+    },
+  });
+
+  return collections.map((collection) => ({
+    id: collection.id,
+    name: collection.name,
+    description: collection.description ?? "No description yet.",
+    isFavorite: collection.isFavorite,
+    itemCount: collection._count.items,
+    updatedAt: collection.updatedAt,
+  }));
 }
 
 export async function createDashboardCollection(
