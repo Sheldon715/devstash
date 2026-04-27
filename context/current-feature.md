@@ -1,38 +1,20 @@
-# Current Feature: Favorites Page
+# Current Feature
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Add a protected `/favorites` page for authenticated users.
-- Display all user-favorited items and collections in compact, dev-focused lists.
-- Add a star icon button in the top bar that links to `/favorites`.
-- Separate favorited items and collections into sections with visible counts.
-- Allow item rows to open the `ItemDrawer` and collection rows to navigate to `/collections/[id]`.
-- Show an empty state when the user has no favorites.
-- Sort favorites by most recently favorited using `updatedAt`.
+<!-- Goals & requirements -->
 
 ## Todo List
 
-- [x] Review existing favorite item and collection data access patterns.
-- [x] Add the top-bar favorites navigation button.
-- [x] Create the protected `/favorites` route.
-- [x] Fetch authenticated user's favorited items and collections.
-- [x] Build compact favorites list sections with counts.
-- [x] Wire item rows to open `ItemDrawer`.
-- [x] Wire collection rows to navigate to collection detail pages.
-- [x] Add empty state for users with no favorites.
-- [x] Verify sorting by most recently favorited.
-- [x] Run lint and production build.
+<!-- Feature-specific checklist -->
 
 ## Notes
 
-- Source spec: `context/feature/favorites-spec.md`
-- UI should be dense and developer-focused, closer to VS Code or a terminal list than cards.
-- Row content should include a type icon, title, type badge, and date added.
-- Styling should use minimal padding, subtle hover states, clean lines, and no heavy card treatment.
+<!-- Any extra notes -->
 
 ## History
 
@@ -81,3 +63,4 @@ In Progress
 - Pagination completed with shared pagination constants/helpers, numbered controls, server-side paged item type and collection detail queries, dashboard limit constants, and passing lint/test/build verification
 - Settings Page completed with a protected `/settings` route, sidebar user-menu link, account actions moved from profile, profile type icons, aligned settings action rows, animated account dialogs, and passing lint/test/build verification
 - Editor Preferences Settings completed with persisted user editor preferences, auto-saving settings controls, Monaco font/tab/wrap/minimap/theme wiring, a Prisma migration, and focused action/utility test coverage
+- Favorites Page completed with a protected `/favorites` route, compact item and collection favorite lists, top-bar star navigation, drawer/navigation row interactions, favorite DB helpers, focused DB test coverage, and passing lint/build verification
