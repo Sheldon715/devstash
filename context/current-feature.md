@@ -1,32 +1,23 @@
-# Responsive Dashboard Top Bar
+# Current Feature
 
 ## Status
 
-Completed
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Reduce dashboard top-bar clutter on small screens.
-- Prevent horizontal page overflow on narrow mobile viewports.
-- Replace separate mobile create actions with one compact create menu.
-- Keep search, favorites, sidebar, item creation, and collection creation accessible.
+<!-- Goals & requirements -->
 
 ## Todo List
 
-- [x] Create feature branch
-- [x] Implement compact responsive top-bar actions
-- [x] Verify mobile layout with Playwright
-- [x] Run lint
-- [x] Run build
+<!-- Feature-specific checklist -->
 
 ## Notes
 
-- Playwright inspection showed the 390px viewport overflowing to 419px because the full "New Item" button remained visible on mobile.
-- Preferred fix: combine new item and new collection behind one mobile create button, while keeping full desktop actions.
+<!-- Any extra notes -->
 
 ## History
 
-- Responsive Dashboard Top Bar completed with a compact mobile create menu, shrink-safe search field, reduced top-bar clutter on narrow screens, Playwright overflow verification, and passing lint/build checks
 - Initial Next.js app scaffold created from Create Next App
 - Initial framework setup completed, including project context files and boilerplate cleanup
 - Dashboard UI Phase 1 completed with a `/dashboard` route, dark-mode dashboard shell, ShadCN-style UI primitives, and placeholder `Sidebar` and `Main` sections based on the phase 1 spec
@@ -78,3 +69,4 @@ Completed
 - Pinned Items completed with an authenticated item pin toggle action, optimistic drawer pin controls, pinned-first item and collection listings, static card pin indicators, focused unit coverage, and passing test/lint/build verification
 - DevStash Homepage Mockup completed with a standalone `prototypes/homepage` marketing prototype, animated chaos-to-dashboard hero, responsive feature/AI/pricing/CTA/footer sections, refined visual styling, and passing lint/build verification
 - Homepage completed with a public `/` marketing page, reusable homepage sections, interactive chaos/pricing components, smoother section navigation, aligned auth page styling, and passing test/lint/build verification
+- Responsive Dashboard Top Bar completed with a compact mobile create menu, shrink-safe search field, reduced top-bar clutter on narrow screens, Playwright overflow verification, and passing lint/build checks
