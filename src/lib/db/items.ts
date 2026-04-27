@@ -46,6 +46,7 @@ async function getDashboardItems(
   userId: string,
   options?: {
     isPinned?: boolean;
+    isFavorite?: boolean;
     limit?: number;
     page?: number;
     pageSize?: number;
@@ -61,6 +62,7 @@ async function getDashboardItems(
     where: {
       userId,
       ...(options?.isPinned === undefined ? {} : { isPinned: options.isPinned }),
+      ...(options?.isFavorite === undefined ? {} : { isFavorite: options.isFavorite }),
       ...(options?.typeKey ? { type: { key: options.typeKey } } : {}),
     },
     orderBy: [{ updatedAt: "desc" }, { title: "asc" }],
@@ -130,6 +132,14 @@ export async function getPinnedDashboardItems(userId: string, limit = 4) {
 export async function getRecentDashboardItems(userId: string, limit = DASHBOARD_RECENT_ITEMS_LIMIT) {
   const items = await getDashboardItems(userId, {
     limit,
+  });
+
+  return items.map(mapItemToDashboardRecord);
+}
+
+export async function getFavoriteDashboardItems(userId: string) {
+  const items = await getDashboardItems(userId, {
+    isFavorite: true,
   });
 
   return items.map(mapItemToDashboardRecord);

@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const {
   prismaCollectionCreateMock,
   prismaCollectionDeleteManyMock,
+  prismaCollectionFindManyMock,
   prismaCollectionFindFirstMock,
   prismaCollectionItemCountMock,
   prismaCollectionItemFindManyMock,
@@ -10,6 +11,7 @@ const {
 } = vi.hoisted(() => ({
   prismaCollectionCreateMock: vi.fn(),
   prismaCollectionDeleteManyMock: vi.fn(),
+  prismaCollectionFindManyMock: vi.fn(),
   prismaCollectionFindFirstMock: vi.fn(),
   prismaCollectionItemCountMock: vi.fn(),
   prismaCollectionItemFindManyMock: vi.fn(),
@@ -21,6 +23,7 @@ vi.mock("@/lib/prisma", () => ({
     collection: {
       create: prismaCollectionCreateMock,
       deleteMany: prismaCollectionDeleteManyMock,
+      findMany: prismaCollectionFindManyMock,
       findFirst: prismaCollectionFindFirstMock,
       updateMany: prismaCollectionUpdateManyMock,
     },
@@ -36,6 +39,7 @@ import {
   deleteDashboardCollection,
   getDashboardCollectionItems,
   getDashboardCollectionItemsPage,
+  getFavoriteDashboardCollections,
   updateDashboardCollection,
 } from "@/lib/db/collections";
 
@@ -43,6 +47,7 @@ describe("collection db queries", () => {
   beforeEach(() => {
     prismaCollectionCreateMock.mockReset();
     prismaCollectionDeleteManyMock.mockReset();
+    prismaCollectionFindManyMock.mockReset();
     prismaCollectionFindFirstMock.mockReset();
     prismaCollectionItemCountMock.mockReset();
     prismaCollectionItemFindManyMock.mockReset();
@@ -270,6 +275,54 @@ describe("collection db queries", () => {
         where,
       }),
     );
+  });
+
+  it("returns favorite collections ordered by latest update", async () => {
+    const updatedAt = new Date("2026-04-25T04:30:00.000Z");
+
+    prismaCollectionFindManyMock.mockResolvedValue([
+      {
+        id: "collection-1",
+        name: "React Recipes",
+        description: null,
+        isFavorite: true,
+        updatedAt,
+        _count: {
+          items: 3,
+        },
+      },
+    ]);
+
+    await expect(getFavoriteDashboardCollections("user-1")).resolves.toEqual([
+      {
+        id: "collection-1",
+        name: "React Recipes",
+        description: "No description yet.",
+        isFavorite: true,
+        itemCount: 3,
+        updatedAt,
+      },
+    ]);
+
+    expect(prismaCollectionFindManyMock).toHaveBeenCalledWith({
+      where: {
+        userId: "user-1",
+        isFavorite: true,
+      },
+      orderBy: [{ updatedAt: "desc" }, { name: "asc" }],
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        isFavorite: true,
+        updatedAt: true,
+        _count: {
+          select: {
+            items: true,
+          },
+        },
+      },
+    });
   });
 
   it("updates collection metadata within the signed-in user's scope", async () => {

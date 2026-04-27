@@ -51,6 +51,7 @@ import {
   deleteItem,
   getDashboardItemDetail,
   getDashboardItemTypePage,
+  getFavoriteDashboardItems,
   isItemFileKeyInUse,
   updateItem,
 } from "@/lib/db/items";
@@ -280,6 +281,61 @@ describe("item db queries", () => {
           fileMimeType: true,
           fileSizeBytes: true,
         }),
+      }),
+    );
+  });
+
+  it("returns favorite items ordered by latest update", async () => {
+    const createdAt = new Date("2026-04-20T03:12:00.000Z");
+    const updatedAt = new Date("2026-04-24T08:30:00.000Z");
+
+    prismaItemFindManyMock.mockResolvedValue([
+      {
+        id: "item-1",
+        title: "Favorite command",
+        description: null,
+        fileName: null,
+        fileMimeType: null,
+        fileSizeBytes: null,
+        isPinned: false,
+        isFavorite: true,
+        createdAt,
+        updatedAt,
+        type: {
+          key: "command",
+          name: "command",
+        },
+        tags: [],
+        collections: [],
+      },
+    ]);
+
+    await expect(getFavoriteDashboardItems("user-1")).resolves.toEqual([
+      {
+        id: "item-1",
+        title: "Favorite command",
+        description: "No description yet.",
+        typeKey: "command",
+        typeLabel: "Command",
+        collectionNames: [],
+        tags: [],
+        fileName: null,
+        fileMimeType: null,
+        fileSizeBytes: null,
+        isPinned: false,
+        isFavorite: true,
+        createdAt,
+        updatedAt,
+      },
+    ]);
+
+    expect(prismaItemFindManyMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderBy: [{ updatedAt: "desc" }, { title: "asc" }],
+        where: {
+          userId: "user-1",
+          isFavorite: true,
+        },
       }),
     );
   });
