@@ -1,20 +1,38 @@
-# Current Feature
+# Current Feature: DevStash Homepage Mockup
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Create a static marketing homepage prototype for DevStash in `prototypes/homepage/`.
+- Include `index.html`, `styles.css`, and `script.js` as the prototype output.
+- Build a dark, developer-focused homepage with fixed navigation, hero copy, feature cards, AI section, pricing, CTA, and footer.
+- Make the hero visual communicate "chaos to order" with an animated scattered-knowledge panel, pulsing transform arrow, and organized DevStash dashboard preview.
+- Use the specified item type accent colors for snippets, prompts, commands, notes, files, images, and URLs.
+- Implement JavaScript-powered floating chaos icons with wall bouncing, subtle rotation/scale motion, and mouse repulsion.
+- Add CSS/JS polish for arrow pulsing, scroll reveal effects, and navbar opacity changes on scroll.
+- Ensure the mockup is responsive, including stacked mobile hero visuals and a rotated mobile arrow.
 
 ## Todo List
 
-<!-- Feature-specific checklist -->
+- [x] Create `prototypes/homepage/index.html`, `styles.css`, and `script.js`.
+- [x] Build fixed navigation with logo, feature/pricing links, sign-in, and get-started actions.
+- [x] Build hero text and CTA buttons above the main visual.
+- [x] Build animated chaos container, transform arrow, and dashboard preview.
+- [x] Build features, AI demo, pricing, CTA, and footer sections.
+- [x] Implement chaos icon animation and scroll/navbar interactions.
+- [x] Add responsive layouts for tablet and mobile.
+- [x] Verify the prototype in a browser and run relevant project checks if applicable.
 
 ## Notes
 
-<!-- Any extra notes -->
+- Source spec: `context/feature/homepage-mockup-spec.md`
+- This is a standalone static prototype rather than a Next.js route.
+- Use these item type accents: snippet `#3b82f6`, prompt `#f59e0b`, command `#06b6d4`, note `#22c55e`, file `#64748b`, image `#ec4899`, URL `#6366f1`.
+- The yearly pricing toggle should show the Pro yearly option at `$72`.
+- On mobile, the hero visual stacks vertically and the arrow rotates 90 degrees to point down.
 
 ## History
 
