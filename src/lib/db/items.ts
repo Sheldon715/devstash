@@ -65,7 +65,7 @@ async function getDashboardItems(
       ...(options?.isFavorite === undefined ? {} : { isFavorite: options.isFavorite }),
       ...(options?.typeKey ? { type: { key: options.typeKey } } : {}),
     },
-    orderBy: [{ updatedAt: "desc" }, { title: "asc" }],
+    orderBy: [{ isPinned: "desc" }, { updatedAt: "desc" }, { title: "asc" }],
     skip:
       options?.page === undefined || pageSize === undefined
         ? undefined
@@ -506,6 +506,37 @@ export async function toggleItemFavorite(
     },
     data: {
       isFavorite: !item.isFavorite,
+    },
+    select: dashboardItemDetailSelect,
+  });
+
+  return mapItemToDashboardDetailRecord(updatedItem);
+}
+
+export async function toggleItemPin(
+  userId: string,
+  itemId: string,
+): Promise<DashboardItemDetailRecord | null> {
+  const item = await prisma.item.findFirst({
+    where: {
+      id: itemId,
+      userId,
+    },
+    select: {
+      isPinned: true,
+    },
+  });
+
+  if (!item) {
+    return null;
+  }
+
+  const updatedItem = await prisma.item.update({
+    where: {
+      id: itemId,
+    },
+    data: {
+      isPinned: !item.isPinned,
     },
     select: dashboardItemDetailSelect,
   });

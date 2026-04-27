@@ -54,6 +54,7 @@ import {
   getFavoriteDashboardItems,
   isItemFileKeyInUse,
   toggleItemFavorite,
+  toggleItemPin,
   updateItem,
 } from "@/lib/db/items";
 
@@ -286,7 +287,7 @@ describe("item db queries", () => {
     );
   });
 
-  it("returns favorite items ordered by latest update", async () => {
+  it("returns favorite items with pinned items first, then latest update", async () => {
     const createdAt = new Date("2026-04-20T03:12:00.000Z");
     const updatedAt = new Date("2026-04-24T08:30:00.000Z");
 
@@ -332,7 +333,7 @@ describe("item db queries", () => {
 
     expect(prismaItemFindManyMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        orderBy: [{ updatedAt: "desc" }, { title: "asc" }],
+        orderBy: [{ isPinned: "desc" }, { updatedAt: "desc" }, { title: "asc" }],
         where: {
           userId: "user-1",
           isFavorite: true,
@@ -820,6 +821,72 @@ describe("item db queries", () => {
     prismaItemFindFirstMock.mockResolvedValue(null);
 
     await expect(toggleItemFavorite("user-1", "item-1")).resolves.toBeNull();
+
+    expect(prismaItemUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("toggles pinned state for an owned item", async () => {
+    const createdAt = new Date("2026-04-22T03:12:00.000Z");
+    const updatedAt = new Date("2026-04-24T08:30:00.000Z");
+
+    prismaItemFindFirstMock.mockResolvedValue({
+      isPinned: false,
+    });
+    prismaItemUpdateMock.mockResolvedValue({
+      id: "item-1",
+      title: "Pinned command",
+      description: null,
+      contentMode: "TEXT",
+      content: "npm run build",
+      url: null,
+      fileName: null,
+      fileUrl: null,
+      fileMimeType: null,
+      fileSizeBytes: null,
+      language: "shell",
+      aiSummary: null,
+      isPinned: true,
+      isFavorite: false,
+      createdAt,
+      updatedAt,
+      lastAccessedAt: null,
+      type: {
+        key: "command",
+        name: "command",
+      },
+      tags: [],
+      collections: [],
+    });
+
+    await expect(toggleItemPin("user-1", "item-1")).resolves.toMatchObject({
+      id: "item-1",
+      isPinned: true,
+    });
+
+    expect(prismaItemFindFirstMock).toHaveBeenCalledWith({
+      where: {
+        id: "item-1",
+        userId: "user-1",
+      },
+      select: {
+        isPinned: true,
+      },
+    });
+    expect(prismaItemUpdateMock).toHaveBeenCalledWith({
+      where: {
+        id: "item-1",
+      },
+      data: {
+        isPinned: true,
+      },
+      select: expect.any(Object),
+    });
+  });
+
+  it("does not toggle pinned state for another user's item", async () => {
+    prismaItemFindFirstMock.mockResolvedValue(null);
+
+    await expect(toggleItemPin("user-1", "item-1")).resolves.toBeNull();
 
     expect(prismaItemUpdateMock).not.toHaveBeenCalled();
   });
