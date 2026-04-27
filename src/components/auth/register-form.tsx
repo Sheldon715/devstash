@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { startTransition, useState } from "react";
+import { startTransition, useState, type FormEvent } from "react";
 import { LoaderCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -52,7 +52,7 @@ export function RegisterForm({ requiresEmailVerification }: RegisterFormProps) {
     }));
   }
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const trimmedEmail = normalizeEmailAddress(formState.email);
@@ -142,7 +142,7 @@ export function RegisterForm({ requiresEmailVerification }: RegisterFormProps) {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <h2 className="text-3xl font-semibold tracking-tight text-white">Create your account</h2>
+        <h2 className="text-3xl font-black tracking-tight text-white">Create your account</h2>
         <p className="text-sm leading-6 text-zinc-400">
           Start building your own developer knowledge hub in a few seconds.
         </p>
@@ -166,7 +166,7 @@ export function RegisterForm({ requiresEmailVerification }: RegisterFormProps) {
             value={formState.name}
             onChange={(event) => updateField("name", event.target.value)}
             placeholder="John Smith"
-            className="h-12 rounded-2xl border-white/12 bg-white/[0.03] text-white placeholder:text-zinc-500"
+            className="h-12 rounded-lg border-white/12 bg-white/[0.03] text-white placeholder:text-zinc-500"
           />
         </div>
 
@@ -183,7 +183,7 @@ export function RegisterForm({ requiresEmailVerification }: RegisterFormProps) {
             value={formState.email}
             onChange={(event) => updateField("email", event.target.value)}
             placeholder="you@example.com"
-            className="h-12 rounded-2xl border-white/12 bg-white/[0.03] text-white placeholder:text-zinc-500"
+            className="h-12 rounded-lg border-white/12 bg-white/[0.03] text-white placeholder:text-zinc-500"
           />
         </div>
 
@@ -199,8 +199,8 @@ export function RegisterForm({ requiresEmailVerification }: RegisterFormProps) {
             required
             value={formState.password}
             onChange={(event) => updateField("password", event.target.value)}
-            placeholder="••••••••"
-            className="h-12 rounded-2xl border-white/12 bg-white/[0.03] text-white placeholder:text-zinc-500"
+            placeholder="********"
+            className="h-12 rounded-lg border-white/12 bg-white/[0.03] text-white placeholder:text-zinc-500"
           />
         </div>
 
@@ -216,14 +216,14 @@ export function RegisterForm({ requiresEmailVerification }: RegisterFormProps) {
             required
             value={formState.confirmPassword}
             onChange={(event) => updateField("confirmPassword", event.target.value)}
-            placeholder="••••••••"
-            className="h-12 rounded-2xl border-white/12 bg-white/[0.03] text-white placeholder:text-zinc-500"
+            placeholder="********"
+            className="h-12 rounded-lg border-white/12 bg-white/[0.03] text-white placeholder:text-zinc-500"
           />
         </div>
 
         <Button
           type="submit"
-          className="h-12 w-full rounded-2xl bg-white text-black hover:bg-zinc-200"
+          className="h-12 w-full rounded-lg bg-zinc-50 text-zinc-950 hover:bg-white"
           disabled={formState.isPending}
         >
           {formState.isPending ? <LoaderCircle className="size-4 animate-spin" /> : null}
@@ -241,7 +241,7 @@ export function RegisterForm({ requiresEmailVerification }: RegisterFormProps) {
         Already have an account?{" "}
         <Link
           href="/sign-in"
-          className="font-medium text-sky-200 transition-colors hover:text-sky-100"
+          className="font-bold text-violet-200 transition-colors hover:text-violet-100"
         >
           Sign in
         </Link>

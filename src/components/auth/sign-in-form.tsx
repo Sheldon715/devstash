@@ -64,7 +64,7 @@ export function SignInForm({
           />
         ) : null
       ) : successMessage ? (
-        <div className="rounded-[22px] border border-emerald-300/12 bg-[#111317] px-4 py-4 shadow-[0_20px_50px_rgba(0,0,0,0.38)]">
+        <div className="rounded-2xl border border-emerald-300/12 bg-emerald-300/8 px-4 py-4 shadow-[0_18px_44px_rgba(0,0,0,0.28)]">
           <div className="flex items-start gap-3">
             <div className="flex size-10 shrink-0 items-center justify-center rounded-[16px] bg-emerald-400/12 text-emerald-300 ring-1 ring-emerald-300/14">
               <CheckCircle2 className="size-5" />
@@ -84,7 +84,7 @@ export function SignInForm({
       ) : null}
 
       <div className="space-y-2">
-        <h2 className="text-3xl font-semibold tracking-tight text-white">Sign in</h2>
+        <h2 className="text-3xl font-black tracking-tight text-white">Sign in</h2>
         <p className="text-sm leading-6 text-zinc-400">
           Use your DevStash account or continue with GitHub.
         </p>
@@ -96,7 +96,7 @@ export function SignInForm({
           {state.resendVerificationEmail ? (
             <Link
               href={`/verify-email?email=${encodeURIComponent(state.resendVerificationEmail)}`}
-              className="mt-2 inline-flex text-xs font-medium tracking-[0.18em] text-sky-100 uppercase transition-colors hover:text-white"
+              className="mt-2 inline-flex text-xs font-bold tracking-[0.14em] text-violet-200 uppercase transition-colors hover:text-violet-100"
             >
               Resend verification email
             </Link>
@@ -109,7 +109,7 @@ export function SignInForm({
         <Button
           type="submit"
           variant="outline"
-          className="h-12 w-full rounded-2xl border-white/12 bg-white/[0.03] text-white hover:bg-white/[0.08]"
+          className="h-12 w-full rounded-lg border-white/12 bg-white/[0.03] text-white hover:bg-white/[0.08]"
         >
           <GitHubMark />
           Sign in with GitHub
@@ -121,7 +121,7 @@ export function SignInForm({
           <span className="w-full border-t border-white/10" />
         </div>
         <div className="relative flex justify-center text-[11px] font-medium tracking-[0.22em] text-zinc-500 uppercase">
-          <span className="bg-[#0b0b0f] px-3">Or continue with email</span>
+          <span className="bg-[#080b16] px-3">Or continue with email</span>
         </div>
       </div>
 
@@ -141,7 +141,7 @@ export function SignInForm({
             value={emailValue}
             onChange={(event) => setEmailValue(event.target.value)}
             placeholder="you@example.com"
-            className="h-12 rounded-2xl border-white/12 bg-white/[0.03] text-white placeholder:text-zinc-500"
+            className="h-12 rounded-lg border-white/12 bg-white/[0.03] text-white placeholder:text-zinc-500"
           />
         </div>
 
@@ -156,7 +156,7 @@ export function SignInForm({
                   ? `/forgot-password?email=${encodeURIComponent(forgotPasswordEmail)}`
                   : "/forgot-password"
               }
-              className="text-xs font-medium tracking-[0.18em] text-sky-200/80 uppercase transition-colors hover:text-sky-100"
+              className="text-xs font-bold tracking-[0.14em] text-violet-200/85 uppercase transition-colors hover:text-violet-100"
             >
               Forgot password?
             </Link>
@@ -168,13 +168,13 @@ export function SignInForm({
             autoComplete="current-password"
             required
             placeholder="Enter your password"
-            className="h-12 rounded-2xl border-white/12 bg-white/[0.03] text-white placeholder:text-zinc-500"
+            className="h-12 rounded-lg border-white/12 bg-white/[0.03] text-white placeholder:text-zinc-500"
           />
         </div>
 
         <Button
           type="submit"
-          className="h-12 w-full rounded-2xl bg-white text-black hover:bg-zinc-200"
+          className="h-12 w-full rounded-lg bg-zinc-50 text-zinc-950 hover:bg-white"
           disabled={isPending}
         >
           {isPending ? <LoaderCircle className="size-4 animate-spin" /> : null}
@@ -186,7 +186,7 @@ export function SignInForm({
         Need an account?{" "}
         <Link
           href="/register"
-          className="font-medium text-sky-200 transition-colors hover:text-sky-100"
+          className="font-bold text-violet-200 transition-colors hover:text-violet-100"
         >
           Create one
         </Link>
