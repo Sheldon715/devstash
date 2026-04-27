@@ -1,36 +1,20 @@
-# Current Feature: Pinned Items
+# Current Feature
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Make the existing Pin button in `ItemDrawer` functional.
-- Add an authenticated `toggleItemPin` server action for items.
-- Update the drawer optimistically so pin state changes feel instant.
-- Show success and error toast notifications for pin toggles.
-- Sort pinned items to the top of item listings.
-- Follow the existing Favorite Button pattern.
-- Keep pinning item-only; collections are not in scope.
-- Preserve the `ItemCard` pin icon as a static indicator.
+<!-- Goals & requirements -->
 
 ## Todo List
 
-- [x] Review the existing favorite toggle implementation and item drawer wiring.
-- [x] Create `toggleItemPin` with ownership-safe item-only updates.
-- [x] Wire the `ItemDrawer` Pin button with optimistic state and toast feedback.
-- [x] Ensure item listing queries sort pinned items first.
-- [x] Confirm dashboard pinned items continue to use pinned item data correctly.
-- [x] Add focused unit coverage for pin toggle logic and sorting helpers/actions where applicable.
-- [x] Run `npm run lint`.
-- [x] Run `npm run build`.
+<!-- Feature-specific checklist -->
 
 ## Notes
 
-- Source spec: `context/feature/pinned-spec.md`
-- Pinned items should appear at the top of listings and in the dashboard pinned items section.
-- The card-level pin icon is display-only for this feature.
+<!-- Any extra notes -->
 
 ## History
 
@@ -82,3 +66,4 @@ In Progress
 - Favorites Page completed with a protected `/favorites` route, compact item and collection favorite lists, top-bar star navigation, drawer/navigation row interactions, favorite DB helpers, focused DB test coverage, and passing lint/build verification
 - Favorite Toggle Buttons completed with authenticated item and collection favorite toggle actions, drawer and collection detail toolbar controls, passive card favorite indicators, removed decorative Favorites page header star, focused toggle tests, and passing full test/lint/build verification
 - Favorites client-side sorting completed with an animated dropdown on the favorites item list, Newest/Oldest/A-Z/Z-A/type sort options, stable client-side ordering, preserved drawer row interactions, and passing test/lint/build verification
+- Pinned Items completed with an authenticated item pin toggle action, optimistic drawer pin controls, pinned-first item and collection listings, static card pin indicators, focused unit coverage, and passing test/lint/build verification
