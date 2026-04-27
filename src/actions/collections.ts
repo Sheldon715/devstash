@@ -5,6 +5,7 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import {
   deleteDashboardCollection,
+  toggleDashboardCollectionFavorite,
   updateDashboardCollection,
   type DashboardCollectionMetadataRecord,
 } from "@/lib/db/collections";
@@ -29,6 +30,7 @@ interface UpdateCollectionFailure {
 }
 
 export type UpdateCollectionResult = UpdateCollectionSuccess | UpdateCollectionFailure;
+export type ToggleCollectionFavoriteResult = UpdateCollectionResult;
 
 interface DeleteCollectionSuccess {
   success: true;
@@ -132,6 +134,49 @@ export async function updateCollection(
       error: "We couldn't save this collection right now.",
     };
   }
+}
+
+export async function toggleCollectionFavorite(
+  collectionId: string,
+): Promise<ToggleCollectionFavoriteResult> {
+  const parsedCollectionId = collectionIdSchema.safeParse(collectionId);
+
+  if (!parsedCollectionId.success) {
+    return {
+      success: false,
+      data: null,
+      error: "Collection not found.",
+    };
+  }
+
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return {
+      success: false,
+      data: null,
+      error: "You need to be signed in to update collections.",
+    };
+  }
+
+  const updatedCollection = await toggleDashboardCollectionFavorite(
+    session.user.id,
+    parsedCollectionId.data,
+  );
+
+  if (!updatedCollection) {
+    return {
+      success: false,
+      data: null,
+      error: "Collection not found.",
+    };
+  }
+
+  return {
+    success: true,
+    data: serializeCollectionMetadata(updatedCollection),
+    error: null,
+  };
 }
 
 export async function deleteCollection(collectionId: string): Promise<DeleteCollectionResult> {

@@ -1,20 +1,33 @@
-# Current Feature
+# Current Feature: Add Favorite Toggle Buttons
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+Completed
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Add favorite toggle buttons to the item drawer.
+- Add favorite toggle buttons to collection detail pages.
+- Keep card surfaces as passive favorite indicators without card-level toggle buttons.
+- Keep favorite state visually clear and synchronized after toggling.
+- Persist favorite changes through existing authenticated, ownership-safe data flows.
 
 ## Todo List
 
-<!-- Feature-specific checklist -->
+- [x] Review existing favorite data helpers, item cards, drawer actions, and collection page components.
+- [x] Add or reuse an authenticated favorite toggle action.
+- [x] Wire favorite controls into the drawer, collection page, and item card surfaces.
+- [x] Refresh affected UI state after toggling so cards, lists, and drawer content stay in sync.
+- [x] Add or update focused tests for favorite toggle behavior where logic lives.
+- [x] Run `npm run lint` and `npm run build`.
 
 ## Notes
 
-<!-- Any extra notes -->
+- User requested: "Add a favourite button to the drawer, collection page and cards to toggle".
+- Use the existing `isFavorite` item field and current Favorites Page patterns where possible.
+- Keep controls compact and consistent with existing icon-button UI.
+- Card surfaces show passive favorite indicators only; favorite toggles remain in the drawer and collection detail toolbar.
+- Verification passed: focused Vitest favorite-toggle coverage, full `npm test`, `npm run lint`, and `npm run build`.
 
 ## History
 

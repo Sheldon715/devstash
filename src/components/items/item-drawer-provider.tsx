@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import { deleteItem, updateItem } from "@/actions/items";
+import { deleteItem, toggleItemFavorite, updateItem } from "@/actions/items";
 import type { CollectionOption } from "@/components/items/collection-multi-select";
 import { ItemDrawerEditBody } from "@/components/items/item-drawer-edit-form";
 import {
@@ -107,6 +107,7 @@ export function ItemDrawerProvider({
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
   const [toastState, setToastState] = useState<ItemDrawerToastState | null>(null);
   const [editFormState, setEditFormState] = useState<EditItemFormState | null>(null);
@@ -344,8 +345,16 @@ export function ItemDrawerProvider({
                 ) : (
                   <div className="flex flex-wrap items-center gap-3">
                     <DrawerActionButton
-                      icon={Star}
-                      label="Favorite"
+                      icon={isTogglingFavorite ? LoaderCircle : Star}
+                      label={
+                        isTogglingFavorite
+                          ? "Saving"
+                          : selectedItem.isFavorite
+                            ? "Favorited"
+                            : "Favorite"
+                      }
+                      onClick={handleFavoriteToggle}
+                      disabled={isTogglingFavorite}
                       active={selectedItem.isFavorite}
                       activeClassName="border-[#facc15]/30 bg-[#facc15]/10 text-[#facc15]"
                     />
@@ -564,6 +573,54 @@ export function ItemDrawerProvider({
     setToastState({
       message: "Item updated.",
       title: "Saved",
+      variant: "success",
+    });
+    router.refresh();
+  }
+
+  async function handleFavoriteToggle() {
+    if (!selectedItem || isTogglingFavorite) {
+      return;
+    }
+
+    setIsTogglingFavorite(true);
+
+    let result: Awaited<ReturnType<typeof toggleItemFavorite>>;
+
+    try {
+      result = await toggleItemFavorite(selectedItem.id);
+    } catch {
+      const message = "We couldn't update this favorite right now.";
+
+      setToastState({
+        message,
+        title: "Favorite failed",
+        variant: "error",
+      });
+      setIsTogglingFavorite(false);
+      return;
+    }
+
+    setIsTogglingFavorite(false);
+
+    if (!result.success) {
+      setToastState({
+        message: result.error,
+        title: "Favorite failed",
+        variant: "error",
+      });
+      return;
+    }
+
+    setDetailsById((current) => ({
+      ...current,
+      [result.data.id]: result.data,
+    }));
+    setToastState({
+      message: result.data.isFavorite
+        ? "Item added to favorites."
+        : "Item removed from favorites.",
+      title: result.data.isFavorite ? "Favorited" : "Unfavorited",
       variant: "success",
     });
     router.refresh();

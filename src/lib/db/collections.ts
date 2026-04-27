@@ -399,6 +399,53 @@ export async function updateDashboardCollection(
   });
 }
 
+export async function toggleDashboardCollectionFavorite(
+  userId: string,
+  collectionId: string,
+): Promise<DashboardCollectionMetadataRecord | null> {
+  const collection = await prisma.collection.findFirst({
+    where: {
+      id: collectionId,
+      userId,
+    },
+    select: {
+      isFavorite: true,
+    },
+  });
+
+  if (!collection) {
+    return null;
+  }
+
+  const updatedCollection = await prisma.collection.updateMany({
+    where: {
+      id: collectionId,
+      userId,
+    },
+    data: {
+      isFavorite: !collection.isFavorite,
+    },
+  });
+
+  if (updatedCollection.count === 0) {
+    return null;
+  }
+
+  return prisma.collection.findFirst({
+    where: {
+      id: collectionId,
+      userId,
+    },
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      isFavorite: true,
+      updatedAt: true,
+    },
+  });
+}
+
 export async function deleteDashboardCollection(
   userId: string,
   collectionId: string,

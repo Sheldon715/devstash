@@ -40,6 +40,7 @@ import {
   getDashboardCollectionItems,
   getDashboardCollectionItemsPage,
   getFavoriteDashboardCollections,
+  toggleDashboardCollectionFavorite,
   updateDashboardCollection,
 } from "@/lib/db/collections";
 
@@ -375,6 +376,55 @@ describe("collection db queries", () => {
         updatedAt: true,
       },
     });
+  });
+
+  it("toggles collection favorite state within the signed-in user's scope", async () => {
+    const updatedAt = new Date("2026-04-25T04:30:00.000Z");
+
+    prismaCollectionFindFirstMock
+      .mockResolvedValueOnce({
+        isFavorite: false,
+      })
+      .mockResolvedValueOnce({
+        id: "collection-1",
+        name: "React Recipes",
+        description: null,
+        isFavorite: true,
+        updatedAt,
+      });
+    prismaCollectionUpdateManyMock.mockResolvedValue({
+      count: 1,
+    });
+
+    await expect(
+      toggleDashboardCollectionFavorite("user-1", "collection-1"),
+    ).resolves.toEqual({
+      id: "collection-1",
+      name: "React Recipes",
+      description: null,
+      isFavorite: true,
+      updatedAt,
+    });
+
+    expect(prismaCollectionUpdateManyMock).toHaveBeenCalledWith({
+      where: {
+        id: "collection-1",
+        userId: "user-1",
+      },
+      data: {
+        isFavorite: true,
+      },
+    });
+  });
+
+  it("does not toggle a collection outside the signed-in user's scope", async () => {
+    prismaCollectionFindFirstMock.mockResolvedValue(null);
+
+    await expect(
+      toggleDashboardCollectionFavorite("user-1", "collection-2"),
+    ).resolves.toBeNull();
+
+    expect(prismaCollectionUpdateManyMock).not.toHaveBeenCalled();
   });
 
   it("returns null when updating a collection outside the signed-in user's scope", async () => {

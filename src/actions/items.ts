@@ -6,6 +6,7 @@ import { auth } from "@/auth";
 import {
   createItem as createItemRecord,
   deleteItem as deleteItemRecord,
+  toggleItemFavorite as toggleItemFavoriteRecord,
   updateItem as updateItemRecord,
   type CreatableItemTypeKey,
   type DashboardItemDetailRecord,
@@ -37,6 +38,7 @@ interface UpdateItemFailure {
 }
 
 export type UpdateItemResult = UpdateItemSuccess | UpdateItemFailure;
+export type ToggleItemFavoriteResult = UpdateItemResult;
 
 interface CreateItemSuccess {
   success: true;
@@ -240,6 +242,46 @@ export async function updateItem(itemId: string, data: unknown): Promise<UpdateI
   }
 
   const updatedItem = await updateItemRecord(session.user.id, itemId, parsedData.data);
+
+  if (!updatedItem) {
+    return {
+      success: false,
+      data: null,
+      error: "Item not found.",
+    };
+  }
+
+  return {
+    success: true,
+    data: serializeItemDetail(updatedItem),
+    error: null,
+  };
+}
+
+export async function toggleItemFavorite(
+  itemId: string,
+): Promise<ToggleItemFavoriteResult> {
+  const parsedItemId = z.string().trim().min(1).safeParse(itemId);
+
+  if (!parsedItemId.success) {
+    return {
+      success: false,
+      data: null,
+      error: "Item not found.",
+    };
+  }
+
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return {
+      success: false,
+      data: null,
+      error: "You need to be signed in to update items.",
+    };
+  }
+
+  const updatedItem = await toggleItemFavoriteRecord(session.user.id, parsedItemId.data);
 
   if (!updatedItem) {
     return {

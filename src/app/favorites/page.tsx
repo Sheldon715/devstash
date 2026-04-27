@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ChevronRight, Star } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 
 import { auth } from "@/auth";
 import { FavoritesList } from "@/components/favorites/favorites-list";
@@ -85,8 +85,7 @@ export default async function FavoritesPage() {
               <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">
                 Quick Access
               </p>
-              <h1 className="mt-2 flex items-center gap-3 text-3xl font-semibold tracking-tight text-zinc-50 sm:text-4xl">
-                <Star className="size-7 fill-yellow-300 text-yellow-300" />
+              <h1 className="mt-2 text-3xl font-semibold tracking-tight text-zinc-50 sm:text-4xl">
                 Favorites
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">

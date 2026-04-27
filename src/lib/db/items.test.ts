@@ -53,6 +53,7 @@ import {
   getDashboardItemTypePage,
   getFavoriteDashboardItems,
   isItemFileKeyInUse,
+  toggleItemFavorite,
   updateItem,
 } from "@/lib/db/items";
 
@@ -755,6 +756,72 @@ describe("item db queries", () => {
         }),
       }),
     );
+  });
+
+  it("toggles favorite state for an owned item", async () => {
+    const createdAt = new Date("2026-04-22T03:12:00.000Z");
+    const updatedAt = new Date("2026-04-24T08:30:00.000Z");
+
+    prismaItemFindFirstMock.mockResolvedValue({
+      isFavorite: false,
+    });
+    prismaItemUpdateMock.mockResolvedValue({
+      id: "item-1",
+      title: "Favorite command",
+      description: null,
+      contentMode: "TEXT",
+      content: "npm run build",
+      url: null,
+      fileName: null,
+      fileUrl: null,
+      fileMimeType: null,
+      fileSizeBytes: null,
+      language: "shell",
+      aiSummary: null,
+      isPinned: false,
+      isFavorite: true,
+      createdAt,
+      updatedAt,
+      lastAccessedAt: null,
+      type: {
+        key: "command",
+        name: "command",
+      },
+      tags: [],
+      collections: [],
+    });
+
+    await expect(toggleItemFavorite("user-1", "item-1")).resolves.toMatchObject({
+      id: "item-1",
+      isFavorite: true,
+    });
+
+    expect(prismaItemFindFirstMock).toHaveBeenCalledWith({
+      where: {
+        id: "item-1",
+        userId: "user-1",
+      },
+      select: {
+        isFavorite: true,
+      },
+    });
+    expect(prismaItemUpdateMock).toHaveBeenCalledWith({
+      where: {
+        id: "item-1",
+      },
+      data: {
+        isFavorite: true,
+      },
+      select: expect.any(Object),
+    });
+  });
+
+  it("does not toggle favorite state for another user's item", async () => {
+    prismaItemFindFirstMock.mockResolvedValue(null);
+
+    await expect(toggleItemFavorite("user-1", "item-1")).resolves.toBeNull();
+
+    expect(prismaItemUpdateMock).not.toHaveBeenCalled();
   });
 
   it("replaces collection memberships for owned items", async () => {

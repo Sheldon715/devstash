@@ -3,10 +3,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const {
   authMock,
   deleteDashboardCollectionMock,
+  toggleDashboardCollectionFavoriteMock,
   updateDashboardCollectionMock,
 } = vi.hoisted(() => ({
   authMock: vi.fn(),
   deleteDashboardCollectionMock: vi.fn(),
+  toggleDashboardCollectionFavoriteMock: vi.fn(),
   updateDashboardCollectionMock: vi.fn(),
 }));
 
@@ -16,15 +18,21 @@ vi.mock("@/auth", () => ({
 
 vi.mock("@/lib/db/collections", () => ({
   deleteDashboardCollection: deleteDashboardCollectionMock,
+  toggleDashboardCollectionFavorite: toggleDashboardCollectionFavoriteMock,
   updateDashboardCollection: updateDashboardCollectionMock,
 }));
 
-import { deleteCollection, updateCollection } from "@/actions/collections";
+import {
+  deleteCollection,
+  toggleCollectionFavorite,
+  updateCollection,
+} from "@/actions/collections";
 
 describe("collection actions", () => {
   beforeEach(() => {
     authMock.mockReset();
     deleteDashboardCollectionMock.mockReset();
+    toggleDashboardCollectionFavoriteMock.mockReset();
     updateDashboardCollectionMock.mockReset();
   });
 
@@ -137,6 +145,54 @@ describe("collection actions", () => {
       data: null,
       error: "Collection not found.",
     });
+  });
+
+  it("toggles a collection favorite for the signed-in user", async () => {
+    const updatedAt = new Date("2026-04-25T04:30:00.000Z");
+
+    authMock.mockResolvedValue({
+      user: {
+        id: "user-1",
+      },
+    });
+    toggleDashboardCollectionFavoriteMock.mockResolvedValue({
+      id: "collection-1",
+      name: "React Recipes",
+      description: null,
+      isFavorite: true,
+      updatedAt,
+    });
+
+    const result = await toggleCollectionFavorite(" collection-1 ");
+
+    expect(toggleDashboardCollectionFavoriteMock).toHaveBeenCalledWith(
+      "user-1",
+      "collection-1",
+    );
+    expect(result).toEqual({
+      success: true,
+      data: {
+        id: "collection-1",
+        name: "React Recipes",
+        description: null,
+        isFavorite: true,
+        updatedAt: updatedAt.toISOString(),
+      },
+      error: null,
+    });
+  });
+
+  it("requires a signed-in user to toggle a collection favorite", async () => {
+    authMock.mockResolvedValue(null);
+
+    const result = await toggleCollectionFavorite("collection-1");
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "You need to be signed in to update collections.",
+    });
+    expect(toggleDashboardCollectionFavoriteMock).not.toHaveBeenCalled();
   });
 
   it("returns delete validation errors before checking auth", async () => {

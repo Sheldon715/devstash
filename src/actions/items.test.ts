@@ -1,9 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { authMock, createItemRecordMock, deleteItemRecordMock, updateItemRecordMock } = vi.hoisted(() => ({
+const {
+  authMock,
+  createItemRecordMock,
+  deleteItemRecordMock,
+  toggleItemFavoriteRecordMock,
+  updateItemRecordMock,
+} = vi.hoisted(() => ({
   authMock: vi.fn(),
   createItemRecordMock: vi.fn(),
   deleteItemRecordMock: vi.fn(),
+  toggleItemFavoriteRecordMock: vi.fn(),
   updateItemRecordMock: vi.fn(),
 }));
 
@@ -14,16 +21,18 @@ vi.mock("@/auth", () => ({
 vi.mock("@/lib/db/items", () => ({
   createItem: createItemRecordMock,
   deleteItem: deleteItemRecordMock,
+  toggleItemFavorite: toggleItemFavoriteRecordMock,
   updateItem: updateItemRecordMock,
 }));
 
-import { createItem, deleteItem, updateItem } from "@/actions/items";
+import { createItem, deleteItem, toggleItemFavorite, updateItem } from "@/actions/items";
 
 describe("item actions", () => {
   beforeEach(() => {
     authMock.mockReset();
     createItemRecordMock.mockReset();
     deleteItemRecordMock.mockReset();
+    toggleItemFavoriteRecordMock.mockReset();
     updateItemRecordMock.mockReset();
   });
 
@@ -610,6 +619,86 @@ describe("item actions", () => {
       data: null,
       error: "Item not found.",
     });
+  });
+
+  it("toggles an item favorite for the signed-in user", async () => {
+    const createdAt = new Date("2026-04-22T03:12:00.000Z");
+    const updatedAt = new Date("2026-04-24T08:30:00.000Z");
+
+    authMock.mockResolvedValue({
+      user: {
+        id: "user-1",
+      },
+    });
+    toggleItemFavoriteRecordMock.mockResolvedValue({
+      id: "item-1",
+      title: "Useful command",
+      description: "Runs the production build.",
+      contentMode: "TEXT",
+      content: "npm run build",
+      url: null,
+      fileName: null,
+      fileUrl: null,
+      fileMimeType: null,
+      fileSizeBytes: null,
+      language: "shell",
+      aiSummary: null,
+      collectionIds: [],
+      collectionNames: [],
+      tags: [],
+      isPinned: false,
+      isFavorite: true,
+      typeKey: "command",
+      typeLabel: "Command",
+      createdAt,
+      updatedAt,
+      lastAccessedAt: null,
+    });
+
+    const result = await toggleItemFavorite(" item-1 ");
+
+    expect(toggleItemFavoriteRecordMock).toHaveBeenCalledWith("user-1", "item-1");
+    expect(result).toEqual({
+      success: true,
+      data: {
+        id: "item-1",
+        title: "Useful command",
+        description: "Runs the production build.",
+        contentMode: "TEXT",
+        content: "npm run build",
+        url: null,
+        fileName: null,
+        fileUrl: null,
+        fileMimeType: null,
+        fileSizeBytes: null,
+        language: "shell",
+        aiSummary: null,
+        collectionIds: [],
+        collectionNames: [],
+        tags: [],
+        isPinned: false,
+        isFavorite: true,
+        typeKey: "command",
+        typeLabel: "Command",
+        createdAt: createdAt.toISOString(),
+        updatedAt: updatedAt.toISOString(),
+        lastAccessedAt: null,
+      },
+      error: null,
+    });
+  });
+
+  it("requires a signed-in user to toggle an item favorite", async () => {
+    authMock.mockResolvedValue(null);
+
+    const result = await toggleItemFavorite("item-1");
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "You need to be signed in to update items.",
+    });
+    expect(toggleItemFavoriteRecordMock).not.toHaveBeenCalled();
   });
 
   it("returns delete validation errors before checking auth", async () => {
