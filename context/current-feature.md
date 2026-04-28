@@ -1,20 +1,32 @@
-# Current Feature
+# Current Feature: Homepage and Dashboard UI Polish
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Improve the mobile dashboard top bar so primary actions stay clear and comfortable on narrow screens.
+- Tighten the homepage mobile hero so the product/concept visual appears sooner in the first scroll.
+- Make the homepage first impression show the actual DevStash product value more directly.
+- Resolve the Next.js smooth-scroll console warning without changing the intended page behavior.
 
 ## Todo List
 
-<!-- Feature-specific checklist -->
+- [x] Review the mobile dashboard top bar at narrow widths and reduce visual compression around search, favorites, and create actions.
+- [x] Adjust homepage hero mobile spacing/type scale so the hero remains readable while showing the chaos-to-order visual earlier.
+- [x] Consider making the homepage hero/product preview feel more like the live DevStash workspace instead of only a marketing concept.
+- [x] Add the recommended `data-scroll-behavior="smooth"` handling for the existing smooth scrolling behavior.
+- [x] Verify homepage and dashboard at desktop and mobile widths after changes.
+- [x] Run `npm run lint` and `npm run build`.
 
 ## Notes
 
-<!-- Any extra notes -->
+- UI review was based on local browser inspection of `/` and `/dashboard` at desktop and 390px mobile.
+- Captured review screenshots: `homepage-desktop.png`, `homepage-mobile.png`, `dashboard-desktop.png`, `dashboard-mobile.png`.
+- Captured implementation verification screenshots: `homepage-mobile-polish.png`, `homepage-desktop-polish.png`, `dashboard-mobile-polish.png`, `dashboard-desktop-polish.png`.
+- Dashboard desktop looked strong overall: dark workspace direction, sidebar, persistent search, stats, and collection cards fit the product well.
+- The `ui-reviewer` subagent was started for the review but did not return findings before shutdown, so these tasks come from the direct browser pass.
 
 ## History
 

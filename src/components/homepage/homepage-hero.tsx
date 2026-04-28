@@ -11,21 +11,21 @@ interface HomepageHeroProps {
 
 export function HomepageHero({ primaryAction }: HomepageHeroProps) {
   return (
-    <section className="mx-auto flex min-h-screen w-full max-w-[1440px] flex-col px-4 pb-20 pt-32 sm:px-6 sm:pt-36 lg:px-12">
-      <div className="mx-auto mb-12 max-w-4xl text-center sm:mb-14">
-        <p className="mb-3 text-xs font-extrabold tracking-[0.14em] text-violet-200 uppercase">
+    <section className="mx-auto flex w-full max-w-[1440px] flex-col px-4 pb-12 pt-24 sm:px-6 sm:pb-16 sm:pt-32 lg:px-12 lg:pt-36">
+      <div className="mx-auto mb-9 max-w-4xl text-center sm:mb-12">
+        <p className="mb-2 text-xs font-extrabold tracking-[0.14em] text-violet-200 uppercase sm:mb-3">
           Developer knowledge, finally indexed
         </p>
-        <h1 className="bg-gradient-to-r from-zinc-50 via-blue-200 to-[#e7d5ad] bg-clip-text pb-2 text-5xl font-black tracking-tight text-transparent sm:text-6xl lg:text-7xl">
+        <h1 className="bg-gradient-to-r from-zinc-50 via-blue-200 to-[#e7d5ad] bg-clip-text pb-2 text-4xl font-black leading-[1.06] tracking-tight text-transparent min-[390px]:text-5xl sm:text-6xl lg:text-7xl">
           <span className="block">Stop Losing Your</span>
           <span className="block">Developer Knowledge</span>
         </h1>
-        <p className="mx-auto mt-4 max-w-2xl text-base leading-8 text-zinc-300 sm:text-lg">
+        <p className="mx-auto mt-3 max-w-2xl text-base leading-7 text-zinc-300 sm:mt-4 sm:text-lg sm:leading-8">
           Bring snippets, prompts, commands, files, images, notes, and links out of scattered
           tools and into{" "}
           <span className="font-bold text-violet-100">one fast, searchable workspace.</span>
         </p>
-        <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3 sm:mt-7">
           <Link
             href={primaryAction.href}
             className={cn(

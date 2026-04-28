@@ -76,12 +76,12 @@ export function TopBar({
   return (
     <>
       <div className="border-b border-border/70 bg-background/95 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-[980px] items-center gap-2 px-4 py-3 sm:px-6 md:gap-3 lg:px-8 xl:px-12 2xl:max-w-[1040px] 2xl:px-16">
+        <div className="mx-auto flex w-full max-w-[980px] items-center gap-1.5 px-3 py-2.5 sm:gap-2 sm:px-6 sm:py-3 md:gap-3 lg:px-8 xl:px-12 2xl:max-w-[1040px] 2xl:px-16">
           <Button
             type="button"
             variant="outline"
             size="icon"
-            className="shrink-0 rounded-xl border-border/80 bg-card text-muted-foreground lg:hidden"
+            className="shrink-0 rounded-xl border-border/80 bg-card text-muted-foreground max-[420px]:size-9 lg:hidden"
             onClick={onOpenMobileSidebar}
           >
             <LayoutPanelLeft className="size-4" />
@@ -94,7 +94,7 @@ export function TopBar({
               aria-label="Search items"
               placeholder="Search"
               readOnly
-              className="h-11 cursor-pointer rounded-xl border-border/80 bg-card pl-9 pr-3 md:pr-20"
+              className="h-10 cursor-pointer rounded-xl border-border/80 bg-card pl-9 pr-3 text-sm md:h-11 md:pr-20"
               onClick={onOpenSearchPalette}
             />
             <span className="pointer-events-none absolute top-1/2 right-3 hidden -translate-y-1/2 rounded-md border border-border/80 bg-background px-2 py-1 text-[10px] font-medium tracking-[0.2em] text-muted-foreground uppercase md:inline-flex">
@@ -107,7 +107,7 @@ export function TopBar({
             aria-label="Favorites"
             className={cn(
               buttonVariants({ variant: "outline", size: "icon" }),
-              "shrink-0 rounded-xl border-border/80 bg-card",
+              "shrink-0 rounded-xl border-border/80 bg-card max-[420px]:size-9",
               isFavoritesRoute
                 ? "border-yellow-300/30 bg-yellow-300/10 text-yellow-200 hover:bg-yellow-300/15 hover:text-yellow-100"
                 : "text-muted-foreground hover:text-foreground",
@@ -123,7 +123,7 @@ export function TopBar({
               size="icon"
               aria-expanded={isCreateMenuOpen}
               aria-haspopup="menu"
-              className="rounded-xl border-border/80 bg-card text-foreground"
+              className="rounded-xl border-border/80 bg-foreground text-background hover:bg-foreground/90 max-[420px]:size-9"
               onClick={() => setIsCreateMenuOpen((current) => !current)}
             >
               <Plus className="size-4" />

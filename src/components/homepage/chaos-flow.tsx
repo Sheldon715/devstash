@@ -173,9 +173,9 @@ export function ChaosFlow() {
 
       <article className="overflow-hidden rounded-3xl border border-white/10 bg-[linear-gradient(145deg,rgba(96,165,250,0.1),transparent_34%),linear-gradient(180deg,rgba(15,18,34,0.96),rgba(7,9,22,0.96))] shadow-[0_24px_70px_rgba(0,0,0,0.35)]">
         <div className="flex min-h-14 items-center justify-between gap-3 border-b border-white/10 px-4 font-extrabold text-zinc-50">
-          <span>...with DevStash</span>
+          <span>DevStash dashboard</span>
           <span className="rounded-full border border-violet-200/25 bg-violet-200/10 px-2.5 py-1 text-[11px] font-black text-violet-200 uppercase">
-            Organized
+            Searchable
           </span>
         </div>
         <div className="grid h-[284px] grid-cols-[64px_minmax(0,1fr)] bg-[#070916] sm:h-[322px] sm:grid-cols-[86px_minmax(0,1fr)]">
@@ -187,9 +187,17 @@ export function ChaosFlow() {
             <span className="h-3 w-7 rounded-full bg-white/15 sm:w-8" />
           </aside>
           <div className="min-w-0 p-3 sm:p-5">
-            <div className="mb-4 flex justify-between gap-4">
-              <span className="h-4 w-[46%] rounded-full bg-white/14" />
-              <span className="h-4 w-[24%] rounded-full bg-white/14" />
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <span className="h-8 flex-1 rounded-full border border-white/10 bg-white/[0.06] px-3 py-2 text-[10px] font-bold tracking-[0.16em] text-zinc-400 uppercase">
+                Search stash
+              </span>
+              <span className="grid size-8 shrink-0 place-items-center rounded-full border border-white/10 bg-white/[0.05] text-[11px] font-black text-zinc-200">
+                +
+              </span>
+            </div>
+            <div className="mb-3 flex items-center gap-2 text-[10px] font-bold tracking-[0.16em] text-zinc-500 uppercase">
+              <span>Pinned</span>
+              <span className="h-px flex-1 bg-white/10" />
             </div>
             <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
               {previewCards.map((card) => (
