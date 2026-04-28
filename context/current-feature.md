@@ -1,44 +1,20 @@
-# Current Feature: Stripe Integration Phase 1 - Core Infrastructure
+# Current Feature
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Add Stripe billing infrastructure without enabling user-facing gates yet.
-- Add server-side Stripe dependency and reusable Stripe client setup.
-- Add billing configuration helpers for monthly and yearly Pro price IDs.
-- Add reusable Free vs Pro usage-limit helpers for items and collections.
-- Expose `plan` and derived `isPro` state through Auth.js session data.
-- Add authenticated Checkout and Customer Portal route handlers.
-- Keep Stripe calls mockable in unit tests.
+<!-- Goals & requirements -->
 
 ## Todo List
 
-- [x] Install `stripe` and update `package-lock.json`
-- [x] Document Stripe environment variables in the repo env example/docs if present
-- [x] Create cached Stripe client helper with clear missing-key handling
-- [x] Create billing plan helpers for interval validation and price ID resolution
-- [x] Create usage-limit helpers for Free and Pro item/collection behavior
-- [x] Add focused usage-limit unit tests
-- [x] Create user-scoped billing usage helper using Prisma
-- [x] Update Auth.js JWT/session callbacks with `plan` and `isPro`
-- [x] Update NextAuth/JWT types for billing session fields
-- [x] Add authenticated Checkout session route
-- [x] Add authenticated Customer Portal route
-- [x] Run `npm run test`
-- [x] Run `npm run lint`
-- [x] Run `npm run build`
+<!-- Feature-specific checklist -->
 
 ## Notes
 
-- Spec loaded from `context/feature/stripe-integration-phase-1-spec.md`.
-- Reference plan: `docs/stripe-integration-plan.md`.
-- Phase 1 is infrastructure only. Do not enforce item, collection, upload, AI, custom-type, or export gates yet.
-- Webhooks, subscription sync, billing UI polish, and homepage Pro CTA behavior are out of scope for this phase.
-- Existing `User` model already has the minimum Stripe fields: `plan`, `stripeCustomerId`, `stripeSubscriptionId`, and `stripePriceId`.
-- Optional Settings-ready schema metadata can be added only if needed, and any schema work must target the Neon `development` branch only.
+<!-- Any extra notes -->
 
 ## History
 
@@ -96,3 +72,4 @@ In Progress
 - Responsive Dashboard Top Bar completed with a compact mobile create menu, shrink-safe search field, reduced top-bar clutter on narrow screens, Playwright overflow verification, and passing lint/build checks
 - Homepage and Dashboard UI Polish completed with tighter mobile dashboard top-bar spacing, a clearer mobile create action, reduced homepage hero height, a more product-focused dashboard preview, the Next.js smooth-scroll warning fix, Playwright desktop/mobile verification, and passing lint/build checks
 - Auth Nav and Logo Polish completed with homepage navigation added to sign-in and register pages, homepage/footer/dashboard brand marks switched from initials to folder icons, and passing lint/build verification
+- Stripe Integration Phase 1 completed with Stripe dependency wiring, cached server client setup, billing price and usage-limit helpers, Auth.js plan/isPro session state, authenticated checkout and customer portal routes, and passing test/lint/build verification
