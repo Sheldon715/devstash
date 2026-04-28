@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FolderOpen } from "lucide-react";
 
 import { buttonVariants } from "@/components/ui/button";
 import { navLinks, type HomepageAction } from "@/components/homepage/homepage-data";
@@ -18,8 +19,8 @@ export function HomepageNav({ primaryAction, secondaryAction }: HomepageNavProps
           aria-label="DevStash home"
           className="flex min-w-0 items-center gap-2.5 rounded-md focus-visible:ring-2 focus-visible:ring-ring/70 focus-visible:outline-none"
         >
-          <span className="grid size-9 shrink-0 place-items-center rounded-lg border border-white/12 bg-gradient-to-br from-blue-500/90 via-indigo-500/85 to-violet-500/85 text-xs font-black text-white shadow-[0_12px_30px_rgba(99,102,241,0.22)]">
-            DS
+          <span className="grid size-9 shrink-0 place-items-center rounded-lg border border-white/12 bg-gradient-to-br from-blue-500/90 via-indigo-500/85 to-violet-500/85 text-white shadow-[0_12px_30px_rgba(99,102,241,0.22)]">
+            <FolderOpen className="size-4.5" aria-hidden="true" />
           </span>
           <span className="truncate text-sm font-extrabold tracking-tight text-zinc-50 sm:text-base">
             DevStash

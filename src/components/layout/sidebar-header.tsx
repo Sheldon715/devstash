@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronsLeft, ChevronsRight, X } from "lucide-react";
+import { ChevronsLeft, ChevronsRight, FolderOpen, X } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -35,9 +35,10 @@ export function SidebarHeader({
         {!isCollapsed ? (
           <>
             <div className="flex size-[clamp(32px,4vh,40px)] shrink-0 items-center justify-center rounded-[14px] border border-white/8 bg-gradient-to-br from-[#24193f] via-[#19122d] to-[#120d20] text-white shadow-[0_10px_24px_rgba(18,13,32,0.34)]">
-              <span className="text-[15px] font-semibold tracking-[-0.04em] text-[#ddd4ff]">
-                D
-              </span>
+              <FolderOpen
+                className="size-[clamp(16px,2.1vh,20px)] text-[#ddd4ff]"
+                aria-hidden="true"
+              />
             </div>
 
             <div

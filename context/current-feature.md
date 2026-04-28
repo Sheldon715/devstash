@@ -1,20 +1,29 @@
-# Current Feature
+# Current Feature: Auth Nav and Logo Polish
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Add the homepage navigation to the sign-in page.
+- Add the homepage navigation to the sign-up page.
+- Change the homepage logo to use a folder icon instead of the `DS` box.
+- Change the dashboard logo to use a folder icon instead of the `DS` box.
+- Remove the boxed `DS` logo treatment wherever it appears in the homepage/dashboard brand areas.
 
 ## Todo List
 
-<!-- Feature-specific checklist -->
+- [x] Locate shared homepage, auth, and dashboard navigation/logo components.
+- [x] Add the homepage navigation to the sign-in and sign-up pages.
+- [x] Replace homepage and dashboard `DS` box logos with a folder icon.
+- [x] Remove any remaining boxed `DS` brand treatment from the affected views.
+- [x] Run lint and build verification.
 
 ## Notes
 
-<!-- Any extra notes -->
+- Keep changes scoped to navigation and logo polish.
+- Preserve existing visual style and responsive behavior.
 
 ## History
 
