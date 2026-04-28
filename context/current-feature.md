@@ -1,45 +1,20 @@
-# Current Feature: Stripe Integration Phase 2
+# Current Feature
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Add webhook-driven Stripe subscription sync for checkout and subscription lifecycle events.
-- Enforce Free vs Pro limits at server boundaries for item and collection creation.
-- Decide and implement upload gating or plan-aware upload limits.
-- Add Settings billing UI for upgrade and subscription management.
-- Wire Pro CTAs to the authenticated billing flow.
-- Cover webhook sync and plan gates with focused automated tests.
-- Verify the end-to-end subscription flow with Stripe CLI and Stripe test cards.
+<!-- Goals & requirements -->
 
 ## Todo List
 
-- [x] Create subscription sync helpers in `src/lib/billing/subscriptions.ts`.
-- [x] Add Stripe webhook route for checkout and subscription events.
-- [x] Add webhook route unit coverage for signatures and plan sync behavior.
-- [x] Enforce Free item creation limits using existing billing usage helpers.
-- [x] Enforce Free collection creation limits with friendly upgrade errors.
-- [x] Choose and implement upload gating or plan-aware upload size limits.
-- [x] Add Settings billing card with checkout and customer portal actions.
-- [x] Update settings profile data to include billing fields.
-- [x] Wire homepage/pricing Pro CTAs into the authenticated billing flow.
-- [x] Run `npm run test`, `npm run lint`, and `npm run build`.
-- [ ] Manually verify Stripe CLI checkout, webhook sync, portal, cancellation, and limits.
+<!-- Feature-specific checklist -->
 
 ## Notes
 
-- Spec loaded from `context/feature/stripe-integration-phase-2-spec.md`.
-- Reference plan: `docs/stripe-integration-plan.md`.
-- This phase depends on Stripe Phase 1 helpers, including the server Stripe client, checkout/customer portal routes, session plan state, and usage-limit utilities.
-- Required webhook events: `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, and `customer.subscription.deleted`.
-- Invoice events should be subscribed to and accepted/logged as no-op until dunning behavior is designed.
-- Treat `active` and `trialing` subscription states as Pro.
-- Treat deleted or canceled inactive subscriptions as Free.
-- Upload decision: file/image uploads and file/image item creation are Pro-only for this phase, matching the existing Pro badges in the product UI.
-- Browser verification: Settings Billing card was checked at desktop and mobile widths, and `Upgrade to Pro` now redirects to Stripe Checkout using the existing `STRIPE_PRICE_ID_MONTHLY` / `STRIPE_PRICE_ID_YEARLY` env names.
-- Remaining open decisions: whether `past_due` keeps temporary Pro access, and whether cancellation downgrades immediately or at period end.
+<!-- Any extra notes -->
 
 ## History
 
@@ -98,3 +73,4 @@ In Progress
 - Homepage and Dashboard UI Polish completed with tighter mobile dashboard top-bar spacing, a clearer mobile create action, reduced homepage hero height, a more product-focused dashboard preview, the Next.js smooth-scroll warning fix, Playwright desktop/mobile verification, and passing lint/build checks
 - Auth Nav and Logo Polish completed with homepage navigation added to sign-in and register pages, homepage/footer/dashboard brand marks switched from initials to folder icons, and passing lint/build verification
 - Stripe Integration Phase 1 completed with Stripe dependency wiring, cached server client setup, billing price and usage-limit helpers, Auth.js plan/isPro session state, authenticated checkout and customer portal routes, and passing test/lint/build verification
+- Stripe Integration Phase 2 completed with webhook subscription sync, Free/Pro creation gates for items, collections, and uploads, Settings billing UI with usage allowances and pricing, homepage Pro CTA wiring, Stripe price env compatibility, and passing test/lint/build verification; full Stripe CLI payment, webhook, portal, and cancellation walkthrough still pending manual verification
