@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { SignInForm } from "@/components/auth/sign-in-form";
+import type { HomepageAction } from "@/components/homepage/homepage-data";
 import { isEmailVerificationRequired } from "@/lib/email-verification-settings";
 
 interface SignInPageProps {
@@ -50,6 +51,9 @@ function getAuthErrorMessage(error?: string, verificationError?: string) {
   }
 }
 
+const primaryAction: HomepageAction = { href: "/register", label: "Get Started" };
+const secondaryAction: HomepageAction = { href: "/sign-in", label: "Sign In" };
+
 export default async function SignInPage({ searchParams }: SignInPageProps) {
   const params = await searchParams;
   const session = await auth();
@@ -94,6 +98,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
   return (
     <AuthShell
       eyebrow="Welcome back"
+      homeNavActions={{ primary: primaryAction, secondary: secondaryAction }}
       title="Your saved developer context, right where you left it."
       subtitle="Sign in to get back to snippets, prompts, notes, commands, links, and everything else you keep in DevStash."
     >

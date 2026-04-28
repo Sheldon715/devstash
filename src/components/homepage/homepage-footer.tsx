@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FolderOpen } from "lucide-react";
 
 import { footerGroups } from "@/components/homepage/homepage-data";
 
@@ -13,8 +14,8 @@ export function HomepageFooter() {
           aria-label="DevStash home"
           className="flex w-fit items-center gap-2.5 rounded-md focus-visible:ring-2 focus-visible:ring-ring/70 focus-visible:outline-none"
         >
-          <span className="grid size-9 place-items-center rounded-lg border border-white/12 bg-gradient-to-br from-blue-500/90 via-indigo-500/85 to-violet-500/85 text-xs font-black text-white">
-            DS
+          <span className="grid size-9 place-items-center rounded-lg border border-white/12 bg-gradient-to-br from-blue-500/90 via-indigo-500/85 to-violet-500/85 text-white">
+            <FolderOpen className="size-4.5" aria-hidden="true" />
           </span>
           <span className="text-sm font-extrabold tracking-tight text-zinc-50 sm:text-base">
             DevStash
