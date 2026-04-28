@@ -1,32 +1,20 @@
-# Current Feature: Homepage and Dashboard UI Polish
+# Current Feature
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Improve the mobile dashboard top bar so primary actions stay clear and comfortable on narrow screens.
-- Tighten the homepage mobile hero so the product/concept visual appears sooner in the first scroll.
-- Make the homepage first impression show the actual DevStash product value more directly.
-- Resolve the Next.js smooth-scroll console warning without changing the intended page behavior.
+<!-- Goals & requirements -->
 
 ## Todo List
 
-- [x] Review the mobile dashboard top bar at narrow widths and reduce visual compression around search, favorites, and create actions.
-- [x] Adjust homepage hero mobile spacing/type scale so the hero remains readable while showing the chaos-to-order visual earlier.
-- [x] Consider making the homepage hero/product preview feel more like the live DevStash workspace instead of only a marketing concept.
-- [x] Add the recommended `data-scroll-behavior="smooth"` handling for the existing smooth scrolling behavior.
-- [x] Verify homepage and dashboard at desktop and mobile widths after changes.
-- [x] Run `npm run lint` and `npm run build`.
+<!-- Feature-specific checklist -->
 
 ## Notes
 
-- UI review was based on local browser inspection of `/` and `/dashboard` at desktop and 390px mobile.
-- Captured review screenshots: `homepage-desktop.png`, `homepage-mobile.png`, `dashboard-desktop.png`, `dashboard-mobile.png`.
-- Captured implementation verification screenshots: `homepage-mobile-polish.png`, `homepage-desktop-polish.png`, `dashboard-mobile-polish.png`, `dashboard-desktop-polish.png`.
-- Dashboard desktop looked strong overall: dark workspace direction, sidebar, persistent search, stats, and collection cards fit the product well.
-- The `ui-reviewer` subagent was started for the review but did not return findings before shutdown, so these tasks come from the direct browser pass.
+<!-- Any extra notes -->
 
 ## History
 
@@ -82,3 +70,4 @@ In Progress
 - DevStash Homepage Mockup completed with a standalone `prototypes/homepage` marketing prototype, animated chaos-to-dashboard hero, responsive feature/AI/pricing/CTA/footer sections, refined visual styling, and passing lint/build verification
 - Homepage completed with a public `/` marketing page, reusable homepage sections, interactive chaos/pricing components, smoother section navigation, aligned auth page styling, and passing test/lint/build verification
 - Responsive Dashboard Top Bar completed with a compact mobile create menu, shrink-safe search field, reduced top-bar clutter on narrow screens, Playwright overflow verification, and passing lint/build checks
+- Homepage and Dashboard UI Polish completed with tighter mobile dashboard top-bar spacing, a clearer mobile create action, reduced homepage hero height, a more product-focused dashboard preview, the Next.js smooth-scroll warning fix, Playwright desktop/mobile verification, and passing lint/build checks
