@@ -3,6 +3,8 @@
 import { z } from "zod";
 
 import { auth } from "@/auth";
+import { getUserBillingUsage } from "@/lib/billing/usage";
+import { canCreateItem } from "@/lib/billing/usage-limits";
 import {
   createItem as createItemRecord,
   deleteItem as deleteItemRecord,
@@ -192,6 +194,25 @@ export async function createItem(data: unknown): Promise<CreateItemResult> {
       success: false,
       data: null,
       error: "You need to be signed in to create items.",
+    };
+  }
+
+  const usage = await getUserBillingUsage(session.user.id);
+  const limit = canCreateItem(usage.plan, usage.totalItems);
+
+  if (!limit.allowed) {
+    return {
+      success: false,
+      data: null,
+      error: limit.message ?? "Upgrade to Pro to save more items.",
+    };
+  }
+
+  if (!usage.isPro && isUploadItemTypeKey(parsedData.data.typeKey)) {
+    return {
+      success: false,
+      data: null,
+      error: "File and image items require DevStash Pro.",
     };
   }
 
@@ -401,6 +422,10 @@ function normalizeCreateItemPayload(data: z.infer<typeof createItemSchema>, user
     tags: data.tags,
     collectionIds: data.collectionIds ?? [],
   };
+}
+
+function isUploadItemTypeKey(typeKey: CreatableItemTypeKey) {
+  return typeKey === "file" || typeKey === "image";
 }
 
 function serializeItemDetail(record: DashboardItemDetailRecord): SerializedDashboardItemDetailRecord {

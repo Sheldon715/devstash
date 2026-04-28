@@ -1,14 +1,25 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { authMock, deleteR2ObjectMock, isItemFileKeyInUseMock, uploadR2ObjectMock } = vi.hoisted(() => ({
+const {
+  authMock,
+  deleteR2ObjectMock,
+  getUserBillingUsageMock,
+  isItemFileKeyInUseMock,
+  uploadR2ObjectMock,
+} = vi.hoisted(() => ({
   authMock: vi.fn(),
   deleteR2ObjectMock: vi.fn(),
+  getUserBillingUsageMock: vi.fn(),
   isItemFileKeyInUseMock: vi.fn(),
   uploadR2ObjectMock: vi.fn(),
 }));
 
 vi.mock("@/auth", () => ({
   auth: authMock,
+}));
+
+vi.mock("@/lib/billing/usage", () => ({
+  getUserBillingUsage: getUserBillingUsageMock,
 }));
 
 vi.mock("@/lib/db/items", () => ({
@@ -26,7 +37,42 @@ import { POST as CLEANUP_POST } from "@/app/api/uploads/cleanup/route";
 describe("POST /api/uploads", () => {
   beforeEach(() => {
     authMock.mockReset();
+    getUserBillingUsageMock.mockReset();
     uploadR2ObjectMock.mockReset();
+    getUserBillingUsageMock.mockResolvedValue({
+      plan: "PRO",
+      isPro: true,
+      totalItems: 0,
+      totalCollections: 0,
+    });
+  });
+
+  it("returns 403 for Free users before reading the upload body", async () => {
+    authMock.mockResolvedValue({
+      user: {
+        id: "user-1",
+      },
+    });
+    getUserBillingUsageMock.mockResolvedValue({
+      plan: "FREE",
+      isPro: false,
+      totalItems: 0,
+      totalCollections: 0,
+    });
+
+    const response = await POST(
+      new Request("http://localhost:3000/api/uploads", {
+        body: "not multipart",
+        method: "POST",
+      }),
+    );
+
+    await expect(response.json()).resolves.toEqual({
+      success: false,
+      error: "File and image uploads require DevStash Pro.",
+    });
+    expect(response.status).toBe(403);
+    expect(uploadR2ObjectMock).not.toHaveBeenCalled();
   });
 
   it("returns a generic error when R2 upload fails", async () => {

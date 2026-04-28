@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
+import { getUserBillingUsage } from "@/lib/billing/usage";
 import { isItemFileKeyInUse } from "@/lib/db/items";
 import {
   createUploadObjectKey,
@@ -38,6 +39,18 @@ export async function POST(request: Request) {
         error: "Unauthorized.",
       },
       { status: 401 },
+    );
+  }
+
+  const usage = await getUserBillingUsage(session.user.id);
+
+  if (!usage.isPro) {
+    return NextResponse.json<UploadResponseBody>(
+      {
+        success: false,
+        error: "File and image uploads require DevStash Pro.",
+      },
+      { status: 403 },
     );
   }
 

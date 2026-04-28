@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getDashboardItemTypeKeys, normalizeDashboardItemTypeKey } from "@/lib/item-types";
 import type { DashboardItemTypeKey } from "@/lib/mock-data";
+import type { Plan } from "../../../generated/prisma/enums";
 
 export interface ProfileItemTypeStat {
   count: number;
@@ -17,6 +18,10 @@ export interface ProfilePageData {
   image: string | null;
   itemTypeBreakdown: ProfileItemTypeStat[];
   name: string | null;
+  plan: Plan;
+  stripeCustomerId: string | null;
+  stripePriceId: string | null;
+  stripeSubscriptionId: string | null;
   totalCollections: number;
   totalItems: number;
 }
@@ -74,6 +79,10 @@ export async function getProfilePageData(userId: string): Promise<ProfilePageDat
       image: true,
       createdAt: true,
       passwordHash: true,
+      plan: true,
+      stripeCustomerId: true,
+      stripePriceId: true,
+      stripeSubscriptionId: true,
       accounts: {
         select: {
           provider: true,
@@ -147,6 +156,10 @@ export async function getProfilePageData(userId: string): Promise<ProfilePageDat
     image: user.image,
     itemTypeBreakdown,
     name: user.name,
+    plan: user.plan,
+    stripeCustomerId: user.stripeCustomerId,
+    stripePriceId: user.stripePriceId,
+    stripeSubscriptionId: user.stripeSubscriptionId,
     totalCollections,
     totalItems,
   };
