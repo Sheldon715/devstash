@@ -1,29 +1,20 @@
-# Current Feature: Auth Nav and Logo Polish
+# Current Feature
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Add the homepage navigation to the sign-in page.
-- Add the homepage navigation to the sign-up page.
-- Change the homepage logo to use a folder icon instead of the `DS` box.
-- Change the dashboard logo to use a folder icon instead of the `DS` box.
-- Remove the boxed `DS` logo treatment wherever it appears in the homepage/dashboard brand areas.
+<!-- Goals & requirements -->
 
 ## Todo List
 
-- [x] Locate shared homepage, auth, and dashboard navigation/logo components.
-- [x] Add the homepage navigation to the sign-in and sign-up pages.
-- [x] Replace homepage and dashboard `DS` box logos with a folder icon.
-- [x] Remove any remaining boxed `DS` brand treatment from the affected views.
-- [x] Run lint and build verification.
+<!-- Feature-specific checklist -->
 
 ## Notes
 
-- Keep changes scoped to navigation and logo polish.
-- Preserve existing visual style and responsive behavior.
+<!-- Any extra notes -->
 
 ## History
 
@@ -80,3 +71,4 @@ In Progress
 - Homepage completed with a public `/` marketing page, reusable homepage sections, interactive chaos/pricing components, smoother section navigation, aligned auth page styling, and passing test/lint/build verification
 - Responsive Dashboard Top Bar completed with a compact mobile create menu, shrink-safe search field, reduced top-bar clutter on narrow screens, Playwright overflow verification, and passing lint/build checks
 - Homepage and Dashboard UI Polish completed with tighter mobile dashboard top-bar spacing, a clearer mobile create action, reduced homepage hero height, a more product-focused dashboard preview, the Next.js smooth-scroll warning fix, Playwright desktop/mobile verification, and passing lint/build checks
+- Auth Nav and Logo Polish completed with homepage navigation added to sign-in and register pages, homepage/footer/dashboard brand marks switched from initials to folder icons, and passing lint/build verification
