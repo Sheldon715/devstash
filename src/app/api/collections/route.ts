@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { auth } from "@/auth";
+import { getUserBillingUsage } from "@/lib/billing/usage";
+import { canCreateCollection } from "@/lib/billing/usage-limits";
 import {
   createDashboardCollection,
   type DashboardCollectionCardRecord,
@@ -75,6 +77,19 @@ export async function POST(request: Request) {
   }
 
   try {
+    const usage = await getUserBillingUsage(session.user.id);
+    const limit = canCreateCollection(usage.plan, usage.totalCollections);
+
+    if (!limit.allowed) {
+      return NextResponse.json<CollectionResponseBody>(
+        {
+          success: false,
+          error: limit.message ?? "Upgrade to Pro to create more collections.",
+        },
+        { status: 403 },
+      );
+    }
+
     const collection = await createDashboardCollection(session.user.id, parsedData.data);
 
     return NextResponse.json<CollectionResponseBody>({

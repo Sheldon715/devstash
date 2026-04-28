@@ -2,7 +2,11 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 import { getPublicAppOrigin } from "@/lib/app-url";
-import { billingIntervalSchema, getStripePriceId } from "@/lib/billing/plans";
+import {
+  BillingConfigurationError,
+  billingIntervalSchema,
+  getStripePriceId,
+} from "@/lib/billing/plans";
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
 
@@ -118,7 +122,17 @@ export async function POST(request: Request) {
         url: checkoutSession.url,
       },
     });
-  } catch {
+  } catch (error) {
+    if (error instanceof BillingConfigurationError) {
+      return NextResponse.json<BillingCheckoutResponseBody>(
+        {
+          success: false,
+          error: "Stripe checkout is not configured. Add monthly and yearly Stripe price IDs to .env.",
+        },
+        { status: 500 },
+      );
+    }
+
     return NextResponse.json<BillingCheckoutResponseBody>(
       {
         success: false,

@@ -3,13 +3,24 @@ import { ChevronRight, KeyRound, Mail } from "lucide-react";
 
 import { ChangePasswordCard } from "@/components/profile/change-password-card";
 import { DeleteAccountCard } from "@/components/profile/delete-account-card";
+import { BillingCard } from "@/components/settings/billing-card";
 import { EditorPreferencesCard } from "@/components/settings/editor-preferences-card";
 import { buttonVariants } from "@/components/ui/button";
 import type { ProfilePageData } from "@/lib/db/profile";
 import { cn } from "@/lib/utils";
 
 interface SettingsPageContentProps {
-  profile: Pick<ProfilePageData, "email" | "hasPassword">;
+  profile: Pick<
+    ProfilePageData,
+    | "email"
+    | "hasPassword"
+    | "plan"
+    | "stripeCustomerId"
+    | "stripePriceId"
+    | "stripeSubscriptionId"
+    | "totalCollections"
+    | "totalItems"
+  >;
 }
 
 export function SettingsPageContent({ profile }: SettingsPageContentProps) {
@@ -40,6 +51,15 @@ export function SettingsPageContent({ profile }: SettingsPageContentProps) {
       </header>
 
       <EditorPreferencesCard />
+
+      <BillingCard
+        plan={profile.plan}
+        stripeCustomerId={profile.stripeCustomerId}
+        stripePriceId={profile.stripePriceId}
+        stripeSubscriptionId={profile.stripeSubscriptionId}
+        totalCollections={profile.totalCollections}
+        totalItems={profile.totalItems}
+      />
 
       <section className="rounded-[2rem] border border-border/70 bg-card/70 p-6 shadow-[0_20px_60px_rgba(0,0,0,0.22)] backdrop-blur sm:p-8">
           <div className="flex items-center gap-3">

@@ -4,6 +4,7 @@ const {
   authMock,
   createItemRecordMock,
   deleteItemRecordMock,
+  getUserBillingUsageMock,
   toggleItemFavoriteRecordMock,
   toggleItemPinRecordMock,
   updateItemRecordMock,
@@ -11,6 +12,7 @@ const {
   authMock: vi.fn(),
   createItemRecordMock: vi.fn(),
   deleteItemRecordMock: vi.fn(),
+  getUserBillingUsageMock: vi.fn(),
   toggleItemFavoriteRecordMock: vi.fn(),
   toggleItemPinRecordMock: vi.fn(),
   updateItemRecordMock: vi.fn(),
@@ -18,6 +20,10 @@ const {
 
 vi.mock("@/auth", () => ({
   auth: authMock,
+}));
+
+vi.mock("@/lib/billing/usage", () => ({
+  getUserBillingUsage: getUserBillingUsageMock,
 }));
 
 vi.mock("@/lib/db/items", () => ({
@@ -35,9 +41,16 @@ describe("item actions", () => {
     authMock.mockReset();
     createItemRecordMock.mockReset();
     deleteItemRecordMock.mockReset();
+    getUserBillingUsageMock.mockReset();
     toggleItemFavoriteRecordMock.mockReset();
     toggleItemPinRecordMock.mockReset();
     updateItemRecordMock.mockReset();
+    getUserBillingUsageMock.mockResolvedValue({
+      plan: "FREE",
+      isPro: false,
+      totalItems: 0,
+      totalCollections: 0,
+    });
   });
 
   it("returns create validation errors before checking auth", async () => {
@@ -198,6 +211,93 @@ describe("item actions", () => {
     });
   });
 
+  it("blocks Free users at the item limit", async () => {
+    authMock.mockResolvedValue({
+      user: {
+        id: "user-1",
+      },
+    });
+    getUserBillingUsageMock.mockResolvedValue({
+      plan: "FREE",
+      isPro: false,
+      totalItems: 50,
+      totalCollections: 0,
+    });
+
+    const result = await createItem({
+      typeKey: "note",
+      title: "Loose note",
+      description: "",
+      content: "Saved for later.",
+      url: "",
+      language: "",
+      tags: [],
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "Free workspaces can save up to 50 items. Upgrade to Pro to save more.",
+    });
+    expect(createItemRecordMock).not.toHaveBeenCalled();
+  });
+
+  it("allows Pro users to create items beyond the Free item limit", async () => {
+    const createdAt = new Date("2026-04-22T03:12:00.000Z");
+    const updatedAt = new Date("2026-04-24T08:30:00.000Z");
+
+    authMock.mockResolvedValue({
+      user: {
+        id: "user-1",
+      },
+    });
+    getUserBillingUsageMock.mockResolvedValue({
+      plan: "PRO",
+      isPro: true,
+      totalItems: 50,
+      totalCollections: 0,
+    });
+    createItemRecordMock.mockResolvedValue({
+      id: "item-1",
+      title: "Loose note",
+      description: null,
+      contentMode: "TEXT",
+      content: "Saved for later.",
+      url: null,
+      fileName: null,
+      fileUrl: null,
+      fileMimeType: null,
+      fileSizeBytes: null,
+      language: null,
+      aiSummary: null,
+      collectionIds: [],
+      collectionNames: [],
+      tags: [],
+      isPinned: false,
+      isFavorite: false,
+      typeKey: "note",
+      typeLabel: "Note",
+      createdAt,
+      updatedAt,
+      lastAccessedAt: null,
+    });
+
+    const result = await createItem({
+      typeKey: "note",
+      title: "Loose note",
+      description: "",
+      content: "Saved for later.",
+      url: "",
+      language: "",
+      tags: [],
+    });
+
+    expect(result.success).toBe(true);
+    expect(createItemRecordMock).toHaveBeenCalledWith("user-1", expect.objectContaining({
+      typeKey: "note",
+    }));
+  });
+
   it("allows file and image items with uploaded file metadata", async () => {
     const createdAt = new Date("2026-04-22T03:12:00.000Z");
     const updatedAt = new Date("2026-04-24T08:30:00.000Z");
@@ -206,6 +306,12 @@ describe("item actions", () => {
       user: {
         id: "user-1",
       },
+    });
+    getUserBillingUsageMock.mockResolvedValue({
+      plan: "PRO",
+      isPro: true,
+      totalItems: 0,
+      totalCollections: 0,
     });
     createItemRecordMock
       .mockResolvedValueOnce({
@@ -346,6 +452,44 @@ describe("item actions", () => {
     });
   });
 
+  it("blocks Free users from creating file or image items", async () => {
+    authMock.mockResolvedValue({
+      user: {
+        id: "user-1",
+      },
+    });
+    getUserBillingUsageMock.mockResolvedValue({
+      plan: "FREE",
+      isPro: false,
+      totalItems: 0,
+      totalCollections: 0,
+    });
+
+    const result = await createItem({
+      typeKey: "file",
+      title: "Config archive",
+      description: "",
+      content: "",
+      file: {
+        fileKey: "users/user-1/file/config.json",
+        fileUrl: null,
+        fileName: "config.json",
+        fileMimeType: "application/json",
+        fileSizeBytes: 512,
+      },
+      url: "",
+      language: "",
+      tags: [],
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "File and image items require DevStash Pro.",
+    });
+    expect(createItemRecordMock).not.toHaveBeenCalled();
+  });
+
   it("requires an uploaded file when creating file items", async () => {
     const result = await createItem({
       typeKey: "file",
@@ -398,6 +542,12 @@ describe("item actions", () => {
       user: {
         id: "user-1",
       },
+    });
+    getUserBillingUsageMock.mockResolvedValue({
+      plan: "PRO",
+      isPro: true,
+      totalItems: 0,
+      totalCollections: 0,
     });
 
     const result = await createItem({
