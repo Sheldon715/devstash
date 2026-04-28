@@ -1,20 +1,44 @@
-# Current Feature
+# Current Feature: Stripe Integration Phase 1 - Core Infrastructure
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Add Stripe billing infrastructure without enabling user-facing gates yet.
+- Add server-side Stripe dependency and reusable Stripe client setup.
+- Add billing configuration helpers for monthly and yearly Pro price IDs.
+- Add reusable Free vs Pro usage-limit helpers for items and collections.
+- Expose `plan` and derived `isPro` state through Auth.js session data.
+- Add authenticated Checkout and Customer Portal route handlers.
+- Keep Stripe calls mockable in unit tests.
 
 ## Todo List
 
-<!-- Feature-specific checklist -->
+- [x] Install `stripe` and update `package-lock.json`
+- [x] Document Stripe environment variables in the repo env example/docs if present
+- [x] Create cached Stripe client helper with clear missing-key handling
+- [x] Create billing plan helpers for interval validation and price ID resolution
+- [x] Create usage-limit helpers for Free and Pro item/collection behavior
+- [x] Add focused usage-limit unit tests
+- [x] Create user-scoped billing usage helper using Prisma
+- [x] Update Auth.js JWT/session callbacks with `plan` and `isPro`
+- [x] Update NextAuth/JWT types for billing session fields
+- [x] Add authenticated Checkout session route
+- [x] Add authenticated Customer Portal route
+- [x] Run `npm run test`
+- [x] Run `npm run lint`
+- [x] Run `npm run build`
 
 ## Notes
 
-<!-- Any extra notes -->
+- Spec loaded from `context/feature/stripe-integration-phase-1-spec.md`.
+- Reference plan: `docs/stripe-integration-plan.md`.
+- Phase 1 is infrastructure only. Do not enforce item, collection, upload, AI, custom-type, or export gates yet.
+- Webhooks, subscription sync, billing UI polish, and homepage Pro CTA behavior are out of scope for this phase.
+- Existing `User` model already has the minimum Stripe fields: `plan`, `stripeCustomerId`, `stripeSubscriptionId`, and `stripePriceId`.
+- Optional Settings-ready schema metadata can be added only if needed, and any schema work must target the Neon `development` branch only.
 
 ## History
 

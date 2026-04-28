@@ -6,6 +6,7 @@ import Credentials from "next-auth/providers/credentials";
 import authConfig, { credentialsInputConfig } from "@/auth.config";
 import { isEmailVerificationRequired } from "@/lib/email-verification-settings";
 import { prisma } from "@/lib/prisma";
+import { isProPlan } from "@/lib/billing/usage-limits";
 
 class EmailNotVerifiedError extends CredentialsSignin {
   code = "email_not_verified";
@@ -79,9 +80,31 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     strategy: "jwt",
   },
   callbacks: {
+    async jwt({ token, user }) {
+      if (user?.id) {
+        token.sub = user.id;
+      }
+
+      if (token.sub) {
+        const dbUser = await prisma.user.findUnique({
+          where: {
+            id: token.sub,
+          },
+          select: {
+            plan: true,
+          },
+        });
+
+        token.plan = dbUser?.plan ?? "FREE";
+      }
+
+      return token;
+    },
     async session({ session, token }) {
       if (session.user && token.sub) {
         session.user.id = token.sub;
+        session.user.plan = token.plan === "PRO" ? "PRO" : "FREE";
+        session.user.isPro = isProPlan(session.user.plan);
       }
 
       return session;

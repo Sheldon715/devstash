@@ -39,6 +39,14 @@ npm install
 
 2. Create `.env` with a valid `DATABASE_URL`.
    For Neon deployments, also add a non-pooled `DIRECT_URL` for Prisma CLI commands like `prisma migrate deploy`.
+   Stripe billing routes also use:
+
+```env
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_PRO_MONTHLY_PRICE_ID=price_...
+STRIPE_PRO_YEARLY_PRICE_ID=price_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+```
 
 3. Generate the Prisma client:
 
