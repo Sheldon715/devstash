@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  type KeyboardEvent as ReactKeyboardEvent,
+  type PointerEvent as ReactPointerEvent,
   type ReactNode,
   createContext,
   startTransition,
@@ -79,15 +81,31 @@ interface ItemDrawerContextValue {
 
 const ItemDrawerContext = createContext<ItemDrawerContextValue | null>(null);
 type EditItemTextField = Exclude<keyof EditItemFormState, "collectionIds">;
+const DRAWER_WIDTH_MIN = 520;
+const DRAWER_WIDTH_MAX = 1248;
+const DRAWER_WIDTH_KEYBOARD_STEP = 48;
+const ITEM_DRAWER_OPEN_EVENT = "devstash:item-drawer-open";
 
 function useItemDrawerContext() {
   const context = useContext(ItemDrawerContext);
 
-  if (!context) {
-    throw new Error("Item drawer components must be used within ItemDrawerProvider.");
+  if (context) {
+    return context;
   }
 
-  return context;
+  return {
+    openItem(itemId: string) {
+      if (typeof window === "undefined") {
+        return;
+      }
+
+      window.dispatchEvent(
+        new CustomEvent<string>(ITEM_DRAWER_OPEN_EVENT, {
+          detail: itemId,
+        }),
+      );
+    },
+  };
 }
 
 export function ItemDrawerProvider({
@@ -109,6 +127,8 @@ export function ItemDrawerProvider({
   const [isDeleting, setIsDeleting] = useState(false);
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
   const [isTogglingPin, setIsTogglingPin] = useState(false);
+  const [isResizingDrawer, setIsResizingDrawer] = useState(false);
+  const [drawerWidth, setDrawerWidth] = useState<number | null>(null);
   const [editError, setEditError] = useState<string | null>(null);
   const [toastState, setToastState] = useState<ItemDrawerToastState | null>(null);
   const [editFormState, setEditFormState] = useState<EditItemFormState | null>(null);
@@ -119,6 +139,7 @@ export function ItemDrawerProvider({
 
   const selectedItem = selectedItemId ? detailsById[selectedItemId] ?? null : null;
   const isLoadingSelectedItem = selectedItemId !== null && loadingItemId === selectedItemId;
+  const drawerWidthValue = drawerWidth ?? 896;
 
   const handleSheetOpenChange = useCallback((nextOpen: boolean) => {
     setIsOpen(nextOpen);
@@ -204,21 +225,41 @@ export function ItemDrawerProvider({
     setIsDeleteDialogOpen(false);
   }, [selectedItem]);
 
+  const openItemDetail = useCallback((itemId: string) => {
+    startTransition(() => {
+      setSelectedItemId(itemId);
+      setLoadingItemId((current) =>
+        detailsById[itemId] || current === itemId ? current : itemId,
+      );
+      setError(null);
+      setIsOpen(true);
+    });
+  }, [detailsById]);
+
   const contextValue = useMemo<ItemDrawerContextValue>(
     () => ({
       openItem(itemId: string) {
-        startTransition(() => {
-          setSelectedItemId(itemId);
-          setLoadingItemId((current) =>
-            detailsById[itemId] || current === itemId ? current : itemId,
-          );
-          setError(null);
-          setIsOpen(true);
-        });
+        openItemDetail(itemId);
       },
     }),
-    [detailsById],
+    [openItemDetail],
   );
+
+  useEffect(() => {
+    function handleGlobalOpen(event: Event) {
+      if (!(event instanceof CustomEvent) || typeof event.detail !== "string") {
+        return;
+      }
+
+      openItemDetail(event.detail);
+    }
+
+    window.addEventListener(ITEM_DRAWER_OPEN_EVENT, handleGlobalOpen);
+
+    return () => {
+      window.removeEventListener(ITEM_DRAWER_OPEN_EVENT, handleGlobalOpen);
+    };
+  }, [openItemDetail]);
 
   function handleRetry() {
     if (!selectedItemId) {
@@ -259,6 +300,76 @@ export function ItemDrawerProvider({
     } catch {}
   }
 
+  function getDrawerWidthBounds() {
+    const viewportWidth = window.innerWidth;
+    const minWidth = Math.min(DRAWER_WIDTH_MIN, viewportWidth);
+    const maxWidth = Math.max(
+      minWidth,
+      Math.min(DRAWER_WIDTH_MAX, Math.max(minWidth, viewportWidth - 24)),
+    );
+
+    return { maxWidth, minWidth };
+  }
+
+  function applyDrawerWidth(nextWidth: number) {
+    const { maxWidth, minWidth } = getDrawerWidthBounds();
+    const clampedWidth = Math.min(maxWidth, Math.max(minWidth, nextWidth));
+
+    document.documentElement.style.setProperty("--item-drawer-width", `${clampedWidth}px`);
+    setDrawerWidth(clampedWidth);
+  }
+
+  function handleDrawerResizePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+    if (window.innerWidth < 640) {
+      return;
+    }
+
+    event.preventDefault();
+    setIsResizingDrawer(true);
+
+    const previousCursor = document.body.style.cursor;
+    const previousUserSelect = document.body.style.userSelect;
+
+    document.body.style.cursor = "ew-resize";
+    document.body.style.userSelect = "none";
+
+    function handlePointerMove(pointerEvent: PointerEvent) {
+      applyDrawerWidth(window.innerWidth - pointerEvent.clientX);
+    }
+
+    function handlePointerUp() {
+      setIsResizingDrawer(false);
+      document.body.style.cursor = previousCursor;
+      document.body.style.userSelect = previousUserSelect;
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointercancel", handlePointerUp);
+    }
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+    window.addEventListener("pointercancel", handlePointerUp);
+  }
+
+  function handleDrawerResizeKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
+    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight" && event.key !== "Home") {
+      return;
+    }
+
+    event.preventDefault();
+
+    if (event.key === "Home") {
+      document.documentElement.style.removeProperty("--item-drawer-width");
+      setDrawerWidth(null);
+      return;
+    }
+
+    const currentWidth = drawerWidth ?? Math.min(window.innerWidth * 0.92, 896);
+    const direction = event.key === "ArrowLeft" ? 1 : -1;
+
+    applyDrawerWidth(currentWidth + direction * DRAWER_WIDTH_KEYBOARD_STEP);
+  }
+
   return (
     <ItemDrawerContext.Provider value={contextValue}>
       {children}
@@ -267,15 +378,35 @@ export function ItemDrawerProvider({
         open={isOpen}
         onOpenChange={handleSheetOpenChange}
       >
-        <SheetContent side="right" className="max-w-[46rem]">
+        <SheetContent
+          side="right"
+          className="max-w-none sm:w-[var(--item-drawer-width,min(92vw,56rem))]"
+        >
+          <div
+            aria-label="Resize item drawer"
+            aria-orientation="vertical"
+            aria-valuemax={DRAWER_WIDTH_MAX}
+            aria-valuemin={DRAWER_WIDTH_MIN}
+            aria-valuenow={drawerWidthValue}
+            role="separator"
+            tabIndex={0}
+            title="Drag to resize drawer"
+            onKeyDown={handleDrawerResizeKeyDown}
+            onPointerDown={handleDrawerResizePointerDown}
+            className={[
+              "absolute left-0 top-0 z-10 hidden h-full w-3 -translate-x-1/2 cursor-ew-resize touch-none items-center justify-center outline-none sm:flex",
+              "after:h-16 after:w-1 after:rounded-full after:bg-white/12 after:opacity-0 after:transition-opacity hover:after:opacity-100 focus-visible:after:opacity-100",
+              isResizingDrawer ? "after:opacity-100" : "",
+            ].join(" ")}
+          />
           <div className="flex min-h-0 flex-1 flex-col">
-            <div className="border-b border-white/8 px-5 py-5 sm:px-6">
+            <div className="border-b border-white/8 px-4 py-3 sm:px-5 sm:py-4">
               <div className="flex items-start justify-between gap-4">
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <p className="text-xs font-medium uppercase tracking-[0.26em] text-zinc-500">
                     Item Details
                   </p>
-                  <p className="text-sm text-zinc-400">
+                  <p className="text-sm text-zinc-400 max-[480px]:hidden">
                     Full item data without leaving the page.
                   </p>
                 </div>
@@ -283,7 +414,7 @@ export function ItemDrawerProvider({
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="inline-flex size-10 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-zinc-300 transition-colors hover:bg-white/[0.08] hover:text-white"
+                  className="inline-flex size-9 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-zinc-300 transition-colors hover:bg-white/[0.08] hover:text-white"
                 >
                   <X className="size-4" />
                   <span className="sr-only">Close item drawer</span>
@@ -291,7 +422,7 @@ export function ItemDrawerProvider({
               </div>
 
               {selectedItem ? (
-                <SheetHeader className="mt-5">
+                <SheetHeader className="mt-4 space-y-3">
                   <div className="flex flex-wrap items-center gap-2">
                     <span
                       className={`inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-xs font-medium ${getDashboardItemTypeColor(selectedItem.typeKey)}`}
@@ -307,17 +438,17 @@ export function ItemDrawerProvider({
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04]">
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04]">
                       <DashboardItemTypeIcon
                         typeKey={selectedItem.typeKey}
                         className={`size-5 ${getDashboardItemTypeColor(selectedItem.typeKey)}`}
                       />
                     </span>
-                    <SheetTitle className="text-3xl sm:text-[2rem]">
+                    <SheetTitle className="text-xl leading-tight sm:text-2xl">
                       {selectedItem.title}
                     </SheetTitle>
                   </div>
-                  <SheetDescription className="max-w-3xl text-sm leading-7 text-zinc-300 sm:text-base">
+                  <SheetDescription className="max-w-3xl text-sm leading-6 text-zinc-300 max-[480px]:truncate">
                     {selectedItem.description}
                   </SheetDescription>
                 </SheetHeader>
@@ -326,10 +457,10 @@ export function ItemDrawerProvider({
               ) : null}
             </div>
 
-            <div className="border-b border-white/8 px-5 py-4 sm:px-6">
+            <div className="border-b border-white/8 px-4 py-3 sm:px-5">
               {selectedItem ? (
                 isEditing ? (
-                  <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-2">
                     <DrawerActionButton
                       icon={Save}
                       label={isSaving ? "Saving" : "Save"}
@@ -344,7 +475,7 @@ export function ItemDrawerProvider({
                     />
                   </div>
                 ) : (
-                  <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-2">
                     <DrawerActionButton
                       icon={isTogglingFavorite ? LoaderCircle : Star}
                       label={
@@ -399,7 +530,12 @@ export function ItemDrawerProvider({
               )}
             </div>
 
-            <div className="devstash-scrollbar min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6 sm:py-6">
+            <div
+              className={[
+                "min-h-0 flex-1 px-4 py-4 sm:px-5",
+                selectedItem && isEditing ? "devstash-scrollbar overflow-y-auto" : "overflow-hidden",
+              ].join(" ")}
+            >
               {selectedItem && isEditing && editFormState ? (
                 <ItemDrawerEditBody
                   collectionOptions={collectionOptions}

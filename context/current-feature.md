@@ -2,19 +2,31 @@
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+Completed
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Add a language dropdown for snippet and command content.
+- Place language selection directly above the content editor in the new item modal and drawer edit form.
+- Ensure selecting a language updates editor highlighting while typing.
+- Use a custom animated picker that matches the DevStash visual style.
+- Preserve the existing vertical drawer/edit/create layouts.
 
 ## Todo List
 
-<!-- Feature-specific checklist -->
+- [x] Locate create and drawer edit language fields.
+- [x] Add a shared language dropdown component.
+- [x] Wire the dropdown above content in new item and edit flows.
+- [x] Replace the native select with a custom animated picker.
+- [x] Fix item drawer opener crash when cards render through server children.
+- [x] Verify lint and production build.
+- [x] Mark the feature complete in this tracker.
 
 ## Notes
 
-<!-- Any extra notes -->
+- Follow-up request: replace language free-text entry with a dropdown above the content editor for both creation and drawer editing.
+- The selected language should feed `CodeEditor` immediately so Monaco syntax highlighting changes as the user types.
+- Follow-up feedback: the language picker should be a styled box with a click animation and arrow controls instead of relying on native scrolling.
 
 ## History
 

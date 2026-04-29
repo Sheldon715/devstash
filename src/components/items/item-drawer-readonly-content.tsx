@@ -20,8 +20,8 @@ import { formatFileSize } from "@/lib/file-size";
 
 export function ItemDrawerBody({ item }: { item: SerializedDashboardItemDetailRecord }) {
   return (
-    <div className="space-y-6">
-      <DrawerMetaSection label={getPrimaryContentSectionLabel(item.contentMode)}>
+    <div className="flex h-full min-h-0 min-w-0 flex-col gap-3 overflow-hidden">
+      <DrawerMetaSection className="min-h-0 min-w-0" label={getPrimaryContentSectionLabel(item.contentMode)}>
         <PrimaryContentCard item={item} />
       </DrawerMetaSection>
 
@@ -63,7 +63,7 @@ export function ItemDrawerBody({ item }: { item: SerializedDashboardItemDetailRe
 
       {item.aiSummary ? (
         <DrawerMetaSection label="AI Summary">
-          <div className="rounded-xl border border-white/8 bg-white/[0.035] p-4 text-sm leading-7 text-zinc-200">
+          <div className="max-h-24 overflow-hidden rounded-xl border border-white/8 bg-white/[0.035] p-3 text-sm leading-6 text-zinc-200">
             {item.aiSummary}
           </div>
         </DrawerMetaSection>
@@ -109,8 +109,9 @@ export function ItemDrawerFooterMeta({ item }: { item: SerializedDashboardItemDe
 function ReadonlyMarkdownContent({ value }: { value: string }) {
   return (
     <MarkdownEditor
-      maxHeight={400}
-      minHeight={220}
+      heightClassName="h-[clamp(9rem,22dvh,20rem)] min-[1400px]:h-[clamp(10rem,26dvh,24rem)]"
+      maxHeight={320}
+      minHeight={128}
       readOnly
       value={value}
     />
@@ -149,7 +150,7 @@ function PrimaryContentCard({ item }: { item: SerializedDashboardItemDetailRecor
               width={800}
               height={520}
               unoptimized
-              className="max-h-[28rem] w-full object-contain"
+              className="max-h-[clamp(9rem,22dvh,20rem)] w-full object-contain min-[1400px]:max-h-[clamp(10rem,26dvh,24rem)]"
             />
           </div>
         ) : null}
@@ -193,9 +194,10 @@ function PrimaryContentCard({ item }: { item: SerializedDashboardItemDetailRecor
   if (isCodeEditorItemType(item.typeKey)) {
     return (
       <CodeEditor
+        height="clamp(9rem, 22dvh, 20rem)"
         language={item.language}
-        maxHeight={400}
-        minHeight={220}
+        maxHeight={320}
+        minHeight={128}
         readOnly
         value={item.content}
       />
@@ -211,7 +213,7 @@ function PrimaryContentCard({ item }: { item: SerializedDashboardItemDetailRecor
       <div className="border-b border-white/8 px-4 py-3 text-xs uppercase tracking-[0.2em] text-zinc-500">
         {item.language ?? "text"}
       </div>
-      <pre className="overflow-x-auto px-4 py-4 font-mono text-sm leading-7 whitespace-pre-wrap text-zinc-100">
+      <pre className="devstash-scrollbar max-h-[clamp(9rem,22dvh,20rem)] overflow-auto px-4 py-4 font-mono text-sm leading-7 whitespace-pre-wrap text-zinc-100 min-[1400px]:max-h-[clamp(10rem,26dvh,24rem)]">
         {item.content}
       </pre>
     </div>
@@ -220,13 +222,15 @@ function PrimaryContentCard({ item }: { item: SerializedDashboardItemDetailRecor
 
 function DrawerMetaSection({
   children,
+  className,
   label,
 }: {
   children: ReactNode;
+  className?: string;
   label: string;
 }) {
   return (
-    <section className="space-y-3">
+    <section className={["space-y-2.5", className ?? ""].join(" ")}>
       <p className="text-xs font-medium uppercase tracking-[0.22em] text-zinc-500">{label}</p>
       {children}
     </section>
@@ -235,7 +239,7 @@ function DrawerMetaSection({
 
 function EmptyMetaCopy({ label }: { label: string }) {
   return (
-    <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.025] p-4 text-sm text-zinc-500">
+    <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.025] p-3 text-sm text-zinc-500">
       {label}
     </div>
   );

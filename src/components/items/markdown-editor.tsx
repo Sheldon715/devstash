@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 interface MarkdownEditorProps {
   className?: string;
   disabled?: boolean;
+  heightClassName?: string;
   maxHeight?: number;
   minHeight?: number;
   onChange?: (value: string) => void;
@@ -23,6 +24,7 @@ type MarkdownEditorTab = "preview" | "write";
 export function MarkdownEditor({
   className,
   disabled = false,
+  heightClassName: customHeightClassName,
   maxHeight = 400,
   minHeight = 180,
   onChange,
@@ -38,7 +40,7 @@ export function MarkdownEditor({
     () => getFluidEditorRows(value, minHeight, maxHeight),
     [maxHeight, minHeight, value],
   );
-  const heightClassName = getEditorHeightClassName(minHeight, maxHeight);
+  const heightClassName = customHeightClassName ?? getEditorHeightClassName(minHeight, maxHeight);
   const shouldShowPreview = isReadOnly || activeTab === "preview";
 
   useEffect(() => {
@@ -71,7 +73,7 @@ export function MarkdownEditor({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-xl border border-white/10 bg-[#1e1e1e] shadow-[0_18px_50px_rgba(0,0,0,0.24)]",
+        "w-full min-w-0 overflow-hidden rounded-xl border border-white/10 bg-[#1e1e1e] shadow-[0_18px_50px_rgba(0,0,0,0.24)]",
         disabled ? "opacity-70" : "",
         className,
       )}

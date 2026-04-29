@@ -31,6 +31,7 @@ const MonacoEditor = dynamic(
 interface CodeEditorProps {
   className?: string;
   disabled?: boolean;
+  height?: EditorProps["height"];
   language?: string | null;
   maxHeight?: number;
   minHeight?: number;
@@ -42,6 +43,7 @@ interface CodeEditorProps {
 export function CodeEditor({
   className,
   disabled = false,
+  height,
   language,
   maxHeight = 400,
   minHeight = 180,
@@ -57,8 +59,8 @@ export function CodeEditor({
   const isReadOnly = readOnly || disabled || !onChange;
   const lineHeight = getEditorLineHeight(preferences.fontSize);
   const editorHeight = useMemo(
-    () => getFluidEditorHeight(value, minHeight, maxHeight, lineHeight),
-    [lineHeight, maxHeight, minHeight, value],
+    () => height ?? getFluidEditorHeight(value, minHeight, maxHeight, lineHeight),
+    [height, lineHeight, maxHeight, minHeight, value],
   );
 
   useEffect(() => {
@@ -187,7 +189,7 @@ export function CodeEditor({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-xl border border-white/10 bg-[#05070b] shadow-[0_18px_50px_rgba(0,0,0,0.24)]",
+        "w-full min-w-0 overflow-hidden rounded-xl border border-white/10 bg-[#05070b] shadow-[0_18px_50px_rgba(0,0,0,0.24)]",
         disabled ? "opacity-70" : "",
         className,
       )}

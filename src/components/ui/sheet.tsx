@@ -178,7 +178,7 @@ export function SheetContent({
         aria-labelledby={titleId}
         tabIndex={-1}
         className={cn(
-          "fixed top-0 flex h-full w-full max-w-[42rem] flex-col overflow-hidden bg-[#07090d] shadow-[0_30px_120px_rgba(0,0,0,0.58)]",
+          "fixed top-0 flex h-[100dvh] w-full max-w-[42rem] flex-col overflow-hidden bg-[#07090d] shadow-[0_30px_120px_rgba(0,0,0,0.58)]",
           sideClasses,
           className,
         )}

@@ -24,8 +24,10 @@ export function DrawerActionButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
+      aria-label={label}
+      title={label}
       className={[
-        "inline-flex h-11 items-center gap-2 rounded-2xl border px-4 text-sm font-medium transition-colors",
+        "inline-flex h-10 items-center gap-2 rounded-xl border px-3 text-sm font-medium transition-colors",
         "border-white/10 bg-white/[0.04] text-zinc-200 hover:bg-white/[0.08]",
         disabled ? "cursor-not-allowed opacity-50 hover:bg-white/[0.04]" : "",
         active && activeClassName ? activeClassName : "",
@@ -39,7 +41,7 @@ export function DrawerActionButton({
           Icon === LoaderCircle ? "animate-spin" : "",
         ].join(" ")}
       />
-      <span>{label}</span>
+      <span className="max-[480px]:sr-only">{label}</span>
     </button>
   );
 }

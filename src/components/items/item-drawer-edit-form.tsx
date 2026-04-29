@@ -1,6 +1,7 @@
 "use client";
 
 import { CodeEditor } from "@/components/items/code-editor";
+import { CodeLanguageSelect } from "@/components/items/code-language-select";
 import {
   CollectionMultiSelect,
   type CollectionOption,
@@ -66,14 +67,6 @@ export function ItemDrawerEditBody({
         />
       </div>
 
-      {showLanguageField ? (
-        <EditTextField
-          label="Language"
-          value={formState.language}
-          onChange={(value) => onChange("language", value)}
-        />
-      ) : null}
-
       {showUrlField ? (
         <EditTextField
           label="URL"
@@ -84,12 +77,20 @@ export function ItemDrawerEditBody({
 
       {showContentField ? (
         showCodeEditor ? (
-          <EditCodeField
-            label="Content"
-            language={formState.language}
-            value={formState.content}
-            onChange={(value) => onChange("content", value)}
-          />
+          <div className="space-y-3">
+            {showLanguageField ? (
+              <CodeLanguageSelect
+                value={formState.language}
+                onChange={(value) => onChange("language", value)}
+              />
+            ) : null}
+            <EditCodeField
+              label="Content"
+              language={formState.language}
+              value={formState.content}
+              onChange={(value) => onChange("content", value)}
+            />
+          </div>
         ) : showMarkdownEditor ? (
           <EditMarkdownField
             label="Content"

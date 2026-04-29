@@ -9,6 +9,7 @@ import {
   CollectionMultiSelect,
   type CollectionOption,
 } from "@/components/items/collection-multi-select";
+import { CodeLanguageSelect } from "@/components/items/code-language-select";
 import { FileUpload } from "@/components/items/file-upload";
 import { CreateItemTypePicker } from "@/components/items/create-item-type-picker";
 import {
@@ -296,25 +297,25 @@ export function CreateItemDialog({
                   />
                 ) : null}
 
-                {showLanguageField ? (
-                  <CreateTextField
-                    label="Language"
-                    disabled={isSubmitting}
-                    placeholder="Language"
-                    value={formState.language}
-                    onChange={(value) => updateFormField("language", value)}
-                  />
-                ) : null}
-
                 {showContentField ? (
                   showCodeEditor ? (
-                    <CreateCodeField
-                      label="Content"
-                      disabled={isSubmitting}
-                      language={formState.language}
-                      value={formState.content}
-                      onChange={(value) => updateFormField("content", value)}
-                    />
+                    <div className="space-y-3">
+                      {showLanguageField ? (
+                        <CodeLanguageSelect
+                          disabled={isSubmitting}
+                          size="compact"
+                          value={formState.language}
+                          onChange={(value) => updateFormField("language", value)}
+                        />
+                      ) : null}
+                      <CreateCodeField
+                        label="Content"
+                        disabled={isSubmitting}
+                        language={formState.language}
+                        value={formState.content}
+                        onChange={(value) => updateFormField("content", value)}
+                      />
+                    </div>
                   ) : showMarkdownEditor ? (
                     <CreateMarkdownField
                       label="Content"
