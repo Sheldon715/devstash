@@ -16,12 +16,14 @@ import type { CollectionOption } from "@/components/items/collection-multi-selec
 
 interface TopBarProps {
   collectionOptions: CollectionOption[];
+  isPro: boolean;
   onOpenMobileSidebar: () => void;
   onOpenSearchPalette: () => void;
 }
 
 export function TopBar({
   collectionOptions,
+  isPro,
   onOpenMobileSidebar,
   onOpenSearchPalette,
 }: TopBarProps) {
@@ -115,6 +117,18 @@ export function TopBar({
           >
             <Star className={cn("size-4", isFavoritesRoute ? "fill-current" : "")} />
           </Link>
+
+          {!isPro ? (
+            <Link
+              href="/upgrade"
+              className={cn(
+                buttonVariants({ variant: "ghost" }),
+                "h-10 shrink-0 rounded-xl px-2.5 text-xs font-semibold text-violet-100/80 hover:bg-violet-300/10 hover:text-violet-50 max-[420px]:h-9 max-[420px]:px-2 sm:px-3",
+              )}
+            >
+              Upgrade
+            </Link>
+          ) : null}
 
           <div ref={createMenuRef} className="relative shrink-0 md:hidden">
             <Button

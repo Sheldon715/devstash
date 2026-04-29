@@ -16,7 +16,6 @@ interface SettingsPageContentProps {
     | "hasPassword"
     | "plan"
     | "stripeCustomerId"
-    | "stripePriceId"
     | "stripeSubscriptionId"
     | "totalCollections"
     | "totalItems"
@@ -55,7 +54,6 @@ export function SettingsPageContent({ profile }: SettingsPageContentProps) {
       <BillingCard
         plan={profile.plan}
         stripeCustomerId={profile.stripeCustomerId}
-        stripePriceId={profile.stripePriceId}
         stripeSubscriptionId={profile.stripeSubscriptionId}
         totalCollections={profile.totalCollections}
         totalItems={profile.totalItems}

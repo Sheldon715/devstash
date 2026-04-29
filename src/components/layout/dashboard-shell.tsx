@@ -89,6 +89,7 @@ export function DashboardShell({
             <ItemDrawerProvider collectionOptions={collectionOptions}>
               <TopBar
                 collectionOptions={collectionOptions}
+                isPro={currentUser.isPro}
                 onOpenMobileSidebar={handleSidebarOpen}
                 onOpenSearchPalette={() => setIsSearchPaletteOpen(true)}
               />

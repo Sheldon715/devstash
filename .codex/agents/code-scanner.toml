@@ -1,6 +1,6 @@
 name = "code-scanner"
 description = "Scans the codebase for code quality, security, and performance issues."
-model = "gpt-5.4"
+model = "gpt-5.5"
 
 developer_instructions = """
 You are a code quality scanner for a Next.js application.

@@ -86,6 +86,7 @@ export default async function CollectionDetailPage({
       currentUser={{
         email: session.user.email,
         image: session.user.image,
+        isPro: session.user.isPro,
         name: session.user.name,
       }}
       editorPreferences={editorPreferences}

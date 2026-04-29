@@ -28,6 +28,9 @@ export function SidebarCollections({
   pathname,
   recentCollections,
 }: SidebarCollectionsProps) {
+  const hasFavoriteCollections = favoriteCollections.length > 0;
+  const hasRecentCollections = recentCollections.length > 0;
+
   return (
     <SidebarSection
       title="Collections"
@@ -38,25 +41,34 @@ export function SidebarCollections({
     >
       {isOpen ? (
         <>
-          <div className="space-y-[clamp(4px,0.6vh,8px)]">
-            <CollectionGroupLabel label="Favorites" isCollapsed={isCollapsed} />
+          {hasFavoriteCollections ? (
+            <div className="space-y-[clamp(4px,0.6vh,8px)]">
+              <CollectionGroupLabel label="Favorites" isCollapsed={isCollapsed} />
 
-            {favoriteCollections.map((collection) => (
-              <CollectionLink
-                key={collection.id}
-                collectionId={collection.id}
-                itemCount={collection.itemCount}
-                name={collection.name}
-                isCollapsed={isCollapsed}
-                onCloseMobile={onCloseMobile}
-                pathname={pathname}
-                showStar
-              />
-            ))}
-          </div>
+              {favoriteCollections.map((collection) => (
+                <CollectionLink
+                  key={collection.id}
+                  collectionId={collection.id}
+                  itemCount={collection.itemCount}
+                  name={collection.name}
+                  isCollapsed={isCollapsed}
+                  onCloseMobile={onCloseMobile}
+                  pathname={pathname}
+                  showStar
+                />
+              ))}
+            </div>
+          ) : null}
 
-          <div className="mt-[clamp(10px,1.5vh,20px)] space-y-[clamp(4px,0.6vh,8px)]">
-            <CollectionGroupLabel label="Recent" isCollapsed={isCollapsed} />
+          <div
+            className={cn(
+              "space-y-[clamp(4px,0.6vh,8px)]",
+              hasFavoriteCollections && "mt-[clamp(10px,1.5vh,20px)]",
+            )}
+          >
+            {hasRecentCollections ? (
+              <CollectionGroupLabel label="Recent" isCollapsed={isCollapsed} />
+            ) : null}
 
             {recentCollections.map((collection) => (
               <CollectionLink

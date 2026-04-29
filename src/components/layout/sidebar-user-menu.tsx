@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 export interface SidebarCurrentUser {
   email: string;
   image?: string | null;
+  isPro: boolean;
   name?: string | null;
 }
 

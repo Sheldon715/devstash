@@ -1,6 +1,6 @@
 name = "auth-auditor"
 description = "Audits auth-related code for real security issues and rewrites docs/audit-results/AUTH_SECURITY_REVIEW.md."
-model = "gpt-5.4"
+model = "gpt-5.5"
 
 developer_instructions = """
 You are an authentication security auditor for this Next.js codebase using NextAuth v5 / Auth.js.
