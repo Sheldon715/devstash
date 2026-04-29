@@ -2,31 +2,19 @@
 
 ## Status
 
-Completed
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Add a language dropdown for snippet and command content.
-- Place language selection directly above the content editor in the new item modal and drawer edit form.
-- Ensure selecting a language updates editor highlighting while typing.
-- Use a custom animated picker that matches the DevStash visual style.
-- Preserve the existing vertical drawer/edit/create layouts.
+<!-- Goals & requirements -->
 
 ## Todo List
 
-- [x] Locate create and drawer edit language fields.
-- [x] Add a shared language dropdown component.
-- [x] Wire the dropdown above content in new item and edit flows.
-- [x] Replace the native select with a custom animated picker.
-- [x] Fix item drawer opener crash when cards render through server children.
-- [x] Verify lint and production build.
-- [x] Mark the feature complete in this tracker.
+<!-- Feature-specific checklist -->
 
 ## Notes
 
-- Follow-up request: replace language free-text entry with a dropdown above the content editor for both creation and drawer editing.
-- The selected language should feed `CodeEditor` immediately so Monaco syntax highlighting changes as the user types.
-- Follow-up feedback: the language picker should be a styled box with a click animation and arrow controls instead of relying on native scrolling.
+<!-- Any extra notes -->
 
 ## History
 
@@ -88,3 +76,4 @@ Completed
 - Stripe Integration Phase 2 completed with webhook subscription sync, Free/Pro creation gates for items, collections, and uploads, Settings billing UI with usage allowances and pricing, homepage Pro CTA wiring, Stripe price env compatibility, and passing test/lint/build verification; full Stripe CLI payment, webhook, portal, and cancellation walkthrough still pending manual verification
 - Free-tier and upgrade flow polish completed with demo seed data aligned to Free limits, collection limit errors shown toast-only, Free file/image routes redirected to a standalone pricing-style `/upgrade` page, dashboard header and settings upgrade links routed through `/upgrade`, Stripe price IDs hidden from settings, sidebar empty collection headings suppressed, and passing lint/build verification
 - Route loading states completed with shared app/auth/upgrade loading pages, route boundaries for protected and auth destinations, redirect overlays for post-submit and billing handoffs, fixed credentials sign-in loading behavior, and auth-page feature/pricing nav anchors restored to homepage sections
+- Item drawer resize and language picker completed with a resizable shared item drawer, viewport-aware content previews, a styled scrollable code language selector for create/edit flows, provider-safe item card drawer opening, and passing test/lint/build verification
