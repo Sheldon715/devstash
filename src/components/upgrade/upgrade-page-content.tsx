@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Check, LoaderCircle, X } from "lucide-react";
 
 import { pricingPlans } from "@/components/homepage/homepage-data";
+import { RedirectLoadingOverlay } from "@/components/layout/redirect-loading-overlay";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -39,6 +40,7 @@ function getYearlySavingsPercent(plan: (typeof pricingPlans)[number]) {
 export function UpgradePageContent() {
   const [isYearly, setIsYearly] = useState(false);
   const [isStartingCheckout, setIsStartingCheckout] = useState(false);
+  const [redirectMessage, setRedirectMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const yearlyPlan = pricingPlans.find((plan) => plan.yearlyPrice);
   const yearlySavingsPercent = yearlyPlan ? getYearlySavingsPercent(yearlyPlan) : null;
@@ -61,13 +63,15 @@ export function UpgradePageContent() {
 
       if (!response.ok || !result.success || !result.data?.url) {
         setError(result.error ?? "We couldn't start checkout right now.");
+        setIsStartingCheckout(false);
         return;
       }
 
+      setRedirectMessage("Opening secure Stripe checkout.");
       window.location.assign(result.data.url);
+      return;
     } catch {
       setError("We couldn't start checkout right now.");
-    } finally {
       setIsStartingCheckout(false);
     }
   }
@@ -207,6 +211,10 @@ export function UpgradePageContent() {
           );
         })}
       </div>
+
+      {redirectMessage ? (
+        <RedirectLoadingOverlay title="Starting checkout" message={redirectMessage} />
+      ) : null}
     </section>
   );
 }

@@ -24,6 +24,7 @@ import {
   toggleCollectionFavorite,
   updateCollection,
 } from "@/actions/collections";
+import { RedirectLoadingOverlay } from "@/components/layout/redirect-loading-overlay";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -92,6 +93,7 @@ export function CollectionActions({
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [redirectMessage, setRedirectMessage] = useState<string | null>(null);
   const [isFavorite, setIsFavorite] = useState(collection.isFavorite);
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -237,6 +239,7 @@ export function CollectionActions({
     });
 
     if (deleteRedirectHref) {
+      setRedirectMessage("Opening your collections.");
       router.push(deleteRedirectHref);
       return;
     }
@@ -467,6 +470,10 @@ export function CollectionActions({
           title={toastState.title}
           variant={toastState.variant}
         />
+      ) : null}
+
+      {redirectMessage ? (
+        <RedirectLoadingOverlay title="Collection deleted" message={redirectMessage} />
       ) : null}
     </div>
   );

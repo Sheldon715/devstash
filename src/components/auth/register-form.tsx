@@ -5,6 +5,7 @@ import { startTransition, useState, type FormEvent } from "react";
 import { LoaderCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+import { RedirectLoadingOverlay } from "@/components/layout/redirect-loading-overlay";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { isValidEmail, normalizeEmailAddress } from "@/lib/email";
@@ -43,6 +44,7 @@ const INITIAL_FORM_STATE: RegisterFormState = {
 export function RegisterForm({ requiresEmailVerification }: RegisterFormProps) {
   const router = useRouter();
   const [formState, setFormState] = useState(INITIAL_FORM_STATE);
+  const [redirectMessage, setRedirectMessage] = useState<string | null>(null);
 
   function updateField(field: keyof Omit<RegisterFormState, "error" | "isPending">, value: string) {
     setFormState((current) => ({
@@ -123,6 +125,11 @@ export function RegisterForm({ requiresEmailVerification }: RegisterFormProps) {
       const registeredEmail = responseBody.data.email;
       const verificationRequired = responseBody.data.requiresEmailVerification;
 
+      setRedirectMessage(
+        verificationRequired
+          ? "Opening the email verification page."
+          : "Opening sign in for your new account.",
+      );
       startTransition(() => {
         router.push(
           verificationRequired
@@ -227,7 +234,7 @@ export function RegisterForm({ requiresEmailVerification }: RegisterFormProps) {
           disabled={formState.isPending}
         >
           {formState.isPending ? <LoaderCircle className="size-4 animate-spin" /> : null}
-          Create account
+          {redirectMessage ? "Redirecting..." : "Create account"}
         </Button>
 
         <p className="text-xs leading-5 text-zinc-500">
@@ -246,6 +253,10 @@ export function RegisterForm({ requiresEmailVerification }: RegisterFormProps) {
           Sign in
         </Link>
       </p>
+
+      {redirectMessage ? (
+        <RedirectLoadingOverlay title="Account created" message={redirectMessage} />
+      ) : null}
     </div>
   );
 }

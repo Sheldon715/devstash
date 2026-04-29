@@ -12,7 +12,18 @@ function getRedirectTarget(value: FormDataEntryValue | null) {
     return "/dashboard";
   }
 
-  return value;
+  try {
+    const target = new URL(value.trim(), "https://devstash.local");
+    const path = `${target.pathname}${target.search}${target.hash}`;
+
+    if (target.pathname === "/sign-in" || target.pathname === "/register") {
+      return "/dashboard";
+    }
+
+    return path.startsWith("/") && !path.startsWith("//") ? path : "/dashboard";
+  } catch {
+    return "/dashboard";
+  }
 }
 
 export async function signInWithCredentialsAction(
@@ -29,6 +40,7 @@ export async function signInWithCredentialsAction(
     return {
       email,
       error: "Enter both your email and password.",
+      redirectTo: null,
       resendVerificationEmail: null,
     };
   }
@@ -42,6 +54,7 @@ export async function signInWithCredentialsAction(
     return {
       email,
       error: getRateLimitErrorMessage(rateLimitResult.reset),
+      redirectTo: null,
       resendVerificationEmail: null,
     };
   }
@@ -50,6 +63,7 @@ export async function signInWithCredentialsAction(
     await signIn("credentials", {
       email,
       password,
+      redirect: false,
       redirectTo,
     });
   } catch (error) {
@@ -57,6 +71,7 @@ export async function signInWithCredentialsAction(
       return {
         email,
         error: "Verify your email before signing in. Check your inbox for the verification link.",
+        redirectTo: null,
         resendVerificationEmail: email,
       };
     }
@@ -66,6 +81,7 @@ export async function signInWithCredentialsAction(
         return {
           email,
           error: "Invalid email or password.",
+          redirectTo: null,
           resendVerificationEmail: null,
         };
       }
@@ -73,6 +89,7 @@ export async function signInWithCredentialsAction(
       return {
         email,
         error: "We couldn't sign you in right now. Please try again.",
+        redirectTo: null,
         resendVerificationEmail: null,
       };
     }
@@ -83,6 +100,7 @@ export async function signInWithCredentialsAction(
   return {
     email,
     error: null,
+    redirectTo,
     resendVerificationEmail: null,
   };
 }

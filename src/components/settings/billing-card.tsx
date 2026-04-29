@@ -5,6 +5,7 @@ import Link from "next/link";
 import { CreditCard, Crown, LoaderCircle } from "lucide-react";
 import type { Plan } from "../../../generated/prisma/enums";
 
+import { RedirectLoadingOverlay } from "@/components/layout/redirect-loading-overlay";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { FREE_COLLECTION_LIMIT, FREE_ITEM_LIMIT } from "@/lib/billing/usage-limits";
@@ -34,6 +35,7 @@ export function BillingCard({
   totalItems,
 }: BillingCardProps) {
   const [pendingAction, setPendingAction] = useState<"portal" | null>(null);
+  const [redirectMessage, setRedirectMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const isPro = plan === "PRO";
   const hasBillingAccount = Boolean(stripeCustomerId);
@@ -56,13 +58,15 @@ export function BillingCard({
 
       if (!response.ok || !result.success || !result.data?.url) {
         setError(result.error ?? "We couldn't open the billing portal right now.");
+        setPendingAction(null);
         return;
       }
 
+      setRedirectMessage("Opening the secure Stripe billing portal.");
       window.location.assign(result.data.url);
+      return;
     } catch {
       setError("We couldn't open the billing portal right now.");
-    } finally {
       setPendingAction(null);
     }
   }
@@ -195,6 +199,10 @@ export function BillingCard({
           </div>
         ) : null}
       </div>
+
+      {redirectMessage ? (
+        <RedirectLoadingOverlay title="Opening billing" message={redirectMessage} />
+      ) : null}
     </section>
   );
 }
