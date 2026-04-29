@@ -2,19 +2,28 @@
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+Complete
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Add loading feedback for route transitions and redirect-heavy pages where users may otherwise see a blank or stale state.
+- Reuse the existing DevStash dashboard/auth visual language and avoid unnecessary loading screens for trivial routes.
 
 ## Todo List
 
-<!-- Feature-specific checklist -->
+- [x] Audit existing redirects, route loading boundaries, and client-side navigations.
+- [x] Add a shared route loading screen for protected app pages.
+- [x] Add loading boundaries to protected destinations that are missing them.
+- [x] Add redirect-in-progress feedback to client flows that navigate after async work.
+- [x] Use route-level loading for homepage Get Started and Sign In navigation without showing a modal overlay.
+- [x] Fix sign-in submit loading so failed credential attempts do not leave the form stuck.
+- [x] Fix auth-page Features and Pricing nav links to jump back to homepage sections.
+- [x] Run lint and build verification.
 
 ## Notes
 
-<!-- Any extra notes -->
+- Focus on app-route loading states and obvious client redirects rather than broad navigation rewrites.
+- Verification passed with `npm run lint` and `npm run build`.
 
 ## History
 

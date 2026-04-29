@@ -6,11 +6,16 @@ import { navLinks, type HomepageAction } from "@/components/homepage/homepage-da
 import { cn } from "@/lib/utils";
 
 interface HomepageNavProps {
+  navLinkBasePath?: string;
   primaryAction: HomepageAction;
   secondaryAction?: HomepageAction;
 }
 
-export function HomepageNav({ primaryAction, secondaryAction }: HomepageNavProps) {
+export function HomepageNav({
+  navLinkBasePath = "",
+  primaryAction,
+  secondaryAction,
+}: HomepageNavProps) {
   return (
     <header className="fixed inset-x-0 top-0 z-30 border-b border-white/8 bg-[#05060f]/78 px-4 backdrop-blur-xl sm:px-6 lg:px-12">
       <div className="mx-auto flex h-17 max-w-7xl items-center justify-between gap-4">
@@ -31,7 +36,7 @@ export function HomepageNav({ primaryAction, secondaryAction }: HomepageNavProps
           {navLinks.map((link) => (
             <Link
               key={link.href}
-              href={link.href}
+              href={`${navLinkBasePath}${link.href}`}
               className="rounded-md px-3 py-2 transition-colors hover:text-zinc-50 focus-visible:ring-2 focus-visible:ring-ring/70 focus-visible:outline-none"
             >
               {link.label}

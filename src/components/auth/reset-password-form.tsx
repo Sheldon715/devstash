@@ -5,6 +5,7 @@ import { startTransition, useState } from "react";
 import { LoaderCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+import { RedirectLoadingOverlay } from "@/components/layout/redirect-loading-overlay";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -42,6 +43,7 @@ const INITIAL_FORM_STATE: ResetPasswordFormState = {
 export function ResetPasswordForm({ email, token }: ResetPasswordFormProps) {
   const router = useRouter();
   const [formState, setFormState] = useState(INITIAL_FORM_STATE);
+  const [redirectMessage, setRedirectMessage] = useState<string | null>(null);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -102,6 +104,7 @@ export function ResetPasswordForm({ email, token }: ResetPasswordFormProps) {
 
       const resetEmail = responseBody.data.email;
 
+      setRedirectMessage("Opening sign in with your reset confirmation.");
       startTransition(() => {
         router.push(`/sign-in?reset=1&email=${encodeURIComponent(resetEmail)}`);
       });
@@ -182,7 +185,7 @@ export function ResetPasswordForm({ email, token }: ResetPasswordFormProps) {
           disabled={formState.isPending}
         >
           {formState.isPending ? <LoaderCircle className="size-4 animate-spin" /> : null}
-          Reset password
+          {redirectMessage ? "Redirecting..." : "Reset password"}
         </Button>
 
         <p className="text-xs leading-5 text-zinc-500">
@@ -199,6 +202,10 @@ export function ResetPasswordForm({ email, token }: ResetPasswordFormProps) {
           Request another reset
         </Link>
       </p>
+
+      {redirectMessage ? (
+        <RedirectLoadingOverlay title="Password updated" message={redirectMessage} />
+      ) : null}
     </div>
   );
 }

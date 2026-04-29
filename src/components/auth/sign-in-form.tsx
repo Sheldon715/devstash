@@ -1,14 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { CheckCircle2, LoaderCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 import { INITIAL_SIGN_IN_STATE } from "@/actions/auth-state";
 import {
   signInWithCredentialsAction,
   signInWithGitHubAction,
 } from "@/actions/auth";
+import { RedirectLoadingOverlay } from "@/components/layout/redirect-loading-overlay";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SuccessToast } from "@/components/ui/success-toast";
@@ -42,6 +44,7 @@ export function SignInForm({
   successMessage = null,
   successTitle = null,
 }: SignInFormProps) {
+  const router = useRouter();
   const [state, formAction, isPending] = useActionState(signInWithCredentialsAction, {
     ...INITIAL_SIGN_IN_STATE,
     email: defaultEmail,
@@ -51,7 +54,16 @@ export function SignInForm({
   const [isToastVisible, setIsToastVisible] = useState(
     successAsToast && Boolean(successMessage),
   );
+  const redirectMessage = state.redirectTo ? "Opening your workspace." : null;
   const forgotPasswordEmail = emailValue.trim();
+
+  useEffect(() => {
+    if (!state.redirectTo) {
+      return;
+    }
+
+    router.replace(state.redirectTo);
+  }, [router, state.redirectTo]);
 
   return (
     <div className="space-y-6">
@@ -175,10 +187,10 @@ export function SignInForm({
         <Button
           type="submit"
           className="h-12 w-full rounded-lg bg-zinc-50 text-zinc-950 hover:bg-white"
-          disabled={isPending}
+          disabled={isPending || Boolean(redirectMessage)}
         >
           {isPending ? <LoaderCircle className="size-4 animate-spin" /> : null}
-          Sign in
+          {redirectMessage ? "Redirecting..." : "Sign in"}
         </Button>
       </form>
 
@@ -191,6 +203,10 @@ export function SignInForm({
           Create one
         </Link>
       </p>
+
+      {redirectMessage ? (
+        <RedirectLoadingOverlay title="Signed in" message={redirectMessage} />
+      ) : null}
     </div>
   );
 }

@@ -42,6 +42,7 @@ export function AuthShell({
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/18 to-transparent" />
       {homeNavActions ? (
         <HomepageNav
+          navLinkBasePath="/"
           primaryAction={homeNavActions.primary}
           secondaryAction={homeNavActions.secondary}
         />
