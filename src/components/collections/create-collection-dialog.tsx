@@ -24,6 +24,7 @@ interface CreateCollectionDialogProps {
 interface CreateCollectionResponse {
   success: boolean;
   error?: string;
+  status?: number;
 }
 
 interface CreateCollectionToastState {
@@ -89,7 +90,10 @@ export function CreateCollectionDialog({
         }),
       });
 
-      payload = (await response.json()) as CreateCollectionResponse;
+      payload = {
+        ...((await response.json()) as CreateCollectionResponse),
+        status: response.status,
+      };
     } catch {
       payload = {
         success: false,
@@ -102,7 +106,10 @@ export function CreateCollectionDialog({
     if (!payload.success) {
       const message = payload.error ?? "We couldn't create this collection right now.";
 
-      setError(message);
+      if (payload.status !== 403) {
+        setError(message);
+      }
+
       setToastState({
         message,
         title: "Create failed",

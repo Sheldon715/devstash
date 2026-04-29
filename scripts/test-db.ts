@@ -21,9 +21,10 @@ const EXPECTED_COLLECTIONS = [
   { name: "React Patterns", itemCount: 3 },
   { name: "AI Workflows", itemCount: 3 },
   { name: "DevOps", itemCount: 4 },
-  { name: "Terminal Commands", itemCount: 4 },
-  { name: "Design Resources", itemCount: 4 },
 ] as const;
+
+const EXPECTED_TOTAL_ITEMS = 10;
+const FREE_ITEM_LIMIT = 50;
 
 function assertCondition(condition: boolean, message: string): asserts condition {
   if (!condition) {
@@ -166,7 +167,14 @@ async function main() {
       0,
     );
 
-    assertCondition(totalItems === 18, `Expected 18 seeded items but found ${totalItems}.`);
+    assertCondition(
+      totalItems === EXPECTED_TOTAL_ITEMS,
+      `Expected ${EXPECTED_TOTAL_ITEMS} seeded items but found ${totalItems}.`,
+    );
+    assertCondition(
+      totalItems < FREE_ITEM_LIMIT,
+      `Expected demo seed to stay under ${FREE_ITEM_LIMIT} items but found ${totalItems}.`,
+    );
 
     const itemRows = demoUser.collections.flatMap((collection) =>
       collection.items.map((entry) => ({

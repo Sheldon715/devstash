@@ -2,15 +2,27 @@
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+Completed
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Align the demo seed account with free-tier limits.
+- Keep the demo user at 3 collections and fewer than 50 items.
+- Run the cleanup/seed flow so only the demo user remains populated.
+- Show collection-limit create failures only as a toast, not as an inline New Collection dialog error.
+- Show an upgrade page when Free users visit file or image item routes.
 
 ## Todo List
 
-<!-- Feature-specific checklist -->
+- [x] Inspect current demo seed data and cleanup script.
+- [x] Reduce demo seed collections to the free-tier limit.
+- [x] Update DB verification expectations for the new seed shape.
+- [x] Run the cleanup and seed flow.
+- [x] Verify the demo account has 3 collections and fewer than 50 items.
+- [x] Update the New Collection dialog to keep limit failures toast-only.
+- [x] Add a Pro upgrade view for file and image item pages.
+- [x] Gate `/items/files` and `/items/images` for Free users before loading those item lists.
+- [x] Run lint and build checks for the UI changes.
 
 ## Notes
 
@@ -18,6 +30,8 @@
 
 ## History
 
+- Demo seed free limit alignment completed with the demo account reduced to 3 collections and 10 items, cleanup removing non-demo users, reseeding demo content, and DB verification passing against the development database
+- Free file and image route gating completed with `/items/files` and `/items/images` showing a Pro upgrade page for Free users while Pro users still see the normal item lists
 - Initial Next.js app scaffold created from Create Next App
 - Initial framework setup completed, including project context files and boilerplate cleanup
 - Dashboard UI Phase 1 completed with a `/dashboard` route, dark-mode dashboard shell, ShadCN-style UI primitives, and placeholder `Sidebar` and `Main` sections based on the phase 1 spec

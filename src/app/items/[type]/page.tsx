@@ -6,6 +6,7 @@ import { auth } from "@/auth";
 import { ItemCard } from "@/components/dashboard/item-card";
 import { FileListView } from "@/components/items/file-list-view";
 import { ImageThumbnailCard } from "@/components/items/image-thumbnail-card";
+import { ProItemTypeUpgrade } from "@/components/items/pro-item-type-upgrade";
 import { TypePageCreateButton } from "@/components/items/type-page-create-button";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { PaginationControls } from "@/components/layout/pagination-controls";
@@ -23,6 +24,7 @@ import {
   getDashboardSearchItems,
   mapCollectionsToDashboardSearchRecords,
 } from "@/lib/db/search";
+import { normalizeDashboardItemTypeRouteKey } from "@/lib/item-types";
 import { normalizePage } from "@/lib/pagination";
 
 export const dynamic = "force-dynamic";
@@ -44,23 +46,26 @@ export default async function ItemTypePage({ params, searchParams }: ItemTypePag
   }
 
   const [{ type }, resolvedSearchParams] = await Promise.all([params, searchParams]);
+  const normalizedTypeKey = normalizeDashboardItemTypeRouteKey(type);
+
+  if (!normalizedTypeKey) {
+    notFound();
+  }
+
   const page = normalizePage(resolvedSearchParams.page);
+  const proOnlyType =
+    normalizedTypeKey === "file" || normalizedTypeKey === "image" ? normalizedTypeKey : null;
+  const shouldShowUpgradePage = Boolean(proOnlyType && !session.user.isPro);
   const [collections, sidebarItemTypes, itemTypePage, searchItems, editorPreferences] =
     await Promise.all([
       getAllDashboardCollections(session.user.id),
       getDashboardSidebarItemTypes(session.user.id),
-      getDashboardItemTypePage(session.user.id, type, { page }),
+      shouldShowUpgradePage
+        ? Promise.resolve(null)
+        : getDashboardItemTypePage(session.user.id, normalizedTypeKey, { page }),
       getDashboardSearchItems(session.user.id),
       getUserEditorPreferences(session.user.id),
     ]);
-
-  if (!itemTypePage) {
-    notFound();
-  }
-
-  const { itemType, items, pagination } = itemTypePage;
-  const isFileList = itemType.typeKey === "file";
-  const isImageGallery = itemType.typeKey === "image";
   const favoriteCollections = collections.filter((collection) => collection.isFavorite).slice(0, 4);
   const recentCollections = collections.slice(0, 4);
   const collectionOptions = collections.map((collection) => ({
@@ -71,6 +76,46 @@ export default async function ItemTypePage({ params, searchParams }: ItemTypePag
     items: searchItems,
     collections: mapCollectionsToDashboardSearchRecords(collections),
   };
+
+  if (proOnlyType && shouldShowUpgradePage) {
+    return (
+      <DashboardShell
+        collectionOptions={collectionOptions}
+        currentUser={{
+          email: session.user.email,
+          image: session.user.image,
+          name: session.user.name,
+        }}
+        editorPreferences={editorPreferences}
+        favoriteCollections={favoriteCollections}
+        recentCollections={recentCollections}
+        searchData={searchData}
+        sidebarItemTypes={sidebarItemTypes}
+      >
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
+          <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Link href="/dashboard" className="transition-colors hover:text-foreground">
+              Dashboard
+            </Link>
+            <ChevronRight className="size-4" />
+            <span className="text-foreground">
+              {proOnlyType === "file" ? "Files" : "Images"}
+            </span>
+          </nav>
+
+          <ProItemTypeUpgrade typeKey={proOnlyType} />
+        </div>
+      </DashboardShell>
+    );
+  }
+
+  if (!itemTypePage) {
+    notFound();
+  }
+
+  const { itemType, items, pagination } = itemTypePage;
+  const isFileList = itemType.typeKey === "file";
+  const isImageGallery = itemType.typeKey === "image";
 
   return (
     <DashboardShell
