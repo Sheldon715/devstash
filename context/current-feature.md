@@ -2,28 +2,19 @@
 
 ## Status
 
-Complete
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Add loading feedback for route transitions and redirect-heavy pages where users may otherwise see a blank or stale state.
-- Reuse the existing DevStash dashboard/auth visual language and avoid unnecessary loading screens for trivial routes.
+<!-- Goals & requirements -->
 
 ## Todo List
 
-- [x] Audit existing redirects, route loading boundaries, and client-side navigations.
-- [x] Add a shared route loading screen for protected app pages.
-- [x] Add loading boundaries to protected destinations that are missing them.
-- [x] Add redirect-in-progress feedback to client flows that navigate after async work.
-- [x] Use route-level loading for homepage Get Started and Sign In navigation without showing a modal overlay.
-- [x] Fix sign-in submit loading so failed credential attempts do not leave the form stuck.
-- [x] Fix auth-page Features and Pricing nav links to jump back to homepage sections.
-- [x] Run lint and build verification.
+<!-- Feature-specific checklist -->
 
 ## Notes
 
-- Focus on app-route loading states and obvious client redirects rather than broad navigation rewrites.
-- Verification passed with `npm run lint` and `npm run build`.
+<!-- Any extra notes -->
 
 ## History
 
@@ -84,3 +75,4 @@ Complete
 - Stripe Integration Phase 1 completed with Stripe dependency wiring, cached server client setup, billing price and usage-limit helpers, Auth.js plan/isPro session state, authenticated checkout and customer portal routes, and passing test/lint/build verification
 - Stripe Integration Phase 2 completed with webhook subscription sync, Free/Pro creation gates for items, collections, and uploads, Settings billing UI with usage allowances and pricing, homepage Pro CTA wiring, Stripe price env compatibility, and passing test/lint/build verification; full Stripe CLI payment, webhook, portal, and cancellation walkthrough still pending manual verification
 - Free-tier and upgrade flow polish completed with demo seed data aligned to Free limits, collection limit errors shown toast-only, Free file/image routes redirected to a standalone pricing-style `/upgrade` page, dashboard header and settings upgrade links routed through `/upgrade`, Stripe price IDs hidden from settings, sidebar empty collection headings suppressed, and passing lint/build verification
+- Route loading states completed with shared app/auth/upgrade loading pages, route boundaries for protected and auth destinations, redirect overlays for post-submit and billing handoffs, fixed credentials sign-in loading behavior, and auth-page feature/pricing nav anchors restored to homepage sections
