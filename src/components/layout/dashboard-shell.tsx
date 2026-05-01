@@ -86,7 +86,7 @@ export function DashboardShell({
 
         <div className="flex min-w-0 flex-1 flex-col">
           <EditorPreferencesProvider initialPreferences={editorPreferences}>
-            <ItemDrawerProvider collectionOptions={collectionOptions}>
+            <ItemDrawerProvider collectionOptions={collectionOptions} isPro={currentUser.isPro}>
               <TopBar
                 collectionOptions={collectionOptions}
                 isPro={currentUser.isPro}

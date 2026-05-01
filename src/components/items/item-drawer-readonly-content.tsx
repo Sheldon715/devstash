@@ -20,8 +20,8 @@ import { formatFileSize } from "@/lib/file-size";
 
 export function ItemDrawerBody({ item }: { item: SerializedDashboardItemDetailRecord }) {
   return (
-    <div className="flex h-full min-h-0 min-w-0 flex-col gap-3 overflow-hidden">
-      <DrawerMetaSection className="min-h-0 min-w-0" label={getPrimaryContentSectionLabel(item.contentMode)}>
+    <div className="flex min-w-0 flex-col gap-4 pb-2">
+      <DrawerMetaSection className="min-w-0" label={getPrimaryContentSectionLabel(item.contentMode)}>
         <PrimaryContentCard item={item} />
       </DrawerMetaSection>
 
@@ -109,9 +109,9 @@ export function ItemDrawerFooterMeta({ item }: { item: SerializedDashboardItemDe
 function ReadonlyMarkdownContent({ value }: { value: string }) {
   return (
     <MarkdownEditor
-      heightClassName="h-[clamp(9rem,22dvh,20rem)] min-[1400px]:h-[clamp(10rem,26dvh,24rem)]"
-      maxHeight={320}
-      minHeight={128}
+      heightClassName="h-[clamp(14rem,36dvh,30rem)] min-[1400px]:h-[clamp(16rem,42dvh,34rem)]"
+      maxHeight={480}
+      minHeight={224}
       readOnly
       value={value}
     />
@@ -150,7 +150,7 @@ function PrimaryContentCard({ item }: { item: SerializedDashboardItemDetailRecor
               width={800}
               height={520}
               unoptimized
-              className="max-h-[clamp(9rem,22dvh,20rem)] w-full object-contain min-[1400px]:max-h-[clamp(10rem,26dvh,24rem)]"
+              className="max-h-[clamp(14rem,36dvh,30rem)] w-full object-contain min-[1400px]:max-h-[clamp(16rem,42dvh,34rem)]"
             />
           </div>
         ) : null}
@@ -194,10 +194,10 @@ function PrimaryContentCard({ item }: { item: SerializedDashboardItemDetailRecor
   if (isCodeEditorItemType(item.typeKey)) {
     return (
       <CodeEditor
-        height="clamp(9rem, 22dvh, 20rem)"
+        height="clamp(14rem, 36dvh, 30rem)"
         language={item.language}
-        maxHeight={320}
-        minHeight={128}
+        maxHeight={480}
+        minHeight={224}
         readOnly
         value={item.content}
       />
@@ -213,7 +213,7 @@ function PrimaryContentCard({ item }: { item: SerializedDashboardItemDetailRecor
       <div className="border-b border-white/8 px-4 py-3 text-xs uppercase tracking-[0.2em] text-zinc-500">
         {item.language ?? "text"}
       </div>
-      <pre className="devstash-scrollbar max-h-[clamp(9rem,22dvh,20rem)] overflow-auto px-4 py-4 font-mono text-sm leading-7 whitespace-pre-wrap text-zinc-100 min-[1400px]:max-h-[clamp(10rem,26dvh,24rem)]">
+      <pre className="devstash-scrollbar max-h-[clamp(14rem,36dvh,30rem)] overflow-auto px-4 py-4 font-mono text-sm leading-7 whitespace-pre-wrap text-zinc-100 min-[1400px]:max-h-[clamp(16rem,42dvh,34rem)]">
         {item.content}
       </pre>
     </div>

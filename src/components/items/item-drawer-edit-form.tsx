@@ -2,6 +2,7 @@
 
 import { CodeEditor } from "@/components/items/code-editor";
 import { CodeLanguageSelect } from "@/components/items/code-language-select";
+import { AiTagSuggestions } from "@/components/items/ai-tag-suggestions";
 import {
   CollectionMultiSelect,
   type CollectionOption,
@@ -24,18 +25,26 @@ type EditItemTextField = Exclude<keyof EditItemFormState, "collectionIds">;
 
 interface ItemDrawerEditBodyProps {
   collectionOptions: CollectionOption[];
+  disabled?: boolean;
   editError: string | null;
   formState: EditItemFormState;
+  isPro: boolean;
   item: SerializedDashboardItemDetailRecord;
+  onAcceptSuggestedTag: (tag: string) => void;
+  onAiTagError: (message: string) => void;
   onCollectionIdsChange: (collectionIds: string[]) => void;
   onChange: (field: EditItemTextField, value: string) => void;
 }
 
 export function ItemDrawerEditBody({
   collectionOptions,
+  disabled = false,
   editError,
   formState,
+  isPro,
   item,
+  onAcceptSuggestedTag,
+  onAiTagError,
   onCollectionIdsChange,
   onChange,
 }: ItemDrawerEditBodyProps) {
@@ -107,11 +116,22 @@ export function ItemDrawerEditBody({
         )
       ) : null}
 
-      <EditTextField
-        label="Tags"
-        value={formState.tags}
-        onChange={(value) => onChange("tags", value)}
-      />
+      <div className="space-y-2">
+        <EditTextField
+          label="Tags"
+          value={formState.tags}
+          onChange={(value) => onChange("tags", value)}
+        />
+        <AiTagSuggestions
+          content={formState.content}
+          description={formState.description}
+          disabled={disabled}
+          isPro={isPro}
+          title={formState.title}
+          onAccept={onAcceptSuggestedTag}
+          onError={onAiTagError}
+        />
+      </div>
 
       <CollectionMultiSelect
         options={collectionOptions}
