@@ -5,6 +5,7 @@ import { LoaderCircle, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { createItem } from "@/actions/items";
+import { AiDescriptionButton } from "@/components/items/ai-description-button";
 import { AiTagSuggestions } from "@/components/items/ai-tag-suggestions";
 import {
   CollectionMultiSelect,
@@ -280,13 +281,34 @@ export function CreateItemDialog({
                     value={formState.title}
                     onChange={(value) => updateFormField("title", value)}
                   />
-                  <CreateTextField
-                    label="Description"
-                    disabled={isSubmitting}
-                    placeholder="Optional description"
-                    value={formState.description}
-                    onChange={(value) => updateFormField("description", value)}
-                  />
+                  <label className="space-y-1.5">
+                    <span className="flex items-center justify-between gap-3">
+                      <span className="text-xs font-medium uppercase tracking-[0.22em] text-zinc-500">
+                        Description
+                      </span>
+                      <AiDescriptionButton
+                        content={formState.content}
+                        description={formState.description}
+                        disabled={isSubmitting}
+                        fileMimeType={uploadedFile?.fileMimeType}
+                        fileName={uploadedFile?.fileName}
+                        isPro={isPro}
+                        itemType={selectedType}
+                        title={formState.title}
+                        url={formState.url}
+                        onError={handleAiDescriptionError}
+                        onGenerated={handleGeneratedDescription}
+                      />
+                    </span>
+                    <input
+                      type="text"
+                      disabled={isSubmitting}
+                      placeholder="Optional description"
+                      value={formState.description}
+                      onChange={(event) => updateFormField("description", event.target.value)}
+                      className="h-10 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 text-sm text-zinc-100 outline-none transition-colors placeholder:text-zinc-600 focus:border-sky-300/35 focus:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-60"
+                    />
+                  </label>
                 </div>
 
                 {showUrlField ? (
@@ -457,6 +479,22 @@ export function CreateItemDialog({
       title: "Tag suggestions failed",
       variant: "error",
     });
+  }
+
+  function handleAiDescriptionError(message: string) {
+    setToastState({
+      message,
+      title: "Description failed",
+      variant: "error",
+    });
+  }
+
+  function handleGeneratedDescription(description: string) {
+    setFormState((current) => ({
+      ...current,
+      description,
+    }));
+    setError(null);
   }
 
   function handleAcceptSuggestedTag(tag: string) {

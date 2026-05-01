@@ -2,6 +2,7 @@
 
 import { CodeEditor } from "@/components/items/code-editor";
 import { CodeLanguageSelect } from "@/components/items/code-language-select";
+import { AiDescriptionButton } from "@/components/items/ai-description-button";
 import { AiTagSuggestions } from "@/components/items/ai-tag-suggestions";
 import {
   CollectionMultiSelect,
@@ -31,9 +32,11 @@ interface ItemDrawerEditBodyProps {
   isPro: boolean;
   item: SerializedDashboardItemDetailRecord;
   onAcceptSuggestedTag: (tag: string) => void;
+  onAiDescriptionError: (message: string) => void;
   onAiTagError: (message: string) => void;
   onCollectionIdsChange: (collectionIds: string[]) => void;
   onChange: (field: EditItemTextField, value: string) => void;
+  onGeneratedDescription: (description: string) => void;
 }
 
 export function ItemDrawerEditBody({
@@ -44,9 +47,11 @@ export function ItemDrawerEditBody({
   isPro,
   item,
   onAcceptSuggestedTag,
+  onAiDescriptionError,
   onAiTagError,
   onCollectionIdsChange,
   onChange,
+  onGeneratedDescription,
 }: ItemDrawerEditBodyProps) {
   const showContentField = ["command", "note", "prompt", "snippet"].includes(item.typeKey);
   const showCodeEditor = isCodeEditorItemType(item.typeKey);
@@ -69,11 +74,31 @@ export function ItemDrawerEditBody({
           value={formState.title}
           onChange={(value) => onChange("title", value)}
         />
-        <EditTextareaField
-          label="Description"
-          value={formState.description}
-          onChange={(value) => onChange("description", value)}
-        />
+        <label className="space-y-2">
+          <span className="flex items-center justify-between gap-3">
+            <span className="text-xs font-medium uppercase tracking-[0.22em] text-zinc-500">
+              Description
+            </span>
+            <AiDescriptionButton
+              content={formState.content}
+              description={formState.description}
+              disabled={disabled}
+              fileMimeType={item.fileMimeType}
+              fileName={item.fileName}
+              isPro={isPro}
+              itemType={item.typeKey}
+              title={formState.title}
+              url={formState.url}
+              onError={onAiDescriptionError}
+              onGenerated={onGeneratedDescription}
+            />
+          </span>
+          <textarea
+            value={formState.description}
+            onChange={(event) => onChange("description", event.target.value)}
+            className="min-h-32 w-full resize-y rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm leading-6 text-zinc-100 outline-none transition-colors placeholder:text-zinc-600 focus:border-sky-300/35 focus:bg-white/[0.06]"
+          />
+        </label>
       </div>
 
       {showUrlField ? (

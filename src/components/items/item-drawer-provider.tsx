@@ -529,9 +529,11 @@ export function ItemDrawerProvider({
                   isPro={isPro}
                   item={selectedItem}
                   onAcceptSuggestedTag={handleAcceptSuggestedTag}
+                  onAiDescriptionError={handleAiDescriptionError}
                   onAiTagError={handleAiTagError}
                   onCollectionIdsChange={updateEditCollectionIds}
                   onChange={updateEditFormField}
+                  onGeneratedDescription={handleGeneratedDescription}
                 />
               ) : selectedItem ? (
                 <ItemDrawerBody item={selectedItem} />
@@ -658,6 +660,26 @@ export function ItemDrawerProvider({
       title: "Tag suggestions failed",
       variant: "error",
     });
+  }
+
+  function handleAiDescriptionError(message: string) {
+    setToastState({
+      message,
+      title: "Description failed",
+      variant: "error",
+    });
+  }
+
+  function handleGeneratedDescription(description: string) {
+    setEditFormState((current) =>
+      current
+        ? {
+            ...current,
+            description,
+          }
+        : current,
+    );
+    setEditError(null);
   }
 
   function handleAcceptSuggestedTag(tag: string) {

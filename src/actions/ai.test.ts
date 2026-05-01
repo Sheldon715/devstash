@@ -32,7 +32,7 @@ vi.mock("@/lib/rate-limit", () => ({
   getRateLimitErrorMessage: (reset: number) => `Too many attempts. Reset at ${reset}.`,
 }));
 
-import { generateAutoTags } from "@/actions/ai";
+import { generateAutoTags, generateItemDescription } from "@/actions/ai";
 
 describe("AI actions", () => {
   beforeEach(() => {
@@ -225,6 +225,111 @@ describe("AI actions", () => {
       success: false,
       data: null,
       error: "We couldn't suggest tags right now.",
+    });
+  });
+
+  it("returns validation errors before generating a description", async () => {
+    const result = await generateItemDescription({
+      title: "   ",
+      description: "",
+      content: "",
+      url: "",
+      fileName: "",
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "Add a title, content, URL, or file before generating a description.",
+    });
+    expect(authMock).not.toHaveBeenCalled();
+    expect(chatCompletionsCreateMock).not.toHaveBeenCalled();
+  });
+
+  it("blocks Free users before generating a description", async () => {
+    getUserBillingUsageMock.mockResolvedValue({
+      plan: "FREE",
+      isPro: false,
+      totalItems: 0,
+      totalCollections: 0,
+    });
+
+    const result = await generateItemDescription({
+      title: "Build command",
+      content: "npm run build",
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "AI descriptions require DevStash Pro.",
+    });
+    expect(checkAiRateLimitMock).not.toHaveBeenCalled();
+    expect(chatCompletionsCreateMock).not.toHaveBeenCalled();
+  });
+
+  it("generates concise descriptions from the available item inputs", async () => {
+    chatCompletionsCreateMock.mockResolvedValue({
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              description:
+                "Runs the production build and catches compile-time issues before release.",
+            }),
+          },
+        },
+      ],
+    });
+
+    const result = await generateItemDescription({
+      title: "Production build",
+      description: "",
+      content: "npm run build",
+      itemType: "command",
+      url: "https://nextjs.org/docs",
+      fileName: "release-notes.md",
+      fileMimeType: "text/markdown",
+    });
+    const request = chatCompletionsCreateMock.mock.calls[0]?.[0] as
+      | { messages?: Array<{ content?: string | Array<{ text?: string }> }> }
+      | undefined;
+
+    expect(checkAiRateLimitMock).toHaveBeenCalledWith("descriptionSummary", "user-1");
+    expect(chatCompletionsCreateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        model: "mimo-v2-flash",
+        temperature: 0.25,
+        top_p: 0.9,
+        max_completion_tokens: 220,
+        response_format: { type: "json_object" },
+      }),
+    );
+    expect(request?.messages?.[1]?.content).toContain("Write a good, concise 1-2 sentence");
+    expect(request?.messages?.[1]?.content).toContain("Item type: command");
+    expect(request?.messages?.[1]?.content).toContain("File name: release-notes.md");
+    expect(result).toEqual({
+      success: true,
+      data: {
+        description:
+          "Runs the production build and catches compile-time issues before release.",
+      },
+      error: null,
+    });
+  });
+
+  it("returns a generic error when description generation fails", async () => {
+    chatCompletionsCreateMock.mockRejectedValue(new Error("service unavailable"));
+
+    const result = await generateItemDescription({
+      title: "Useful snippet",
+      content: "useEffect(() => {}, [])",
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "We couldn't generate a description right now.",
     });
   });
 });
