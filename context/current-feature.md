@@ -1,33 +1,23 @@
-# Current Feature: AI Description Summary
+# Current Feature
 
 ## Status
 
-Completed
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Add an AI summary action that creates a concise 1-2 sentence description from the current item inputs.
-- Support all item types by using whatever current title, content, URL, file/image metadata, and existing description context is available.
-- Add an icon button near the description field in create and edit flows that fills the description without requiring the item to be saved first.
-- Preserve the existing Pro-only AI/rate-limit behavior and MiMo integration patterns.
+<!-- Goals & requirements -->
 
 ## Todo List
 
-- [x] Create a feature branch
-- [x] Inspect the existing AI tag suggestion and item form flow
-- [x] Add a server action for generating item descriptions
-- [x] Add description-generation controls to create and edit item forms
-- [x] Add or update focused tests
-- [x] Run lint and build checks
+<!-- Feature-specific checklist -->
 
 ## Notes
 
-- Loaded from inline request: "I want to be able to click an icon button to generate a good and concise description with an AI summary feature. It should look at the content and title and create a 1-2 sentence summary for the description field. No need to save first. It should just look at what is in the current inputs. Do this for all items using whatever information is available"
-- Existing AI Auto-Tagging is MiMo-backed and Pro-only; reuse that shape unless implementation context shows otherwise.
+<!-- Any extra notes -->
 
 ## History
 
-- AI Description Summary completed with a Pro-only MiMo-backed description generator, icon-only summary buttons in create/edit item forms, support for title/content/URL/file metadata inputs, focused AI action coverage, and passing test/lint/build verification
 - Initial Next.js app scaffold created from Create Next App
 - Initial framework setup completed, including project context files and boilerplate cleanup
 - Dashboard UI Phase 1 completed with a `/dashboard` route, dark-mode dashboard shell, ShadCN-style UI primitives, and placeholder `Sidebar` and `Main` sections based on the phase 1 spec
@@ -88,3 +78,4 @@ Completed
 - Route loading states completed with shared app/auth/upgrade loading pages, route boundaries for protected and auth destinations, redirect overlays for post-submit and billing handoffs, fixed credentials sign-in loading behavior, and auth-page feature/pricing nav anchors restored to homepage sections
 - Item drawer resize and language picker completed with a resizable shared item drawer, viewport-aware content previews, a styled scrollable code language selector for create/edit flows, provider-safe item card drawer opening, and passing test/lint/build verification
 - AI Auto-Tagging completed with MiMo-backed Pro-only tag suggestions, user-scoped AI rate limiting, accept/reject suggestion badges in create and edit flows, focused server action coverage, and polished item drawer scrolling/header layout
+- AI Description Summary completed with a Pro-only MiMo-backed description generator, icon-only summary buttons in create/edit item forms, support for title/content/URL/file metadata inputs, focused AI action coverage, and passing test/lint/build verification
