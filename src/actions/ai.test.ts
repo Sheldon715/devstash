@@ -1,0 +1,230 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const {
+  authMock,
+  checkAiRateLimitMock,
+  getAiClientMock,
+  getUserBillingUsageMock,
+  chatCompletionsCreateMock,
+} = vi.hoisted(() => ({
+  authMock: vi.fn(),
+  checkAiRateLimitMock: vi.fn(),
+  getAiClientMock: vi.fn(),
+  getUserBillingUsageMock: vi.fn(),
+  chatCompletionsCreateMock: vi.fn(),
+}));
+
+vi.mock("@/auth", () => ({
+  auth: authMock,
+}));
+
+vi.mock("@/lib/ai/openai", () => ({
+  AI_MODEL: "mimo-v2-flash",
+  getOpenAIClient: getAiClientMock,
+}));
+
+vi.mock("@/lib/billing/usage", () => ({
+  getUserBillingUsage: getUserBillingUsageMock,
+}));
+
+vi.mock("@/lib/rate-limit", () => ({
+  checkAiRateLimit: checkAiRateLimitMock,
+  getRateLimitErrorMessage: (reset: number) => `Too many attempts. Reset at ${reset}.`,
+}));
+
+import { generateAutoTags } from "@/actions/ai";
+
+describe("AI actions", () => {
+  beforeEach(() => {
+    authMock.mockReset();
+    checkAiRateLimitMock.mockReset();
+    getAiClientMock.mockReset();
+    getUserBillingUsageMock.mockReset();
+    chatCompletionsCreateMock.mockReset();
+
+    authMock.mockResolvedValue({
+      user: {
+        id: "user-1",
+      },
+    });
+    getUserBillingUsageMock.mockResolvedValue({
+      plan: "PRO",
+      isPro: true,
+      totalItems: 0,
+      totalCollections: 0,
+    });
+    checkAiRateLimitMock.mockResolvedValue({
+      remaining: 19,
+      reset: Date.now() + 60_000,
+      success: true,
+    });
+    getAiClientMock.mockReturnValue({
+      chat: {
+        completions: {
+          create: chatCompletionsCreateMock,
+        },
+      },
+    });
+    chatCompletionsCreateMock.mockResolvedValue({
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              tags: ["React", " Hooks ", "#React", "state management"],
+            }),
+          },
+        },
+      ],
+    });
+  });
+
+  it("returns validation errors before checking auth", async () => {
+    const result = await generateAutoTags({
+      title: "   ",
+      description: "",
+      content: "",
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "Add a title or content before suggesting tags.",
+    });
+    expect(authMock).not.toHaveBeenCalled();
+    expect(chatCompletionsCreateMock).not.toHaveBeenCalled();
+  });
+
+  it("requires a signed-in user", async () => {
+    authMock.mockResolvedValue(null);
+
+    const result = await generateAutoTags({
+      title: "Useful snippet",
+      content: "useEffect(() => {}, [])",
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "You need to be signed in to suggest tags.",
+    });
+    expect(getUserBillingUsageMock).not.toHaveBeenCalled();
+    expect(chatCompletionsCreateMock).not.toHaveBeenCalled();
+  });
+
+  it("blocks Free users before rate limiting or calling OpenAI", async () => {
+    getUserBillingUsageMock.mockResolvedValue({
+      plan: "FREE",
+      isPro: false,
+      totalItems: 0,
+      totalCollections: 0,
+    });
+
+    const result = await generateAutoTags({
+      title: "Useful snippet",
+      content: "useEffect(() => {}, [])",
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "AI tag suggestions require DevStash Pro.",
+    });
+    expect(checkAiRateLimitMock).not.toHaveBeenCalled();
+    expect(chatCompletionsCreateMock).not.toHaveBeenCalled();
+  });
+
+  it("returns a rate limit error before calling OpenAI", async () => {
+    checkAiRateLimitMock.mockResolvedValue({
+      remaining: 0,
+      reset: 12345,
+      success: false,
+    });
+
+    const result = await generateAutoTags({
+      title: "Useful snippet",
+      content: "useEffect(() => {}, [])",
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "Too many attempts. Reset at 12345.",
+    });
+    expect(checkAiRateLimitMock).toHaveBeenCalledWith("autoTag", "user-1");
+    expect(chatCompletionsCreateMock).not.toHaveBeenCalled();
+  });
+
+  it("uses the chat completions API and normalizes object-shaped tags", async () => {
+    const result = await generateAutoTags({
+      title: "React state helper",
+      description: "Small hook utility",
+      content: "export function useToggle() { return null; }",
+    });
+    const request = chatCompletionsCreateMock.mock.calls[0]?.[0] as
+      | { messages?: Array<{ content?: string | Array<{ text?: string }> }> }
+      | undefined;
+
+    expect(chatCompletionsCreateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        model: "mimo-v2-flash",
+        temperature: 0.3,
+        top_p: 0.95,
+        max_completion_tokens: 256,
+        response_format: { type: "json_object" },
+      }),
+    );
+    expect(request?.messages?.[1]?.content).toContain("Return JSON only");
+    expect(result).toEqual({
+      success: true,
+      data: {
+        tags: ["react", "hooks", "state management"],
+      },
+      error: null,
+    });
+  });
+
+  it("handles array-shaped tag output and truncates content", async () => {
+    chatCompletionsCreateMock.mockResolvedValue({
+      choices: [
+        {
+          message: {
+            content: JSON.stringify(["Next.js", "Server Actions", "OpenAI"]),
+          },
+        },
+      ],
+    });
+
+    const result = await generateAutoTags({
+      title: "AI action",
+      content: "a".repeat(2_100),
+    });
+    const request = chatCompletionsCreateMock.mock.calls[0]?.[0] as
+      | { messages?: Array<{ content?: string | Array<{ text?: string }> }> }
+      | undefined;
+
+    expect(request?.messages?.[1]?.content).toContain("a".repeat(2_000));
+    expect(request?.messages?.[1]?.content).not.toContain("a".repeat(2_001));
+    expect(result).toEqual({
+      success: true,
+      data: {
+        tags: ["next.js", "server actions", "openai"],
+      },
+      error: null,
+    });
+  });
+
+  it("returns a generic error when OpenAI fails", async () => {
+    chatCompletionsCreateMock.mockRejectedValue(new Error("service unavailable"));
+
+    const result = await generateAutoTags({
+      title: "Useful snippet",
+      content: "useEffect(() => {}, [])",
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "We couldn't suggest tags right now.",
+    });
+  });
+});

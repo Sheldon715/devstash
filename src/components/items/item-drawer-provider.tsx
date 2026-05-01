@@ -63,8 +63,6 @@ import type {
 } from "@/components/items/item-drawer-types";
 import {
   createEditItemFormState,
-  formatContentModeLabel,
-  formatDetailTimestamp,
   getItemCopyValue,
   parseTagsInput,
 } from "@/components/items/item-drawer-utils";
@@ -111,9 +109,11 @@ function useItemDrawerContext() {
 export function ItemDrawerProvider({
   children,
   collectionOptions,
+  isPro,
 }: {
   children: ReactNode;
   collectionOptions: CollectionOption[];
+  isPro: boolean;
 }) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
@@ -400,17 +400,8 @@ export function ItemDrawerProvider({
             ].join(" ")}
           />
           <div className="flex min-h-0 flex-1 flex-col">
-            <div className="border-b border-white/8 px-4 py-3 sm:px-5 sm:py-4">
-              <div className="flex items-start justify-between gap-4">
-                <div className="space-y-1">
-                  <p className="text-xs font-medium uppercase tracking-[0.26em] text-zinc-500">
-                    Item Details
-                  </p>
-                  <p className="text-sm text-zinc-400 max-[480px]:hidden">
-                    Full item data without leaving the page.
-                  </p>
-                </div>
-
+            <div className="relative border-b border-white/8 px-4 py-4 pr-14 sm:px-5 sm:py-5 sm:pr-16">
+              <div className="absolute right-4 top-4 sm:right-5 sm:top-5">
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
@@ -422,31 +413,24 @@ export function ItemDrawerProvider({
               </div>
 
               {selectedItem ? (
-                <SheetHeader className="mt-4 space-y-3">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span
-                      className={`inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-xs font-medium ${getDashboardItemTypeColor(selectedItem.typeKey)}`}
-                    >
-                      <DashboardItemTypeIcon typeKey={selectedItem.typeKey} className="size-3.5" />
-                      {selectedItem.typeLabel}
-                    </span>
-                    <span className="rounded-full border border-white/8 bg-white/[0.03] px-3 py-1.5 text-xs font-medium text-zinc-300">
-                      {formatContentModeLabel(selectedItem.contentMode)}
-                    </span>
-                    <span className="rounded-full border border-white/8 bg-white/[0.03] px-3 py-1.5 text-xs font-medium text-zinc-400">
-                      Updated {formatDetailTimestamp(selectedItem.updatedAt)}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3">
+                <SheetHeader className="space-y-3">
+                  <div className="flex items-start gap-3">
                     <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04]">
                       <DashboardItemTypeIcon
                         typeKey={selectedItem.typeKey}
                         className={`size-5 ${getDashboardItemTypeColor(selectedItem.typeKey)}`}
                       />
                     </span>
-                    <SheetTitle className="text-xl leading-tight sm:text-2xl">
-                      {selectedItem.title}
-                    </SheetTitle>
+                    <div className="min-w-0 space-y-2 pt-1">
+                      <SheetTitle className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xl leading-tight sm:text-2xl">
+                        {selectedItem.title}
+                        <span
+                          className={`inline-flex shrink-0 items-center rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs font-medium ${getDashboardItemTypeColor(selectedItem.typeKey)}`}
+                        >
+                          {selectedItem.typeLabel}
+                        </span>
+                      </SheetTitle>
+                    </div>
                   </div>
                   <SheetDescription className="max-w-3xl text-sm leading-6 text-zinc-300 max-[480px]:truncate">
                     {selectedItem.description}
@@ -533,15 +517,19 @@ export function ItemDrawerProvider({
             <div
               className={[
                 "min-h-0 flex-1 px-4 py-4 sm:px-5",
-                selectedItem && isEditing ? "devstash-scrollbar overflow-y-auto" : "overflow-hidden",
+                selectedItem ? "devstash-scrollbar overflow-y-auto" : "overflow-hidden",
               ].join(" ")}
             >
               {selectedItem && isEditing && editFormState ? (
                 <ItemDrawerEditBody
                   collectionOptions={collectionOptions}
+                  disabled={isSaving}
                   editError={editError}
                   formState={editFormState}
+                  isPro={isPro}
                   item={selectedItem}
+                  onAcceptSuggestedTag={handleAcceptSuggestedTag}
+                  onAiTagError={handleAiTagError}
                   onCollectionIdsChange={updateEditCollectionIds}
                   onChange={updateEditFormField}
                 />
@@ -661,6 +649,34 @@ export function ItemDrawerProvider({
           }
         : current,
     );
+    setEditError(null);
+  }
+
+  function handleAiTagError(message: string) {
+    setToastState({
+      message,
+      title: "Tag suggestions failed",
+      variant: "error",
+    });
+  }
+
+  function handleAcceptSuggestedTag(tag: string) {
+    setEditFormState((current) => {
+      if (!current) {
+        return current;
+      }
+
+      const currentTags = parseTagsInput(current.tags);
+
+      if (currentTags.includes(tag)) {
+        return current;
+      }
+
+      return {
+        ...current,
+        tags: [...currentTags, tag].join(", "),
+      };
+    });
     setEditError(null);
   }
 

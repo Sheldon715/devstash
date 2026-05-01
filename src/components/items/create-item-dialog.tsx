@@ -5,6 +5,7 @@ import { LoaderCircle, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { createItem } from "@/actions/items";
+import { AiTagSuggestions } from "@/components/items/ai-tag-suggestions";
 import {
   CollectionMultiSelect,
   type CollectionOption,
@@ -45,6 +46,7 @@ import type { UploadedFileMetadata } from "@/lib/uploads";
 interface CreateItemDialogProps {
   collectionOptions: CollectionOption[];
   initialType?: CreatableItemTypeKey;
+  isPro: boolean;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -80,6 +82,7 @@ const emptyFormState: CreateItemFormState = {
 export function CreateItemDialog({
   collectionOptions,
   initialType = "snippet",
+  isPro,
   onOpenChange,
   open,
 }: CreateItemDialogProps) {
@@ -349,13 +352,24 @@ export function CreateItemDialog({
                   </div>
                 ) : null}
 
-                <CreateTextField
-                  label="Tags"
-                  disabled={isSubmitting}
-                  placeholder="tag, tag"
-                  value={formState.tags}
-                  onChange={(value) => updateFormField("tags", value)}
-                />
+                <div className="space-y-2">
+                  <CreateTextField
+                    label="Tags"
+                    disabled={isSubmitting}
+                    placeholder="tag, tag"
+                    value={formState.tags}
+                    onChange={(value) => updateFormField("tags", value)}
+                  />
+                  <AiTagSuggestions
+                    content={formState.content}
+                    description={formState.description}
+                    disabled={isSubmitting}
+                    isPro={isPro}
+                    title={formState.title}
+                    onAccept={handleAcceptSuggestedTag}
+                    onError={handleAiTagError}
+                  />
+                </div>
 
                 <CollectionMultiSelect
                   disabled={isSubmitting}
@@ -435,6 +449,28 @@ export function CreateItemDialog({
       title: "Upload failed",
       variant: "error",
     });
+  }
+
+  function handleAiTagError(message: string) {
+    setToastState({
+      message,
+      title: "Tag suggestions failed",
+      variant: "error",
+    });
+  }
+
+  function handleAcceptSuggestedTag(tag: string) {
+    const currentTags = parseTagsInput(formState.tags);
+
+    if (currentTags.includes(tag)) {
+      return;
+    }
+
+    setFormState((current) => ({
+      ...current,
+      tags: [...currentTags, tag].join(", "),
+    }));
+    setError(null);
   }
 
   async function cleanupUploadedFile(file: UploadedFileMetadata) {

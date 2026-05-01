@@ -10,12 +10,14 @@ import type { DashboardItemTypeKey } from "@/lib/mock-data";
 
 interface TypePageCreateButtonProps {
   collectionOptions: CollectionOption[];
+  isPro: boolean;
   typeKey: DashboardItemTypeKey;
   typeName: string;
 }
 
 export function TypePageCreateButton({
   collectionOptions,
+  isPro,
   typeKey,
   typeName,
 }: TypePageCreateButtonProps) {
@@ -37,6 +39,7 @@ export function TypePageCreateButton({
           key={typeKey}
           collectionOptions={collectionOptions}
           initialType={typeKey}
+          isPro={isPro}
           open={isCreateDialogOpen}
           onOpenChange={setIsCreateDialogOpen}
         />

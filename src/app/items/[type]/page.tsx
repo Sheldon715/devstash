@@ -136,6 +136,7 @@ export default async function ItemTypePage({ params, searchParams }: ItemTypePag
             <div className="sm:self-start">
               <TypePageCreateButton
                 collectionOptions={collectionOptions}
+                isPro={session.user.isPro}
                 typeKey={itemType.typeKey}
                 typeName={itemType.name}
               />

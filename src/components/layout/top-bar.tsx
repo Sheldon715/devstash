@@ -195,6 +195,7 @@ export function TopBar({
         key={routeType ?? "default"}
         collectionOptions={collectionOptions}
         initialType={routeType ?? "snippet"}
+        isPro={isPro}
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
       />

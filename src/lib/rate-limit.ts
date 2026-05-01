@@ -9,6 +9,8 @@ type AuthRateLimitScope =
   | "resendVerification"
   | "resetPassword";
 
+type AiRateLimitScope = "autoTag";
+
 type AuthRateLimitKeyStrategy = "ip" | "ip-email";
 
 type AuthRateLimitConfig = {
@@ -51,12 +53,24 @@ const RATE_LIMIT_CONFIG: Record<AuthRateLimitScope, AuthRateLimitConfig> = {
   },
 };
 
+const AI_RATE_LIMIT_CONFIG: Record<AiRateLimitScope, { limit: number; window: Duration }> = {
+  autoTag: {
+    limit: 20,
+    window: "1 h",
+  },
+};
+
 const RATE_LIMIT_TIMEOUT_MS = 1_000;
 const RATE_LIMIT_PREFIX = "devstash:auth-rate-limit";
+const AI_RATE_LIMIT_PREFIX = "devstash:ai-rate-limit";
 
 let cachedRedis: Redis | null | undefined;
 let cachedRatelimiters:
   | Record<AuthRateLimitScope, Ratelimit>
+  | null
+  | undefined;
+let cachedAiRatelimiters:
+  | Record<AiRateLimitScope, Ratelimit>
   | null
   | undefined;
 let hasWarnedAboutMissingRedis = false;
@@ -151,6 +165,33 @@ function getRatelimiters() {
   return cachedRatelimiters;
 }
 
+function getAiRatelimiters() {
+  if (cachedAiRatelimiters !== undefined) {
+    return cachedAiRatelimiters;
+  }
+
+  const redis = getRedisClient();
+
+  if (!redis) {
+    cachedAiRatelimiters = null;
+    return cachedAiRatelimiters;
+  }
+
+  cachedAiRatelimiters = {
+    autoTag: new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(
+        AI_RATE_LIMIT_CONFIG.autoTag.limit,
+        AI_RATE_LIMIT_CONFIG.autoTag.window,
+      ),
+      prefix: `${AI_RATE_LIMIT_PREFIX}:auto-tag`,
+      timeout: RATE_LIMIT_TIMEOUT_MS,
+    }),
+  };
+
+  return cachedAiRatelimiters;
+}
+
 function normalizeEmail(email?: string | null) {
   return typeof email === "string" ? email.trim().toLowerCase() : "";
 }
@@ -234,6 +275,34 @@ export async function checkAuthRateLimit(
     };
   } catch (error) {
     console.error(`Rate limit check failed for ${scope}. Allowing request.`, error);
+
+    return createAllowedResult();
+  }
+}
+
+export async function checkAiRateLimit(
+  scope: AiRateLimitScope,
+  userId: string,
+): Promise<RateLimitCheckResult> {
+  const ratelimiters = getAiRatelimiters();
+
+  if (!ratelimiters) {
+    // Local development can run without Redis; production should configure Upstash.
+    return createAllowedResult();
+  }
+
+  try {
+    const result = await ratelimiters[scope].limit(userId);
+
+    void result.pending.catch(() => undefined);
+
+    return {
+      remaining: result.remaining,
+      reset: result.reset,
+      success: result.success,
+    };
+  } catch (error) {
+    console.error(`AI rate limit check failed for ${scope}. Allowing request.`, error);
 
     return createAllowedResult();
   }
