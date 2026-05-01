@@ -1,41 +1,20 @@
-# Current Feature: AI Auto-Tagging
+# Current Feature
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Add AI-powered tag suggestions for item create and edit flows.
-- Use the OpenAI SDK with the `gpt-5-nano` model through the Responses API.
-- Create a `generateAutoTags` server action with authentication, Pro gating, Zod validation, rate limiting, and service error handling.
-- Suggest 3-5 normalized freeform tags from an item's title and truncated content.
-- Let users accept or reject individual suggested tags, adding accepted suggestions to the item's tag list.
-- Hide AI tag suggestion controls from Free users in the UI while enforcing Pro access on the server.
-- Add focused unit tests for the server action.
+<!-- Goals & requirements -->
 
 ## Todo List
 
-- [x] Inspect existing item create/edit tag inputs, auth/session plan access, and rate limit utilities.
-- [x] Add or reuse a shared OpenAI client utility with an `AI_MODEL` constant.
-- [x] Add AI rate limit configuration for 20 requests per hour per user.
-- [x] Implement `generateAutoTags` with auth, Pro gating, Zod validation, content truncation, OpenAI Responses API call, output parsing, and tag normalization.
-- [x] Pass `isPro` to create/edit UI surfaces or otherwise fetch it client-side for UI gating.
-- [x] Add "Suggest Tags" controls to the create item dialog and item drawer edit mode.
-- [x] Render suggested tag badges with accept and reject controls.
-- [x] Add unit tests for the auto-tag server action.
-- [x] Run `npm run lint` and `npm run build`.
+<!-- Feature-specific checklist -->
 
 ## Notes
 
-- Source spec: `context/feature/ai-auto-tag-spec.md`
-- `OPENAI_API_KEY` already exists in `.env`.
-- Use the OpenAI Responses API, not Chat Completions, for `gpt-5-nano`.
-- Request JSON object output with `text: { format: { type: "json_object" } }` and read from `response.output_text`.
-- Handle both `{ "tags": [...] }` and raw array response shapes.
-- Normalize returned tags to lowercase and keep suggestions freeform.
-- Truncate content to 2000 characters before calling OpenAI.
-- Display user-facing errors via toast for Pro gating, rate limits, and AI service failures.
+<!-- Any extra notes -->
 
 ## History
 
@@ -98,3 +77,4 @@ In Progress
 - Free-tier and upgrade flow polish completed with demo seed data aligned to Free limits, collection limit errors shown toast-only, Free file/image routes redirected to a standalone pricing-style `/upgrade` page, dashboard header and settings upgrade links routed through `/upgrade`, Stripe price IDs hidden from settings, sidebar empty collection headings suppressed, and passing lint/build verification
 - Route loading states completed with shared app/auth/upgrade loading pages, route boundaries for protected and auth destinations, redirect overlays for post-submit and billing handoffs, fixed credentials sign-in loading behavior, and auth-page feature/pricing nav anchors restored to homepage sections
 - Item drawer resize and language picker completed with a resizable shared item drawer, viewport-aware content previews, a styled scrollable code language selector for create/edit flows, provider-safe item card drawer opening, and passing test/lint/build verification
+- AI Auto-Tagging completed with MiMo-backed Pro-only tag suggestions, user-scoped AI rate limiting, accept/reject suggestion badges in create and edit flows, focused server action coverage, and polished item drawer scrolling/header layout
