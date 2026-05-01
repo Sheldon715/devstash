@@ -536,7 +536,11 @@ export function ItemDrawerProvider({
                   onGeneratedDescription={handleGeneratedDescription}
                 />
               ) : selectedItem ? (
-                <ItemDrawerBody item={selectedItem} />
+                <ItemDrawerBody
+                  isPro={isPro}
+                  item={selectedItem}
+                  onAiExplainError={handleAiExplainError}
+                />
               ) : isLoadingSelectedItem ? (
                 <DrawerBodySkeleton />
               ) : error ? (
@@ -666,6 +670,14 @@ export function ItemDrawerProvider({
     setToastState({
       message,
       title: "Description failed",
+      variant: "error",
+    });
+  }
+
+  function handleAiExplainError(message: string) {
+    setToastState({
+      message,
+      title: "Explain failed",
       variant: "error",
     });
   }

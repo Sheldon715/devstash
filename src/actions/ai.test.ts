@@ -32,7 +32,7 @@ vi.mock("@/lib/rate-limit", () => ({
   getRateLimitErrorMessage: (reset: number) => `Too many attempts. Reset at ${reset}.`,
 }));
 
-import { generateAutoTags, generateItemDescription } from "@/actions/ai";
+import { explainCode, generateAutoTags, generateItemDescription } from "@/actions/ai";
 
 describe("AI actions", () => {
   beforeEach(() => {
@@ -330,6 +330,125 @@ describe("AI actions", () => {
       success: false,
       data: null,
       error: "We couldn't generate a description right now.",
+    });
+  });
+
+  it("validates code explanation inputs before checking auth", async () => {
+    const result = await explainCode({
+      title: "Empty snippet",
+      content: "   ",
+      itemType: "snippet",
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "Add code or a command before generating an explanation.",
+    });
+    expect(authMock).not.toHaveBeenCalled();
+    expect(chatCompletionsCreateMock).not.toHaveBeenCalled();
+  });
+
+  it("blocks unsupported item types for code explanations", async () => {
+    const result = await explainCode({
+      title: "Readable note",
+      content: "Some note content",
+      itemType: "note",
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "Code explanations are available for snippets and commands only.",
+    });
+    expect(authMock).not.toHaveBeenCalled();
+    expect(chatCompletionsCreateMock).not.toHaveBeenCalled();
+  });
+
+  it("blocks Free users before explaining code", async () => {
+    getUserBillingUsageMock.mockResolvedValue({
+      plan: "FREE",
+      isPro: false,
+      totalItems: 0,
+      totalCollections: 0,
+    });
+
+    const result = await explainCode({
+      title: "Build command",
+      content: "npm run build",
+      itemType: "command",
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "AI code explanations require DevStash Pro.",
+    });
+    expect(checkAiRateLimitMock).not.toHaveBeenCalled();
+    expect(chatCompletionsCreateMock).not.toHaveBeenCalled();
+  });
+
+  it("generates markdown code explanations and truncates long content", async () => {
+    chatCompletionsCreateMock.mockResolvedValue({
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              explanation:
+                "## What it does\n\nRuns the production build and reports compile-time issues.",
+            }),
+          },
+        },
+      ],
+    });
+
+    const result = await explainCode({
+      title: "Production build",
+      content: "a".repeat(6_100),
+      itemType: "command",
+      language: "bash",
+    });
+    const request = chatCompletionsCreateMock.mock.calls[0]?.[0] as
+      | { messages?: Array<{ content?: string | Array<{ text?: string }> }> }
+      | undefined;
+
+    expect(checkAiRateLimitMock).toHaveBeenCalledWith("codeExplain", "user-1");
+    expect(chatCompletionsCreateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        model: "mimo-v2-flash",
+        temperature: 0.2,
+        top_p: 0.9,
+        max_completion_tokens: 520,
+        response_format: { type: "json_object" },
+      }),
+    );
+    expect(request?.messages?.[1]?.content).toContain("roughly 200-300 words");
+    expect(request?.messages?.[1]?.content).toContain("Language: bash");
+    expect(request?.messages?.[1]?.content).toContain("a".repeat(6_000));
+    expect(request?.messages?.[1]?.content).not.toContain("a".repeat(6_001));
+    expect(result).toEqual({
+      success: true,
+      data: {
+        explanation:
+          "## What it does\n\nRuns the production build and reports compile-time issues.",
+      },
+      error: null,
+    });
+  });
+
+  it("returns a generic error when code explanation generation fails", async () => {
+    chatCompletionsCreateMock.mockRejectedValue(new Error("service unavailable"));
+
+    const result = await explainCode({
+      title: "Useful snippet",
+      content: "useEffect(() => {}, [])",
+      itemType: "snippet",
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "We couldn't explain this code right now.",
     });
   });
 });
