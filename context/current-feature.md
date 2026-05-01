@@ -1,20 +1,33 @@
-# Current Feature
+# Current Feature: AI Explain Code
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Add an `explainCode` server action with authentication, Pro gating, Zod validation, AI rate limiting, and MiMo `mimo-v2-flash` integration.
+- Show an Explain control in the code editor header for snippet and command items in the item drawer read view only.
+- Generate concise markdown explanations of code or commands, displayed inline through Code/Explain tabs in the existing editor space.
+- Handle loading, Pro gating, rate limits, and AI service errors through existing UI patterns, spinner states, tooltips, and toasts.
+- Keep generated explanations transient and avoid saving them to the database.
+- Add focused unit tests for the new server action.
 
 ## Todo List
 
-<!-- Feature-specific checklist -->
+- [x] Review existing AI action, rate limit, Pro gating, drawer, and CodeEditor patterns.
+- [x] Implement the `explainCode` server action and unit tests.
+- [x] Pass user Pro state through the item drawer/code editor path.
+- [x] Add the item drawer Explain button, loading state, Pro tooltip, and Code/Explain tabs.
+- [x] Render AI explanations as markdown inside the code editor container.
+- [x] Run `npm run lint` and `npm run build`.
 
 ## Notes
 
-<!-- Any extra notes -->
+- Explanations apply only to snippet and command items.
+- The feature is available only in item drawer read mode, not in create or edit forms.
+- Explanation length should be concise, roughly 200-300 words, covering what the code does and key concepts.
+- See `docs/ai-integration-plan.md` for the broader AI architecture context.
 
 ## History
 

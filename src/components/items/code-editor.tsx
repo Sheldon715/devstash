@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { Check, Copy } from "lucide-react";
+import { Check, Copy, Crown, Loader2, Sparkles } from "lucide-react";
 import {
   type ComponentType,
   useCallback,
@@ -11,6 +11,8 @@ import {
   useState,
 } from "react";
 import type { BeforeMount, EditorProps, OnChange } from "@monaco-editor/react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 import { useEditorPreferences } from "@/components/items/editor-preferences-context";
 import { getEditorLineHeight } from "@/lib/editor-preferences";
@@ -32,31 +34,49 @@ interface CodeEditorProps {
   className?: string;
   disabled?: boolean;
   height?: EditorProps["height"];
+  explanation?: string | null;
+  explanationHeightClassName?: string;
   language?: string | null;
   maxHeight?: number;
   minHeight?: number;
+  isExplaining?: boolean;
   onChange?: (value: string) => void;
+  onExplain?: () => void;
+  onExplainUnavailable?: () => void;
   readOnly?: boolean;
+  showExplain?: boolean;
   value: string;
 }
+
+type CodeEditorTab = "code" | "explanation";
 
 export function CodeEditor({
   className,
   disabled = false,
+  explanation,
+  explanationHeightClassName = "min-h-[180px] max-h-[400px]",
   height,
+  isExplaining = false,
   language,
   maxHeight = 400,
   minHeight = 180,
   onChange,
+  onExplain,
+  onExplainUnavailable,
   readOnly = false,
+  showExplain = false,
   value,
 }: CodeEditorProps) {
   const { preferences } = useEditorPreferences();
+  const [activeTab, setActiveTab] = useState<CodeEditorTab>("code");
   const [isCopied, setIsCopied] = useState(false);
   const copyResetTimeoutRef = useRef<number | null>(null);
   const normalizedLanguage = normalizeEditorLanguage(language);
   const displayLanguage = getDisplayLanguage(language);
   const isReadOnly = readOnly || disabled || !onChange;
+  const hasExplanation = Boolean(explanation);
+  const activeContent = hasExplanation ? activeTab : "code";
+  const copyValue = activeContent === "explanation" && explanation ? explanation : value;
   const lineHeight = getEditorLineHeight(preferences.fontSize);
   const editorHeight = useMemo(
     () => height ?? getFluidEditorHeight(value, minHeight, maxHeight, lineHeight),
@@ -168,12 +188,12 @@ export function CodeEditor({
   );
 
   async function handleCopy() {
-    if (!value) {
+    if (!copyValue) {
       return;
     }
 
     try {
-      await navigator.clipboard.writeText(value);
+      await navigator.clipboard.writeText(copyValue);
       setIsCopied(true);
 
       if (copyResetTimeoutRef.current !== null) {
@@ -184,6 +204,20 @@ export function CodeEditor({
         setIsCopied(false);
       }, 1600);
     } catch {}
+  }
+
+  async function handleExplainClick() {
+    if (!showExplain || isExplaining) {
+      return;
+    }
+
+    if (!onExplain) {
+      onExplainUnavailable?.();
+      return;
+    }
+
+    await onExplain();
+    setActiveTab("explanation");
   }
 
   return (
@@ -200,38 +234,119 @@ export function CodeEditor({
           <span className="size-2.5 rounded-full bg-[#febc2e]" />
           <span className="size-2.5 rounded-full bg-[#28c840]" />
         </div>
-        <span className="min-w-0 flex-1 truncate font-mono text-xs text-zinc-500">
-          {displayLanguage}
-        </span>
+        {hasExplanation ? (
+          <div
+            className="flex min-w-0 flex-1 items-center gap-1"
+            role="tablist"
+            aria-label="Code explanation"
+          >
+            <CodeEditorTabButton
+              active={activeTab === "code"}
+              label="Code"
+              onClick={() => setActiveTab("code")}
+            />
+            <CodeEditorTabButton
+              active={activeTab === "explanation"}
+              label="Explain"
+              onClick={() => setActiveTab("explanation")}
+            />
+          </div>
+        ) : (
+          <span className="min-w-0 flex-1 truncate font-mono text-xs text-zinc-500">
+            {displayLanguage}
+          </span>
+        )}
+        {showExplain ? (
+          <button
+            type="button"
+            disabled={isExplaining || !value}
+            title={
+              onExplain
+                ? "Explain code"
+                : "AI features require Pro subscription"
+            }
+            onClick={handleExplainClick}
+            className="inline-flex h-8 items-center gap-2 rounded-lg border border-transparent bg-transparent px-2.5 text-xs font-medium text-violet-100 transition-colors hover:bg-white/[0.05] hover:text-violet-50 disabled:cursor-not-allowed disabled:opacity-55"
+          >
+            {onExplain ? (
+              isExplaining ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Sparkles className="size-3.5" />
+              )
+            ) : (
+              <Crown className="size-3.5 text-amber-200" />
+            )}
+            <span>{isExplaining ? "Explaining" : "Explain"}</span>
+          </button>
+        ) : null}
         <button
           type="button"
-          disabled={!value}
+          disabled={!copyValue}
           onClick={handleCopy}
-          className="inline-flex h-8 items-center gap-2 rounded-lg border border-white/8 bg-white/[0.04] px-2.5 text-xs font-medium text-zinc-300 transition-colors hover:border-white/15 hover:bg-white/[0.08] hover:text-zinc-50 disabled:cursor-not-allowed disabled:opacity-45"
+          className="inline-flex h-8 items-center gap-2 rounded-lg border border-transparent bg-transparent px-2.5 text-xs font-medium text-zinc-300 transition-colors hover:bg-white/[0.05] hover:text-zinc-50 disabled:cursor-not-allowed disabled:opacity-45"
         >
           {isCopied ? <Check className="size-3.5 text-emerald-300" /> : <Copy className="size-3.5" />}
           <span>{isCopied ? "Copied" : "Copy"}</span>
         </button>
       </div>
 
-      <div>
-        <MonacoEditor
-          height={editorHeight}
-          language={normalizedLanguage}
-          loading={
-            <div className="flex h-full items-center justify-center bg-[#05070b] font-mono text-xs text-zinc-500">
-              Loading editor
-            </div>
-          }
-          onChange={handleEditorChange}
-          beforeMount={handleBeforeMount}
-          options={editorOptions}
-          theme={preferences.theme}
-          value={value}
-          width="100%"
-        />
-      </div>
+      {activeContent === "explanation" && explanation ? (
+        <div
+          className={cn(
+            "devstash-scrollbar markdown-preview overflow-auto bg-[#05070b] px-4 py-4 text-sm leading-7 text-zinc-200",
+            explanationHeightClassName,
+          )}
+        >
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{explanation}</ReactMarkdown>
+        </div>
+      ) : (
+        <div>
+          <MonacoEditor
+            height={editorHeight}
+            language={normalizedLanguage}
+            loading={
+              <div className="flex h-full items-center justify-center bg-[#05070b] font-mono text-xs text-zinc-500">
+                Loading editor
+              </div>
+            }
+            onChange={handleEditorChange}
+            beforeMount={handleBeforeMount}
+            options={editorOptions}
+            theme={preferences.theme}
+            value={value}
+            width="100%"
+          />
+        </div>
+      )}
     </div>
+  );
+}
+
+function CodeEditorTabButton({
+  active,
+  label,
+  onClick,
+}: {
+  active: boolean;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      onClick={onClick}
+      className={cn(
+        "h-8 rounded-lg px-3 text-xs font-medium transition-colors",
+        active
+          ? "bg-white/[0.1] text-zinc-50"
+          : "text-zinc-400 hover:bg-white/[0.06] hover:text-zinc-100",
+      )}
+    >
+      {label}
+    </button>
   );
 }
 

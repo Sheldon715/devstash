@@ -9,7 +9,7 @@ type AuthRateLimitScope =
   | "resendVerification"
   | "resetPassword";
 
-type AiRateLimitScope = "autoTag" | "descriptionSummary";
+type AiRateLimitScope = "autoTag" | "codeExplain" | "descriptionSummary";
 
 type AuthRateLimitKeyStrategy = "ip" | "ip-email";
 
@@ -59,6 +59,10 @@ const AI_RATE_LIMIT_CONFIG: Record<AiRateLimitScope, { limit: number; window: Du
     window: "1 h",
   },
   descriptionSummary: {
+    limit: 20,
+    window: "1 h",
+  },
+  codeExplain: {
     limit: 20,
     window: "1 h",
   },
@@ -198,6 +202,15 @@ function getAiRatelimiters() {
         AI_RATE_LIMIT_CONFIG.descriptionSummary.window,
       ),
       prefix: `${AI_RATE_LIMIT_PREFIX}:description-summary`,
+      timeout: RATE_LIMIT_TIMEOUT_MS,
+    }),
+    codeExplain: new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(
+        AI_RATE_LIMIT_CONFIG.codeExplain.limit,
+        AI_RATE_LIMIT_CONFIG.codeExplain.window,
+      ),
+      prefix: `${AI_RATE_LIMIT_PREFIX}:code-explain`,
       timeout: RATE_LIMIT_TIMEOUT_MS,
     }),
   };

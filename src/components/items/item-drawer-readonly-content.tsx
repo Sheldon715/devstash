@@ -1,9 +1,10 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Clock3, Download, FileText, ImageIcon } from "lucide-react";
 import Image from "next/image";
 
+import { explainCode } from "@/actions/ai";
 import { CodeEditor } from "@/components/items/code-editor";
 import { MarkdownEditor } from "@/components/items/markdown-editor";
 import type { SerializedDashboardItemDetailRecord } from "@/components/items/item-drawer-types";
@@ -18,11 +19,23 @@ import {
 import { DashboardItemTypeIcon, getDashboardItemTypeColor } from "@/lib/dashboard-icons";
 import { formatFileSize } from "@/lib/file-size";
 
-export function ItemDrawerBody({ item }: { item: SerializedDashboardItemDetailRecord }) {
+export function ItemDrawerBody({
+  isPro,
+  item,
+  onAiExplainError,
+}: {
+  isPro: boolean;
+  item: SerializedDashboardItemDetailRecord;
+  onAiExplainError: (message: string) => void;
+}) {
   return (
     <div className="flex min-w-0 flex-col gap-4 pb-2">
       <DrawerMetaSection className="min-w-0" label={getPrimaryContentSectionLabel(item.contentMode)}>
-        <PrimaryContentCard item={item} />
+        <PrimaryContentCard
+          isPro={isPro}
+          item={item}
+          onAiExplainError={onAiExplainError}
+        />
       </DrawerMetaSection>
 
       <DrawerMetaSection label="Tags">
@@ -118,7 +131,15 @@ function ReadonlyMarkdownContent({ value }: { value: string }) {
   );
 }
 
-function PrimaryContentCard({ item }: { item: SerializedDashboardItemDetailRecord }) {
+function PrimaryContentCard({
+  isPro,
+  item,
+  onAiExplainError,
+}: {
+  isPro: boolean;
+  item: SerializedDashboardItemDetailRecord;
+  onAiExplainError: (message: string) => void;
+}) {
   if (item.contentMode === "URL") {
     if (!item.url) {
       return <EmptyMetaCopy label="No URL was saved for this item." />;
@@ -193,13 +214,11 @@ function PrimaryContentCard({ item }: { item: SerializedDashboardItemDetailRecor
 
   if (isCodeEditorItemType(item.typeKey)) {
     return (
-      <CodeEditor
-        height="clamp(14rem, 36dvh, 30rem)"
-        language={item.language}
-        maxHeight={480}
-        minHeight={224}
-        readOnly
-        value={item.content}
+      <ReadonlyCodeContent
+        key={`${item.id}:${item.updatedAt}`}
+        isPro={isPro}
+        item={item}
+        onAiExplainError={onAiExplainError}
       />
     );
   }
@@ -217,6 +236,70 @@ function PrimaryContentCard({ item }: { item: SerializedDashboardItemDetailRecor
         {item.content}
       </pre>
     </div>
+  );
+}
+
+function ReadonlyCodeContent({
+  isPro,
+  item,
+  onAiExplainError,
+}: {
+  isPro: boolean;
+  item: SerializedDashboardItemDetailRecord;
+  onAiExplainError: (message: string) => void;
+}) {
+  const [explanation, setExplanation] = useState<string | null>(null);
+  const [isExplaining, setIsExplaining] = useState(false);
+
+  async function handleExplain() {
+    if (isExplaining) {
+      return;
+    }
+
+    setIsExplaining(true);
+
+    let result: Awaited<ReturnType<typeof explainCode>>;
+
+    try {
+      result = await explainCode({
+        title: item.title,
+        content: item.content,
+        itemType: item.typeKey,
+        language: item.language,
+      });
+    } catch {
+      result = {
+        success: false,
+        data: null,
+        error: "We couldn't explain this code right now.",
+      };
+    }
+
+    setIsExplaining(false);
+
+    if (!result.success) {
+      onAiExplainError(result.error);
+      return;
+    }
+
+    setExplanation(result.data.explanation);
+  }
+
+  return (
+    <CodeEditor
+      explanation={explanation}
+      explanationHeightClassName="h-[clamp(14rem,36dvh,30rem)] min-[1400px]:h-[clamp(16rem,42dvh,34rem)]"
+      height="clamp(14rem, 36dvh, 30rem)"
+      isExplaining={isExplaining}
+      language={item.language}
+      maxHeight={480}
+      minHeight={224}
+      onExplain={isPro ? handleExplain : undefined}
+      onExplainUnavailable={() => onAiExplainError("AI features require Pro subscription.")}
+      readOnly
+      showExplain
+      value={item.content ?? ""}
+    />
   );
 }
 

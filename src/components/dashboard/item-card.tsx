@@ -89,11 +89,6 @@ export function ItemCard({ item, variant }: ItemCardProps) {
             </div>
 
             <div className="mt-3 flex min-h-8 flex-wrap content-start gap-1.5">
-              <span
-                className={`rounded-full bg-white/[0.05] px-2.5 py-1 text-xs font-medium sm:text-sm ${getDashboardItemTypeColor(item.typeKey)}`}
-              >
-                {item.typeLabel}
-              </span>
               {item.tags.map((tag) => (
                 <span
                   key={tag}
