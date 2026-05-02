@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 
 interface SidebarTypeLinksProps {
   isCollapsed: boolean;
+  isPro: boolean;
   onCloseMobile: () => void;
   pathname: string;
   sidebarItemTypes: DashboardSidebarItemTypeRecord[];
@@ -21,6 +22,7 @@ interface SidebarTypeLinksProps {
 
 export function SidebarTypeLinks({
   isCollapsed,
+  isPro,
   onCloseMobile,
   pathname,
   sidebarItemTypes,
@@ -32,9 +34,10 @@ export function SidebarTypeLinks({
       className="border-b border-white/6 px-3.5 py-[clamp(10px,1.6vh,20px)]"
     >
       {sidebarItemTypes.map((itemType) => {
-        const href = `/items/${getDashboardItemTypeRouteSegment(itemType.typeKey)}`;
-        const iconColor = getDashboardItemTypeColor(itemType.typeKey);
         const isProType = itemType.key === "file" || itemType.key === "image";
+        const itemTypeHref = `/items/${getDashboardItemTypeRouteSegment(itemType.typeKey)}`;
+        const href = isProType && !isPro ? "/upgrade" : itemTypeHref;
+        const iconColor = getDashboardItemTypeColor(itemType.typeKey);
         const isActive = pathname === href;
 
         return (

@@ -132,6 +132,7 @@ export function Sidebar({
 
           <SidebarTypeLinks
             isCollapsed={isCollapsed}
+            isPro={currentUser.isPro}
             onCloseMobile={onCloseMobile}
             pathname={pathname}
             sidebarItemTypes={sidebarItemTypes}
