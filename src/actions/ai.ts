@@ -10,9 +10,12 @@ import { checkAiRateLimit, getRateLimitErrorMessage } from "@/lib/rate-limit";
 const AUTO_TAG_CONTENT_LIMIT = 2_000;
 const CODE_EXPLANATION_CONTENT_LIMIT = 6_000;
 const DESCRIPTION_CONTENT_LIMIT = 2_000;
+const PROMPT_OPTIMIZATION_CONTENT_LIMIT = 8_000;
 const GENERATED_CODE_EXPLANATION_LIMIT = 2_400;
 const GENERATED_DESCRIPTION_LIMIT = 500;
+const GENERATED_PROMPT_LIMIT = 8_000;
 const MAX_AUTO_TAGS = 5;
+const NO_USEFUL_PROMPT_UPDATE_ERROR = "No useful prompt update was generated.";
 
 const autoTagSchema = z
   .object({
@@ -58,6 +61,14 @@ const codeExplanationSchema = z
     language: z.string().trim().max(80).optional().nullable().default(""),
   })
   .refine((data) => Boolean(data.content), "Add code or a command before generating an explanation.");
+
+const promptOptimizationSchema = z
+  .object({
+    title: z.string().trim().max(200).optional().default(""),
+    description: z.string().trim().max(1_000).optional().nullable().default(""),
+    content: z.string().trim().optional().nullable().default(""),
+  })
+  .refine((data) => Boolean(data.content), "Add a prompt before optimizing it.");
 
 interface GenerateAutoTagsSuccess {
   success: true;
@@ -108,6 +119,23 @@ interface ExplainCodeFailure {
 }
 
 export type ExplainCodeResult = ExplainCodeSuccess | ExplainCodeFailure;
+
+interface OptimizePromptSuccess {
+  success: true;
+  data: {
+    optimizedPrompt: string;
+    changes: string[];
+  };
+  error: null;
+}
+
+interface OptimizePromptFailure {
+  success: false;
+  data: null;
+  error: string;
+}
+
+export type OptimizePromptResult = OptimizePromptSuccess | OptimizePromptFailure;
 
 export async function generateAutoTags(data: unknown): Promise<GenerateAutoTagsResult> {
   const parsedData = autoTagSchema.safeParse(data);
@@ -411,6 +439,66 @@ export async function explainCode(data: unknown): Promise<ExplainCodeResult> {
   }
 }
 
+export async function optimizePrompt(data: unknown): Promise<OptimizePromptResult> {
+  const parsedData = promptOptimizationSchema.safeParse(data);
+
+  if (!parsedData.success) {
+    return {
+      success: false,
+      data: null,
+      error: parsedData.error.issues.map((issue) => issue.message).join(" "),
+    };
+  }
+
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return {
+      success: false,
+      data: null,
+      error: "You need to be signed in to optimize prompts.",
+    };
+  }
+
+  const usage = await getUserBillingUsage(session.user.id);
+
+  if (!usage.isPro) {
+    return {
+      success: false,
+      data: null,
+      error: "AI prompt optimization requires DevStash Pro.",
+    };
+  }
+
+  const rateLimitResult = await checkAiRateLimit("promptOptimize", session.user.id);
+
+  if (!rateLimitResult.success) {
+    return {
+      success: false,
+      data: null,
+      error: getRateLimitErrorMessage(rateLimitResult.reset),
+    };
+  }
+
+  const initialResult = await requestPromptOptimization(parsedData.data);
+
+  if (initialResult.success || initialResult.error !== NO_USEFUL_PROMPT_UPDATE_ERROR) {
+    return initialResult;
+  }
+
+  const retryResult = await requestPromptOptimization(parsedData.data, 2);
+
+  if (retryResult.success) {
+    return retryResult;
+  }
+
+  if (retryResult.error !== NO_USEFUL_PROMPT_UPDATE_ERROR) {
+    return retryResult;
+  }
+
+  return initialResult;
+}
+
 function buildAutoTagPrompt(data: z.infer<typeof autoTagSchema>) {
   const content = data.content ? data.content.slice(0, AUTO_TAG_CONTENT_LIMIT) : "";
 
@@ -457,6 +545,100 @@ function buildCodeExplanationPrompt(data: z.infer<typeof codeExplanationSchema>)
   ].join("\n");
 }
 
+async function requestPromptOptimization(
+  data: z.infer<typeof promptOptimizationSchema>,
+  attempt = 1,
+): Promise<OptimizePromptResult> {
+  try {
+    const response = await getOpenAIClient().chat.completions.create({
+      model: AI_MODEL,
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are MiMo, a developer knowledge-base assistant that rewrites prompts into clearly better versions. Preserve intent, but produce a genuinely improved prompt rather than a light edit or copy of the original.",
+        },
+        {
+          role: "user",
+          content: buildPromptOptimizationPrompt(data, attempt),
+        },
+      ],
+      max_completion_tokens: 720,
+      temperature: 0.3,
+      top_p: 0.9,
+      response_format: {
+        type: "json_object",
+      },
+    });
+    const outputText = response.choices[0]?.message?.content;
+
+    if (!outputText) {
+      return {
+        success: false,
+        data: null,
+        error: NO_USEFUL_PROMPT_UPDATE_ERROR,
+      };
+    }
+
+    const result = parsePromptOptimizationOutput(outputText);
+
+    if (!result || !isMeaningfulPromptOptimization(data.content ?? "", result.optimizedPrompt)) {
+      return {
+        success: false,
+        data: null,
+        error: NO_USEFUL_PROMPT_UPDATE_ERROR,
+      };
+    }
+
+    return {
+      success: true,
+      data: result,
+      error: null,
+    };
+  } catch (error) {
+    console.error("AI prompt optimization failed.", error);
+
+    return {
+      success: false,
+      data: null,
+      error: "We couldn't optimize this prompt right now.",
+    };
+  }
+}
+
+function buildPromptOptimizationPrompt(
+  data: z.infer<typeof promptOptimizationSchema>,
+  attempt = 1,
+) {
+  const content = data.content ? data.content.slice(0, PROMPT_OPTIMIZATION_CONTENT_LIMIT) : "";
+  const retryInstructions =
+    attempt > 1
+      ? [
+          "The previous rewrite was still too similar to the original.",
+          "Rewrite it again with noticeably different wording, structure, and phrasing.",
+          "Use markdown sections and bullets so the result is visibly more useful than a paraphrase.",
+          "Keep the same intent and constraints, but make the result feel like a fresh, stronger prompt.",
+        ]
+      : [];
+
+  return [
+    "Rewrite this prompt into a stronger, cleaner markdown prompt.",
+    "Preserve the intent, audience, and constraints.",
+    "Make the result meaningfully different from the input, not a paraphrase.",
+    "Do not copy the original wording or sentence structure unless it is necessary.",
+    "Improve the prompt structurally by adding useful sections such as role, task, context/input, requirements, output format, and quality checks when relevant.",
+    "For short one-paragraph prompts, expand them into a clearer markdown prompt with headings and bullets rather than only changing verbs or word order.",
+    "Tighten the language, remove redundancy, and improve organization.",
+    "If the prompt is already clear, still return a sharper and better-structured markdown version.",
+    ...retryInstructions,
+    "Return JSON only, using {\"optimizedPrompt\":\"...\",\"changes\":[\"...\"]}.",
+    "Do not invent missing project facts or add unrelated detail.",
+    `Title: ${data.title || "(none)"}`,
+    `Current description: ${data.description || "(none)"}`,
+    `Prompt:\n${content}`,
+  ].join("\n");
+}
+
 function parseAutoTagOutput(outputText: string) {
   const parsed = JSON.parse(outputText) as unknown;
   const rawTags = Array.isArray(parsed)
@@ -482,6 +664,30 @@ function parseCodeExplanationOutput(outputText: string) {
   return normalizeGeneratedExplanation(explanation);
 }
 
+function parsePromptOptimizationOutput(outputText: string) {
+  const parsed = JSON.parse(outputText) as unknown;
+
+  if (!isPromptOptimizationObject(parsed)) {
+    return null;
+  }
+
+  const optimizedPrompt = normalizeGeneratedPrompt(parsed.optimizedPrompt);
+  const changes = parsed.changes
+    .filter((change): change is string => typeof change === "string")
+    .map((change) => change.trim())
+    .filter(Boolean)
+    .slice(0, 8);
+
+  if (!optimizedPrompt) {
+    return null;
+  }
+
+  return {
+    optimizedPrompt,
+    changes,
+  };
+}
+
 function isTagObject(value: unknown): value is { tags: unknown[] } {
   return (
     typeof value === "object" &&
@@ -497,6 +703,18 @@ function isDescriptionObject(value: unknown): value is { description: unknown } 
 
 function isExplanationObject(value: unknown): value is { explanation: unknown } {
   return typeof value === "object" && value !== null && "explanation" in value;
+}
+
+function isPromptOptimizationObject(
+  value: unknown,
+): value is { optimizedPrompt: unknown; changes: unknown[] } {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "optimizedPrompt" in value &&
+    "changes" in value &&
+    Array.isArray((value as { changes: unknown }).changes)
+  );
 }
 
 function normalizeSuggestedTag(tag: unknown) {
@@ -533,4 +751,55 @@ function normalizeGeneratedExplanation(explanation: unknown) {
     .replace(/\n{3,}/g, "\n\n")
     .slice(0, GENERATED_CODE_EXPLANATION_LIMIT)
     .trim();
+}
+
+function normalizeGeneratedPrompt(prompt: unknown) {
+  if (typeof prompt !== "string") {
+    return "";
+  }
+
+  return prompt.trim().replace(/\n{3,}/g, "\n\n").slice(0, GENERATED_PROMPT_LIMIT).trim();
+}
+
+function isMeaningfulPromptOptimization(original: string, optimized: string) {
+  if (!hasMarkdownStructure(optimized)) {
+    return false;
+  }
+
+  return !isPromptTooSimilar(original, optimized);
+}
+
+function hasMarkdownStructure(prompt: string) {
+  return /(^|\n)\s{0,3}#{1,3}\s+\S/.test(prompt) || /(^|\n)\s*[-*]\s+\S/.test(prompt);
+}
+
+function isPromptTooSimilar(original: string, optimized: string) {
+  const normalizedOriginal = normalizeGeneratedPrompt(original).toLowerCase();
+  const normalizedOptimized = normalizeGeneratedPrompt(optimized).toLowerCase();
+
+  if (normalizedOriginal === normalizedOptimized) {
+    return true;
+  }
+
+  const originalTokens = getComparablePromptTokens(normalizedOriginal);
+  const optimizedTokens = getComparablePromptTokens(normalizedOptimized);
+
+  if (!originalTokens.length || !optimizedTokens.length) {
+    return false;
+  }
+
+  const optimizedTokenSet = new Set(optimizedTokens);
+  const sharedTokenCount = originalTokens.filter((token) => optimizedTokenSet.has(token)).length;
+  const overlapRatio = sharedTokenCount / originalTokens.length;
+  const lengthRatio = normalizedOptimized.length / Math.max(normalizedOriginal.length, 1);
+
+  return overlapRatio >= 0.82 && lengthRatio >= 0.75 && lengthRatio <= 1.35;
+}
+
+function getComparablePromptTokens(prompt: string) {
+  return prompt
+    .replace(/[`*_#>-]/g, " ")
+    .split(/[^a-z0-9]+/)
+    .map((token) => token.trim())
+    .filter((token) => token.length >= 4);
 }
