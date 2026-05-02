@@ -1,6 +1,6 @@
 "use server";
 
-import { auth } from "@/auth";
+import { getActionUserId } from "@/actions/_shared";
 import {
   editorPreferencesSchema,
   normalizeEditorPreferences,
@@ -27,9 +27,9 @@ export async function updateEditorPreferences(
     };
   }
 
-  const session = await auth();
+  const userId = await getActionUserId();
 
-  if (!session?.user?.id) {
+  if (!userId) {
     return {
       data: null,
       error: "You need to be signed in to update editor preferences.",
@@ -39,7 +39,7 @@ export async function updateEditorPreferences(
 
   const user = await prisma.user.update({
     where: {
-      id: session.user.id,
+      id: userId,
     },
     data: {
       editorPreferences: parsedPreferences.data,
