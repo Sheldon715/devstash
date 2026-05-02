@@ -1,67 +1,20 @@
-# Current Feature: UI Layout Polish
+# Current Feature
 
 ## Status
 
-Complete
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Make route location clearer with consistent sidebar active states across dashboard, item types, collections, favorites, settings, and profile.
-- Add GitHub sign-up to the register page so auth options match sign-in.
-- Improve the mobile register layout so the form is visible sooner.
-- Strengthen mobile drawer modal and accessibility behavior.
-- Tune responsive top-bar behavior around tablet widths.
-- Clarify File/Image Pro gating on empty states and create CTAs.
-- Normalize focus-visible states across navigation and menu controls.
-- Polish lower-priority typography and homepage trust cues.
+<!-- Goals & requirements -->
 
 ## Todo List
 
-- [x] Add stronger sidebar active styling and `aria-current="page"` where appropriate.
-- [x] Add a "Continue with GitHub" option to the register page.
-- [x] Adjust mobile register layout to surface the form sooner.
-- [x] Improve mobile drawer scroll lock, focus handling, and modal semantics.
-- [x] Review and tune top-bar actions around the tablet breakpoint.
-- [x] Clarify File/Image Pro gating in empty states and create actions.
-- [x] Apply consistent focus-visible styling to nav links, menu items, and icon controls.
-- [x] Review Favorites typography and homepage trust cue polish.
-- [x] Run lint/build and perform Playwright checks on changed UI flows.
+<!-- Feature-specific checklist -->
 
 ## Notes
 
 <!-- Any extra notes -->
-
-### UI Layout Review Findings - 2026-05-02
-
-Browser-reviewed with Playwright across homepage, register, sign-in, dashboard, item type pages, collections, collection detail, favorites, settings, profile, search dialog, file/image pages, and mobile layouts.
-
-- **P1: Sidebar active states are inconsistent**
-  - Item type pages and collection detail pages show active sidebar highlighting, but dashboard, favorites, settings, and profile do not have an equally clear sidebar route state.
-  - Add stronger active styling with `aria-current="page"`, a left accent rail, and clearer active states for top-level routes.
-- **P1: Register page is missing GitHub sign-up**
-  - Sign-in has "Sign in with GitHub", but register only has email/password.
-  - Add "Continue with GitHub" above the email form using the same divider pattern as sign-in.
-- **P1: Mobile register form starts too low**
-  - On mobile, the marketing copy takes most of the first viewport and pushes the create-account form near/below the fold.
-  - Put the form first on mobile or heavily compress the hero text/chips.
-- **P2: Mobile drawer needs stronger modal behavior**
-  - The mobile sidebar looks modal, but background scrolling remains visible.
-  - Lock body scroll while open, trap focus, restore focus to the trigger, and mark it semantically as modal navigation.
-- **P2: Tablet top bar may crowd**
-  - Full "New Collection" and "New Item" buttons appear at `md`, while the sidebar remains drawer-based until `lg`.
-  - Keep the compact create menu until `lg`, or specifically test/tune around 768px.
-- **P2: File/Image Pro affordance is mixed**
-  - Sidebar labels File/Image as `PRO`, but the pages still show primary "New File" / "New Image" buttons and generic empty states.
-  - Make those pages explain Pro gating more clearly or lock/badge the create CTA.
-- **P2: Focus states need consistency**
-  - Some nav rows and menu items rely more on hover than keyboard-visible focus.
-  - Apply shared `focus-visible` treatment to sidebar links, collection rows, menu items, and icon buttons.
-- **P3: Favorites typography feels off**
-  - Favorites rows use a monospace look that makes normal item/collection names feel like code.
-  - Use the main UI font for titles/descriptions and reserve monospace for snippets, commands, or metadata.
-- **P3: Homepage could use a trust cue**
-  - The homepage is polished and clear, but has no visible social proof.
-  - Add a small credibility cue, such as a sample quote, usage metric, or concise product proof point.
 
 ## History
 
@@ -128,3 +81,4 @@ Browser-reviewed with Playwright across homepage, register, sign-in, dashboard, 
 - AI Description Summary completed with a Pro-only MiMo-backed description generator, icon-only summary buttons in create/edit item forms, support for title/content/URL/file metadata inputs, focused AI action coverage, and passing test/lint/build verification
 - AI Explain Code completed with a Pro-only MiMo-backed code explanation action, drawer-only Explain flow with inline Code/Explain tabs, markdown rendering, focused unit coverage, and passing lint/build verification
 - AI Prompt Optimization completed with a Pro-only prompt optimizer, header Optimize controls for prompt editors, Use/Keep review controls in preview and edit modes, no-op quality guards, accepted-prompt refresh behavior, and passing test/lint/build verification
+- UI Layout Polish completed with consistent sidebar active states, GitHub registration, mobile register-first layout, modal mobile drawer handling, tablet top-bar tuning, clearer Pro upload affordances, favorites typography polish, homepage trust copy, Playwright verification, and passing lint/build checks
