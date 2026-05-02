@@ -1,21 +1,57 @@
-# Current Feature
+# Component Refactor Audit
 
 ## Status
 
-<!-- Not Started|In Progress|Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Audit the `src/components` folder for oversized components and duplicate UI patterns.
+- Identify concrete split points to break complex components into smaller, focused pieces.
+- Document duplicate code candidates that should be unified into shared components or hooks.
+- Prioritize refactors by impact and implementation effort so the next pass can be executed cleanly.
 
 ## Todo List
 
-<!-- Feature-specific checklist -->
+- [x] Split `src/components/items/item-drawer-provider.tsx` into smaller hooks and presentational components.
+- [x] Unify duplicated create/edit item form sections shared between `create-item-dialog.tsx` and `item-drawer-edit-form.tsx`.
+- [x] Extract a shared collection form dialog/fields component for `create-collection-dialog.tsx` and the edit flow in `collection-actions.tsx`.
+- [x] Extract a shared account modal shell for profile/settings dialogs such as change password and delete account.
+- [x] Consolidate repeated action button patterns used in item drawer and collection actions.
+- [x] Consider a small shared toast/action-result helper for repeated client-side success/error handling.
 
 ## Notes
 
-<!-- Any extra notes -->
-
+- Highest-impact refactor target: `src/components/items/item-drawer-provider.tsx` currently mixes context wiring, fetching, caching, resize logic, clipboard behavior, edit state, optimistic item actions, delete flow, toast state, and drawer rendering.
+- Strong duplication exists between item create/edit flows:
+  - `src/components/items/create-item-dialog.tsx`
+  - `src/components/items/item-drawer-edit-form.tsx`
+  - shared opportunities include title, description, tags, collection selection, and conditional code/markdown/plain-text field rendering.
+  - Shared item form primitives in `src/components/items/create-item-fields.tsx` now cover title, description, textareas, code fields, and markdown fields across both flows.
+- Strong duplication exists between collection create/edit dialogs:
+  - `src/components/collections/create-collection-dialog.tsx`
+  - `src/components/collections/collection-actions.tsx`
+  - Shared `src/components/collections/collection-form-dialog.tsx` now covers the duplicated dialog shell and form fields for both flows.
+- Profile modal shell patterns are repeated in:
+  - `src/components/profile/change-password-card.tsx`
+  - `src/components/profile/delete-account-card.tsx`
+  - Shared `src/components/profile/account-modal-shell.tsx` now covers the common modal portal, overlay, close control, and shell layout.
+- Action button variants are duplicated across:
+  - `src/components/items/item-drawer-parts.tsx`
+  - `src/components/collections/collection-actions.tsx`
+- Shared button primitives now live in:
+  - `src/components/ui/icon-action-button.tsx`
+  - `src/components/ui/dropdown-action-item.tsx`
+- Item drawer provider has been split across:
+  - `src/components/items/item-drawer-provider.tsx`
+  - `src/components/items/item-drawer-hooks.ts`
+  - `src/components/items/item-drawer-panel.tsx`
+- A small toast-state helper now lives in:
+  - `src/components/ui/use-toast-state.ts`
+- Verification note:
+  - `cmd /c npm run lint` passes.
+  - `cmd /c npm run build` reaches successful compile, then fails during the Next.js TypeScript phase with Windows `spawn EPERM`, which appears environment-related rather than a surfaced application compile error.
+ 
 ## History
 
 - Initial Next.js app scaffold created from Create Next App

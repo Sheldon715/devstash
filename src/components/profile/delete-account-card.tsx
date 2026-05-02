@@ -1,10 +1,10 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
-import { createPortal } from "react-dom";
-import { AlertTriangle, LoaderCircle, Trash2, X } from "lucide-react";
+import { useActionState, useState } from "react";
+import { LoaderCircle, Trash2 } from "lucide-react";
 
 import { deleteAccountAction } from "@/actions/profile";
+import { AccountModalShell } from "@/components/profile/account-modal-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -82,52 +82,20 @@ function DeleteAccountDialog({
   onConfirmationChange: (value: string) => void;
   stateError: string | null;
 }) {
-  useEffect(() => {
-    const previousOverflow = document.body.style.overflow;
-
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, []);
-
-  if (typeof document === "undefined") {
-    return null;
-  }
-
-  return createPortal(
-    <div className="account-dialog-overlay-enter fixed inset-0 z-[120] flex items-center justify-center bg-[rgba(5,6,10,0.78)] px-4 py-8 backdrop-blur-md">
-      <div className="account-dialog-panel-enter w-full max-w-lg rounded-[2rem] border border-white/10 bg-[#090a0e] p-6 shadow-[0_40px_140px_rgba(0,0,0,0.7)]">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-4">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-[1rem] bg-rose-400/12 text-rose-200">
-              <AlertTriangle className="size-5" />
-            </div>
-
-            <div className="space-y-1">
-              <h2 className="text-xl font-semibold tracking-tight text-zinc-50">
-                Confirm account deletion
-              </h2>
-              <p className="text-sm leading-6 text-zinc-300">
-                This cannot be undone. Type <span className="font-semibold text-white">DELETE</span> to
-                confirm.
-              </p>
-            </div>
-          </div>
-
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            className="rounded-xl border-white/10 bg-white/[0.03] text-zinc-300 hover:bg-white/[0.08] hover:text-white"
-            onClick={onClose}
-          >
-            <X className="size-4" />
-            <span className="sr-only">Close confirmation dialog</span>
-          </Button>
-        </div>
-
+  return (
+    <AccountModalShell
+      closeLabel="Close confirmation dialog"
+      description={
+        <>
+          This cannot be undone. Type <span className="font-semibold text-white">DELETE</span> to
+          confirm.
+        </>
+      }
+      maxWidthClassName="max-w-lg"
+      onClose={onClose}
+      title="Confirm account deletion"
+      titleId="delete-account-title"
+    >
         <form action={formAction} className="mt-6 space-y-4">
           <div className="rounded-2xl border border-rose-300/20 bg-rose-400/10 px-4 py-3 text-sm leading-6 text-rose-100">
             This action is permanent. Your saved items, collections, uploads, and account access cannot be restored after deletion.
@@ -176,8 +144,6 @@ function DeleteAccountDialog({
             </Button>
           </div>
         </form>
-      </div>
-    </div>,
-    document.body,
+    </AccountModalShell>
   );
 }

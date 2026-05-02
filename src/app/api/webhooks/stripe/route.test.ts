@@ -84,7 +84,7 @@ describe("POST /api/webhooks/stripe", () => {
           userId: "user-1",
         },
         subscription: "sub_123",
-      } as Stripe.Checkout.Session),
+      } as unknown as Stripe.Checkout.Session),
     );
     retrieveSubscriptionMock.mockResolvedValue(createSubscription("active"));
 
@@ -212,7 +212,7 @@ function createStripeEvent<TEventType extends Stripe.Event.Type>(
     pending_webhooks: 1,
     request: null,
     type,
-  };
+  } as unknown as Stripe.Event;
 }
 
 function createSubscription(status: Stripe.Subscription.Status): Stripe.Subscription {

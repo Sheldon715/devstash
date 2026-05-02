@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
-import { KeyRound, LoaderCircle, X } from "lucide-react";
+import { useRef, useState } from "react";
+import { KeyRound, LoaderCircle } from "lucide-react";
 
 import { changePasswordAction } from "@/actions/profile";
+import { AccountModalShell } from "@/components/profile/account-modal-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SuccessToast } from "@/components/ui/success-toast";
@@ -70,20 +70,6 @@ function ChangePasswordModal({
   const [state, setState] = useState<ChangePasswordFormState>(INITIAL_CHANGE_PASSWORD_STATE);
   const [isPending, setIsPending] = useState(false);
 
-  useEffect(() => {
-    const previousOverflow = document.body.style.overflow;
-
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [onClose]);
-
-  if (typeof document === "undefined") {
-    return null;
-  }
-
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -105,40 +91,16 @@ function ChangePasswordModal({
     }
   }
 
-  return createPortal(
-    <div className="account-dialog-overlay-enter fixed inset-0 z-[120] flex items-center justify-center bg-[rgba(5,6,10,0.78)] px-4 py-8 backdrop-blur-md">
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="change-password-title"
-        className="account-dialog-panel-enter w-full max-w-3xl rounded-[2rem] border border-white/10 bg-[#090a0e] p-6 shadow-[0_40px_140px_rgba(0,0,0,0.7)] sm:p-8"
-      >
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm font-medium tracking-[0.2em] text-zinc-500 uppercase">
-              Account security
-            </p>
-            <h3
-              id="change-password-title"
-              className="mt-3 text-3xl font-semibold tracking-tight text-zinc-50"
-            >
-              Change Password
-            </h3>
-            <p className="mt-3 text-sm leading-6 text-zinc-300 sm:text-base">
-              Enter your current password and choose a new one.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="inline-flex size-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-zinc-300 transition-colors hover:bg-white/[0.08] hover:text-white"
-          >
-            <X className="size-4" />
-            <span className="sr-only">Close change password dialog</span>
-          </button>
-        </div>
-
+  return (
+    <AccountModalShell
+      closeLabel="Close change password dialog"
+      description="Enter your current password and choose a new one."
+      eyebrow="Account security"
+      maxWidthClassName="max-w-3xl"
+      onClose={onClose}
+      title="Change Password"
+      titleId="change-password-title"
+    >
         <form ref={formRef} onSubmit={handleSubmit} className="mt-6 space-y-5">
           <div className="space-y-2">
             <label htmlFor="currentPassword" className="text-sm font-medium text-zinc-100">
@@ -226,8 +188,6 @@ function ChangePasswordModal({
             </div>
           </div>
         </form>
-      </div>
-    </div>,
-    document.body,
+    </AccountModalShell>
   );
 }

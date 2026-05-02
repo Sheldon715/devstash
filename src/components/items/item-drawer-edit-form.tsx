@@ -1,15 +1,19 @@
 "use client";
 
-import { CodeEditor } from "@/components/items/code-editor";
 import { CodeLanguageSelect } from "@/components/items/code-language-select";
-import { AiDescriptionButton } from "@/components/items/ai-description-button";
 import { AiTagSuggestions } from "@/components/items/ai-tag-suggestions";
 import {
   CollectionMultiSelect,
   type CollectionOption,
 } from "@/components/items/collection-multi-select";
-import { MarkdownEditor } from "@/components/items/markdown-editor";
 import { optimizePrompt } from "@/actions/ai";
+import {
+  ItemFormCodeField,
+  ItemFormDescriptionField,
+  ItemFormMarkdownField,
+  ItemFormTextField,
+  ItemFormTextareaField,
+} from "@/components/items/create-item-fields";
 import type {
   EditItemFormState,
   SerializedDashboardItemDetailRecord,
@@ -73,42 +77,38 @@ export function ItemDrawerEditBody({
       ) : null}
 
       <div className="grid gap-4">
-        <EditTextField
+        <ItemFormTextField
           label="Title"
           required
+          fieldClassName="h-12 rounded-2xl"
+          labelClassName="space-y-2"
           value={formState.title}
           onChange={(value) => onChange("title", value)}
         />
-        <label className="space-y-2">
-          <span className="flex items-center justify-between gap-3">
-            <span className="text-xs font-medium uppercase tracking-[0.22em] text-zinc-500">
-              Description
-            </span>
-            <AiDescriptionButton
-              content={formState.content}
-              description={formState.description}
-              disabled={disabled}
-              fileMimeType={item.fileMimeType}
-              fileName={item.fileName}
-              isPro={isPro}
-              itemType={item.typeKey}
-              title={formState.title}
-              url={formState.url}
-              onError={onAiDescriptionError}
-              onGenerated={onGeneratedDescription}
-            />
-          </span>
-          <textarea
-            value={formState.description}
-            onChange={(event) => onChange("description", event.target.value)}
-            className="min-h-32 w-full resize-y rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm leading-6 text-zinc-100 outline-none transition-colors placeholder:text-zinc-600 focus:border-sky-300/35 focus:bg-white/[0.06]"
-          />
-        </label>
+        <ItemFormDescriptionField
+          content={formState.content}
+          description={formState.description}
+          disabled={disabled}
+          fieldClassName="min-h-32 resize-y rounded-2xl"
+          fileMimeType={item.fileMimeType}
+          fileName={item.fileName}
+          isPro={isPro}
+          itemType={item.typeKey}
+          labelClassName="space-y-2"
+          multiline
+          title={formState.title}
+          url={formState.url}
+          onChange={(value) => onChange("description", value)}
+          onError={onAiDescriptionError}
+          onGenerated={onGeneratedDescription}
+        />
       </div>
 
       {showUrlField ? (
-        <EditTextField
+        <ItemFormTextField
           label="URL"
+          fieldClassName="h-12 rounded-2xl"
+          labelClassName="space-y-2"
           value={formState.url}
           onChange={(value) => onChange("url", value)}
         />
@@ -123,11 +123,13 @@ export function ItemDrawerEditBody({
                 onChange={(value) => onChange("language", value)}
               />
             ) : null}
-            <EditCodeField
+            <ItemFormCodeField
               label="Content"
               language={formState.language}
+              minHeight={260}
               value={formState.content}
               onChange={(value) => onChange("content", value)}
+              wrapperClassName="space-y-2"
             />
           </div>
         ) : showMarkdownEditor ? (
@@ -143,9 +145,11 @@ export function ItemDrawerEditBody({
             showOptimize={item.typeKey === "prompt"}
           />
         ) : (
-          <EditTextareaField
+          <ItemFormTextareaField
             label="Content"
             minHeightClassName="min-h-64"
+            fieldClassName="resize-y rounded-2xl py-3 leading-6"
+            labelClassName="space-y-2"
             value={formState.content}
             onChange={(value) => onChange("content", value)}
           />
@@ -153,8 +157,10 @@ export function ItemDrawerEditBody({
       ) : null}
 
       <div className="space-y-2">
-        <EditTextField
+        <ItemFormTextField
           label="Tags"
+          fieldClassName="h-12 rounded-2xl"
+          labelClassName="space-y-2"
           value={formState.tags}
           onChange={(value) => onChange("tags", value)}
         />
@@ -177,81 +183,6 @@ export function ItemDrawerEditBody({
 
       <ItemDrawerCompactMeta item={item} />
       <ItemDrawerFooterMeta item={item} />
-    </div>
-  );
-}
-
-function EditTextField({
-  label,
-  onChange,
-  required = false,
-  value,
-}: {
-  label: string;
-  onChange: (value: string) => void;
-  required?: boolean;
-  value: string;
-}) {
-  return (
-    <label className="space-y-2">
-      <span className="text-xs font-medium uppercase tracking-[0.22em] text-zinc-500">
-        {label}
-        {required ? <span className="text-rose-300"> *</span> : null}
-      </span>
-      <input
-        type="text"
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className="h-12 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-sm text-zinc-100 outline-none transition-colors placeholder:text-zinc-600 focus:border-sky-300/35 focus:bg-white/[0.06]"
-      />
-    </label>
-  );
-}
-
-function EditTextareaField({
-  label,
-  minHeightClassName = "min-h-32",
-  onChange,
-  value,
-}: {
-  label: string;
-  minHeightClassName?: string;
-  onChange: (value: string) => void;
-  value: string;
-}) {
-  return (
-    <label className="space-y-2">
-      <span className="text-xs font-medium uppercase tracking-[0.22em] text-zinc-500">{label}</span>
-      <textarea
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className={`${minHeightClassName} w-full resize-y rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm leading-6 text-zinc-100 outline-none transition-colors placeholder:text-zinc-600 focus:border-sky-300/35 focus:bg-white/[0.06]`}
-      />
-    </label>
-  );
-}
-
-function EditCodeField({
-  label,
-  language,
-  onChange,
-  value,
-}: {
-  label: string;
-  language: string;
-  onChange: (value: string) => void;
-  value: string;
-}) {
-  return (
-    <div className="space-y-2">
-      <p className="text-xs font-medium uppercase tracking-[0.22em] text-zinc-500">{label}</p>
-      <CodeEditor
-        language={language}
-        maxHeight={400}
-        minHeight={260}
-        value={value}
-        onChange={onChange}
-      />
     </div>
   );
 }
@@ -292,20 +223,19 @@ function EditMarkdownField({
   }
 
   return (
-    <div className="space-y-2">
-      <p className="text-xs font-medium uppercase tracking-[0.22em] text-zinc-500">{label}</p>
-      <MarkdownEditor
-        disabled={disabled}
-        maxHeight={400}
-        minHeight={260}
-        value={value}
-        onChange={onChange}
-        onAcceptOptimized={showOptimize ? onAcceptOptimized : undefined}
-        onOptimize={showOptimize && isPro ? handleOptimize : undefined}
-        onOptimizeError={onAiError}
-        onOptimizeUnavailable={() => onAiError("AI features require Pro subscription.")}
-        showOptimize={showOptimize}
-      />
-    </div>
+    <ItemFormMarkdownField
+      disabled={disabled}
+      label={label}
+      maxHeight={400}
+      minHeight={260}
+      value={value}
+      onAcceptOptimized={showOptimize ? onAcceptOptimized : undefined}
+      onChange={onChange}
+      onOptimize={showOptimize && isPro ? handleOptimize : undefined}
+      onOptimizeError={onAiError}
+      onOptimizeUnavailable={() => onAiError("AI features require Pro subscription.")}
+      showOptimize={showOptimize}
+      wrapperClassName="space-y-2"
+    />
   );
 }

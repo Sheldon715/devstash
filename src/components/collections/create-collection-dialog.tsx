@@ -1,19 +1,10 @@
 "use client";
 
 import { type FormEvent, useCallback, useState } from "react";
-import { FolderPlus, LoaderCircle, X } from "lucide-react";
+import { FolderPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { CollectionFormDialog } from "@/components/collections/collection-form-dialog";
 import { SuccessToast } from "@/components/ui/success-toast";
 
 interface CreateCollectionDialogProps {
@@ -130,78 +121,22 @@ export function CreateCollectionDialog({
 
   return (
     <>
-      <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="max-w-md">
-          <form onSubmit={handleSubmit} className="flex flex-col">
-            <div className="border-b border-white/8 px-5 py-4">
-              <div className="flex items-start justify-between gap-4">
-                <DialogHeader>
-                  <DialogTitle>New Collection</DialogTitle>
-                  <DialogDescription>
-                    Group related items with a reusable workspace label.
-                  </DialogDescription>
-                </DialogHeader>
-
-                <DialogClose disabled={isSubmitting} className="size-10 shrink-0 rounded-xl p-0">
-                  <X className="size-4" />
-                  <span className="sr-only">Close create collection dialog</span>
-                </DialogClose>
-              </div>
-            </div>
-
-            <div className="space-y-4 px-5 py-4">
-              {error ? (
-                <div className="rounded-2xl border border-rose-400/20 bg-rose-400/10 p-4 text-sm leading-6 text-rose-100">
-                  {error}
-                </div>
-              ) : null}
-
-              <label className="space-y-1.5">
-                <span className="text-xs font-medium uppercase tracking-[0.22em] text-zinc-500">
-                  Name <span className="text-rose-300">*</span>
-                </span>
-                <input
-                  type="text"
-                  disabled={isSubmitting}
-                  placeholder="Collection name"
-                  value={formState.name}
-                  onChange={(event) => updateFormField("name", event.target.value)}
-                  className="h-10 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 text-sm text-zinc-100 outline-none transition-colors placeholder:text-zinc-600 focus:border-sky-300/35 focus:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-60"
-                />
-              </label>
-
-              <label className="space-y-1.5">
-                <span className="text-xs font-medium uppercase tracking-[0.22em] text-zinc-500">
-                  Description
-                </span>
-                <textarea
-                  disabled={isSubmitting}
-                  placeholder="Optional description"
-                  value={formState.description}
-                  onChange={(event) => updateFormField("description", event.target.value)}
-                  className="min-h-28 w-full resize-none rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm leading-5 text-zinc-100 outline-none transition-colors placeholder:text-zinc-600 focus:border-sky-300/35 focus:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-60"
-                />
-              </label>
-            </div>
-
-            <DialogFooter className="border-t border-white/8 px-5 py-4">
-              <DialogClose disabled={isSubmitting}>Cancel</DialogClose>
-              <Button
-                type="submit"
-                disabled={!canSubmit || isSubmitting}
-                className="h-10 rounded-xl bg-zinc-50 px-4 text-zinc-950 hover:bg-white"
-              >
-                {isSubmitting ? (
-                  <LoaderCircle className="size-4 animate-spin" />
-                ) : (
-                  <FolderPlus className="size-4" />
-                )}
-                Create collection
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <CollectionFormDialog
+        closeLabel="Close create collection dialog"
+        description="Group related items with a reusable workspace label."
+        error={error}
+        formState={formState}
+        isOpen={open}
+        isSubmitting={isSubmitting}
+        submitIcon={FolderPlus}
+        submitLabel="Create collection"
+        submittingLabel="Creating collection"
+        title="New Collection"
+        onDescriptionChange={(value) => updateFormField("description", value)}
+        onNameChange={(value) => updateFormField("name", value)}
+        onOpenChange={handleOpenChange}
+        onSubmit={handleSubmit}
+      />
 
       {toastState ? (
         <SuccessToast

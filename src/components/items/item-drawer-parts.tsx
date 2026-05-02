@@ -1,6 +1,8 @@
 "use client";
 
-import { LoaderCircle, Pin, Star, type LucideIcon } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+
+import { IconActionButton } from "@/components/ui/icon-action-button";
 
 export function DrawerActionButton({
   active = false,
@@ -20,29 +22,17 @@ export function DrawerActionButton({
   onClick?: () => void;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
+    <IconActionButton
+      active={active}
+      activeClassName={activeClassName}
+      buttonClassName="max-[480px]:[&>span]:sr-only"
+      danger={danger}
       disabled={disabled}
-      aria-label={label}
-      title={label}
-      className={[
-        "inline-flex h-10 items-center gap-2 rounded-xl border px-3 text-sm font-medium transition-colors",
-        "border-white/10 bg-white/[0.04] text-zinc-200 hover:bg-white/[0.08]",
-        disabled ? "cursor-not-allowed opacity-50 hover:bg-white/[0.04]" : "",
-        active && activeClassName ? activeClassName : "",
-        danger && !disabled ? "text-rose-200 hover:border-rose-300/30 hover:bg-rose-400/10" : "",
-      ].join(" ")}
-    >
-      <Icon
-        className={[
-          "size-4",
-          active && (Icon === Star || Icon === Pin) ? "fill-current" : "",
-          Icon === LoaderCircle ? "animate-spin" : "",
-        ].join(" ")}
-      />
-      <span className="max-[480px]:sr-only">{label}</span>
-    </button>
+      icon={Icon}
+      label={label}
+      onClick={onClick}
+      size="compact"
+    />
   );
 }
 
