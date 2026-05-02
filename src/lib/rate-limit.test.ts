@@ -54,9 +54,25 @@ describe("rate-limit utilities", () => {
   });
 
   afterEach(() => {
-    process.env.NODE_ENV = ORIGINAL_ENV.NODE_ENV;
-    process.env.UPSTASH_REDIS_REST_TOKEN = ORIGINAL_ENV.UPSTASH_REDIS_REST_TOKEN;
-    process.env.UPSTASH_REDIS_REST_URL = ORIGINAL_ENV.UPSTASH_REDIS_REST_URL;
+    const env = process.env as Record<string, string | undefined>;
+
+    if (ORIGINAL_ENV.NODE_ENV === undefined) {
+      delete env.NODE_ENV;
+    } else {
+      env.NODE_ENV = ORIGINAL_ENV.NODE_ENV;
+    }
+
+    if (ORIGINAL_ENV.UPSTASH_REDIS_REST_TOKEN === undefined) {
+      delete env.UPSTASH_REDIS_REST_TOKEN;
+    } else {
+      env.UPSTASH_REDIS_REST_TOKEN = ORIGINAL_ENV.UPSTASH_REDIS_REST_TOKEN;
+    }
+
+    if (ORIGINAL_ENV.UPSTASH_REDIS_REST_URL === undefined) {
+      delete env.UPSTASH_REDIS_REST_URL;
+    } else {
+      env.UPSTASH_REDIS_REST_URL = ORIGINAL_ENV.UPSTASH_REDIS_REST_URL;
+    }
   });
 
   it("allows AI rate limit checks when Redis is not configured", async () => {

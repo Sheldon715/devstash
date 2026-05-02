@@ -8,7 +8,6 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import {
-  type LucideIcon,
   AlertTriangle,
   FolderPen,
   LoaderCircle,
@@ -16,7 +15,6 @@ import {
   Pencil,
   Star,
   Trash2,
-  X,
 } from "lucide-react";
 
 import {
@@ -24,6 +22,7 @@ import {
   toggleCollectionFavorite,
   updateCollection,
 } from "@/actions/collections";
+import { CollectionFormDialog } from "@/components/collections/collection-form-dialog";
 import { RedirectLoadingOverlay } from "@/components/layout/redirect-loading-overlay";
 import {
   AlertDialog,
@@ -35,16 +34,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { DropdownActionItem } from "@/components/ui/dropdown-action-item";
+import { IconActionButton } from "@/components/ui/icon-action-button";
 import { SuccessToast } from "@/components/ui/success-toast";
 
 export interface CollectionActionModel {
@@ -98,8 +89,6 @@ export function CollectionActions({
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [toastState, setToastState] = useState<CollectionToastState | null>(null);
-  const canSubmit = Boolean(formState.name.trim());
-
   useEffect(() => {
     setFormState(createFormState(collection));
     setIsFavorite(collection.isFavorite);
@@ -158,7 +147,7 @@ export function CollectionActions({
   async function handleEditSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!canSubmit || isSaving) {
+    if (!formState.name.trim() || isSaving) {
       return;
     }
 
@@ -314,14 +303,25 @@ export function CollectionActions({
 
           {isMenuOpen ? (
             <div className="collection-action-menu-enter absolute right-0 top-12 z-30 w-44 overflow-hidden rounded-2xl border border-white/10 bg-[#0c0d12] p-1.5 shadow-[0_20px_70px_rgba(0,0,0,0.48)]">
-              <MenuAction icon={Pencil} label="Edit" onClick={openEditDialog} />
-              <MenuAction icon={Trash2} label="Delete" onClick={openDeleteDialog} danger />
+              <DropdownActionItem
+                className="collection-action-menu-item"
+                icon={Pencil}
+                label="Edit"
+                onClick={openEditDialog}
+              />
+              <DropdownActionItem
+                className="collection-action-menu-item"
+                danger
+                icon={Trash2}
+                label="Delete"
+                onClick={openDeleteDialog}
+              />
             </div>
           ) : null}
         </div>
       ) : (
         <div className="flex flex-wrap items-center gap-3">
-          <ActionButton
+          <IconActionButton
             icon={isTogglingFavorite ? LoaderCircle : Star}
             label={isFavorite ? "Unfavorite" : "Favorite"}
             active={isFavorite}
@@ -329,13 +329,13 @@ export function CollectionActions({
             onClick={handleToggleFavorite}
             iconOnly
           />
-          <ActionButton
+          <IconActionButton
             icon={FolderPen}
             label="Edit"
             onClick={openEditDialog}
             iconOnly
           />
-          <ActionButton
+          <IconActionButton
             icon={Trash2}
             label="Delete"
             onClick={openDeleteDialog}
@@ -345,86 +345,27 @@ export function CollectionActions({
         </div>
       )}
 
-      <Dialog
-        open={isEditOpen}
+      <CollectionFormDialog
+        closeLabel="Close edit collection dialog"
+        description="Update the collection name and description."
+        error={error}
+        formState={formState}
+        isOpen={isEditOpen}
+        isSubmitting={isSaving}
+        submitIcon={isSaving ? LoaderCircle : FolderPen}
+        submitLabel="Save changes"
+        submittingLabel="Saving changes"
+        title="Edit Collection"
+        onDescriptionChange={(value) => updateFormField("description", value)}
+        onNameChange={(value) => updateFormField("name", value)}
         onOpenChange={(nextOpen) => {
           if (!isSaving) {
             setError(null);
             setIsEditOpen(nextOpen);
           }
         }}
-      >
-        <DialogContent className="max-w-md">
-          <form onSubmit={handleEditSubmit} className="flex flex-col">
-            <div className="border-b border-white/8 px-5 py-4">
-              <div className="flex items-start justify-between gap-4">
-                <DialogHeader>
-                  <DialogTitle>Edit Collection</DialogTitle>
-                  <DialogDescription>
-                    Update the collection name and description.
-                  </DialogDescription>
-                </DialogHeader>
-
-                <DialogClose disabled={isSaving} className="size-10 shrink-0 rounded-xl p-0">
-                  <X className="size-4" />
-                  <span className="sr-only">Close edit collection dialog</span>
-                </DialogClose>
-              </div>
-            </div>
-
-            <div className="space-y-4 px-5 py-4">
-              {error ? (
-                <div className="rounded-2xl border border-rose-400/20 bg-rose-400/10 p-4 text-sm leading-6 text-rose-100">
-                  {error}
-                </div>
-              ) : null}
-
-              <label className="space-y-1.5">
-                <span className="text-xs font-medium uppercase tracking-[0.22em] text-zinc-500">
-                  Name <span className="text-rose-300">*</span>
-                </span>
-                <input
-                  type="text"
-                  disabled={isSaving}
-                  placeholder="Collection name"
-                  value={formState.name}
-                  onChange={(event) => updateFormField("name", event.target.value)}
-                  className="h-10 w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 text-sm text-zinc-100 outline-none transition-colors placeholder:text-zinc-600 focus:border-sky-300/35 focus:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-60"
-                />
-              </label>
-
-              <label className="space-y-1.5">
-                <span className="text-xs font-medium uppercase tracking-[0.22em] text-zinc-500">
-                  Description
-                </span>
-                <textarea
-                  disabled={isSaving}
-                  placeholder="Optional description"
-                  value={formState.description}
-                  onChange={(event) => updateFormField("description", event.target.value)}
-                  className="min-h-28 w-full resize-none rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm leading-5 text-zinc-100 outline-none transition-colors placeholder:text-zinc-600 focus:border-sky-300/35 focus:bg-white/[0.06] disabled:cursor-not-allowed disabled:opacity-60"
-                />
-              </label>
-            </div>
-
-            <DialogFooter className="border-t border-white/8 px-5 py-4">
-              <DialogClose disabled={isSaving}>Cancel</DialogClose>
-              <Button
-                type="submit"
-                disabled={!canSubmit || isSaving}
-                className="h-10 rounded-xl bg-zinc-50 px-4 text-zinc-950 hover:bg-white"
-              >
-                {isSaving ? (
-                  <LoaderCircle className="size-4 animate-spin" />
-                ) : (
-                  <FolderPen className="size-4" />
-                )}
-                Save changes
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+        onSubmit={handleEditSubmit}
+      />
 
       <AlertDialog
         open={isDeleteOpen}
@@ -476,92 +417,5 @@ export function CollectionActions({
         <RedirectLoadingOverlay title="Collection deleted" message={redirectMessage} />
       ) : null}
     </div>
-  );
-}
-
-function ActionButton({
-  active = false,
-  danger = false,
-  disabled = false,
-  iconOnly = false,
-  icon: Icon,
-  label,
-  onClick,
-}: {
-  active?: boolean;
-  danger?: boolean;
-  disabled?: boolean;
-  icon: LucideIcon;
-  iconOnly?: boolean;
-  label: string;
-  onClick?: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      disabled={disabled}
-      onClick={onClick}
-      title={label}
-      aria-label={label}
-      className={[
-        "inline-flex h-11 items-center justify-center gap-2 rounded-2xl border text-sm font-medium transition-colors",
-        iconOnly ? "w-11 px-0" : "px-4",
-        "border-white/10 bg-white/[0.04] text-zinc-200 hover:bg-white/[0.08]",
-        active ? "border-[#facc15]/30 bg-[#facc15]/10 text-[#facc15]" : "",
-        danger && !disabled ? "text-rose-200 hover:border-rose-300/30 hover:bg-rose-400/10" : "",
-        disabled ? "cursor-not-allowed opacity-60 hover:bg-white/[0.04]" : "",
-      ].join(" ")}
-    >
-      <Icon
-        className={[
-          "size-4",
-          active && Icon === Star ? "fill-current" : "",
-          Icon === LoaderCircle ? "animate-spin" : "",
-        ].join(" ")}
-      />
-      <span className={iconOnly ? "sr-only" : undefined}>{label}</span>
-    </button>
-  );
-}
-
-function MenuAction({
-  active = false,
-  danger = false,
-  disabled = false,
-  icon: Icon,
-  label,
-  onClick,
-}: {
-  active?: boolean;
-  danger?: boolean;
-  disabled?: boolean;
-  icon: LucideIcon;
-  label: string;
-  onClick?: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      disabled={disabled}
-      onClick={onClick}
-      title={label}
-      className={[
-        "collection-action-menu-item",
-        "flex h-10 w-full items-center gap-2 rounded-xl px-3 text-left text-sm transition-colors",
-        "text-zinc-300 hover:bg-white/[0.06] hover:text-zinc-50",
-        danger && !disabled ? "text-rose-200 hover:bg-rose-400/10" : "",
-        active ? "text-[#facc15]" : "",
-        disabled ? "cursor-not-allowed opacity-60 hover:bg-transparent" : "",
-      ].join(" ")}
-    >
-      <Icon
-        className={[
-          "size-4",
-          active && Icon === Star ? "fill-current" : "",
-          Icon === LoaderCircle ? "animate-spin" : "",
-        ].join(" ")}
-      />
-      <span>{label}</span>
-    </button>
   );
 }
