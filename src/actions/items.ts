@@ -2,7 +2,15 @@
 
 import { z } from "zod";
 
-import { auth } from "@/auth";
+import {
+  actionFailure,
+  actionSuccess,
+  getActionUserId,
+  getZodErrorMessage,
+  nonEmptyIdSchema,
+  runOwnedMutation,
+  type ActionResult,
+} from "@/actions/_shared";
 import { getUserBillingUsage } from "@/lib/billing/usage";
 import { canCreateItem } from "@/lib/billing/usage-limits";
 import {
@@ -27,52 +35,13 @@ type SerializedDashboardItemDetailRecord = Omit<
   lastAccessedAt: string | null;
   updatedAt: string;
 };
+const itemIdSchema = nonEmptyIdSchema("Item not found.");
 
-interface UpdateItemSuccess {
-  success: true;
-  data: SerializedDashboardItemDetailRecord;
-  error: null;
-}
-
-interface UpdateItemFailure {
-  success: false;
-  data: null;
-  error: string;
-}
-
-export type UpdateItemResult = UpdateItemSuccess | UpdateItemFailure;
+export type UpdateItemResult = ActionResult<SerializedDashboardItemDetailRecord>;
 export type ToggleItemFavoriteResult = UpdateItemResult;
 export type ToggleItemPinResult = UpdateItemResult;
-
-interface CreateItemSuccess {
-  success: true;
-  data: SerializedDashboardItemDetailRecord;
-  error: null;
-}
-
-interface CreateItemFailure {
-  success: false;
-  data: null;
-  error: string;
-}
-
-export type CreateItemResult = CreateItemSuccess | CreateItemFailure;
-
-interface DeleteItemSuccess {
-  success: true;
-  data: {
-    id: string;
-  };
-  error: null;
-}
-
-interface DeleteItemFailure {
-  success: false;
-  data: null;
-  error: string;
-}
-
-export type DeleteItemResult = DeleteItemSuccess | DeleteItemFailure;
+export type CreateItemResult = ActionResult<SerializedDashboardItemDetailRecord>;
+export type DeleteItemResult = ActionResult<{ id: string }>;
 
 const optionalTextSchema = z
   .string()
@@ -180,225 +149,96 @@ export async function createItem(data: unknown): Promise<CreateItemResult> {
   const parsedData = createItemSchema.safeParse(data);
 
   if (!parsedData.success) {
-    return {
-      success: false,
-      data: null,
-      error: parsedData.error.issues.map((issue) => issue.message).join(" "),
-    };
+    return actionFailure(getZodErrorMessage(parsedData.error));
   }
 
-  const session = await auth();
+  const userId = await getActionUserId();
 
-  if (!session?.user?.id) {
-    return {
-      success: false,
-      data: null,
-      error: "You need to be signed in to create items.",
-    };
+  if (!userId) {
+    return actionFailure("You need to be signed in to create items.");
   }
 
-  const usage = await getUserBillingUsage(session.user.id);
+  const usage = await getUserBillingUsage(userId);
   const limit = canCreateItem(usage.plan, usage.totalItems);
 
   if (!limit.allowed) {
-    return {
-      success: false,
-      data: null,
-      error: limit.message ?? "Upgrade to Pro to save more items.",
-    };
+    return actionFailure(limit.message ?? "Upgrade to Pro to save more items.");
   }
 
   if (!usage.isPro && isUploadItemTypeKey(parsedData.data.typeKey)) {
-    return {
-      success: false,
-      data: null,
-      error: "File and image items require DevStash Pro.",
-    };
+    return actionFailure("File and image items require DevStash Pro.");
   }
 
-  const payload = normalizeCreateItemPayload(parsedData.data, session.user.id);
+  const payload = normalizeCreateItemPayload(parsedData.data, userId);
 
   if (!payload) {
-    return {
-      success: false,
-      data: null,
-      error: "Upload a file first.",
-    };
+    return actionFailure("Upload a file first.");
   }
 
-  const createdItem = await createItemRecord(session.user.id, payload);
+  const createdItem = await createItemRecord(userId, payload);
 
   if (!createdItem) {
-    return {
-      success: false,
-      data: null,
-      error: "Item type not found.",
-    };
+    return actionFailure("Item type not found.");
   }
 
-  return {
-    success: true,
-    data: serializeItemDetail(createdItem),
-    error: null,
-  };
+  return actionSuccess(serializeItemDetail(createdItem));
 }
 
 export async function updateItem(itemId: string, data: unknown): Promise<UpdateItemResult> {
   const parsedData = updateItemSchema.safeParse(data);
 
   if (!parsedData.success) {
-    return {
-      success: false,
-      data: null,
-      error: parsedData.error.issues.map((issue) => issue.message).join(" "),
-    };
+    return actionFailure(getZodErrorMessage(parsedData.error));
   }
 
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    return {
-      success: false,
-      data: null,
-      error: "You need to be signed in to update items.",
-    };
-  }
-
-  const updatedItem = await updateItemRecord(session.user.id, itemId, parsedData.data);
-
-  if (!updatedItem) {
-    return {
-      success: false,
-      data: null,
-      error: "Item not found.",
-    };
-  }
-
-  return {
-    success: true,
-    data: serializeItemDetail(updatedItem),
-    error: null,
-  };
+  return runOwnedMutation({
+    id: itemId,
+    idSchema: itemIdSchema,
+    unauthorizedError: "You need to be signed in to update items.",
+    notFoundError: "Item not found.",
+    mutate: (userId, normalizedItemId) =>
+      updateItemRecord(userId, normalizedItemId, parsedData.data),
+    serialize: (record) => serializeItemDetail(record),
+  });
 }
 
 export async function toggleItemFavorite(
   itemId: string,
 ): Promise<ToggleItemFavoriteResult> {
-  const parsedItemId = z.string().trim().min(1).safeParse(itemId);
-
-  if (!parsedItemId.success) {
-    return {
-      success: false,
-      data: null,
-      error: "Item not found.",
-    };
-  }
-
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    return {
-      success: false,
-      data: null,
-      error: "You need to be signed in to update items.",
-    };
-  }
-
-  const updatedItem = await toggleItemFavoriteRecord(session.user.id, parsedItemId.data);
-
-  if (!updatedItem) {
-    return {
-      success: false,
-      data: null,
-      error: "Item not found.",
-    };
-  }
-
-  return {
-    success: true,
-    data: serializeItemDetail(updatedItem),
-    error: null,
-  };
+  return runOwnedMutation({
+    id: itemId,
+    idSchema: itemIdSchema,
+    unauthorizedError: "You need to be signed in to update items.",
+    notFoundError: "Item not found.",
+    mutate: toggleItemFavoriteRecord,
+    serialize: (record) => serializeItemDetail(record),
+  });
 }
 
 export async function toggleItemPin(
   itemId: string,
 ): Promise<ToggleItemPinResult> {
-  const parsedItemId = z.string().trim().min(1).safeParse(itemId);
-
-  if (!parsedItemId.success) {
-    return {
-      success: false,
-      data: null,
-      error: "Item not found.",
-    };
-  }
-
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    return {
-      success: false,
-      data: null,
-      error: "You need to be signed in to update items.",
-    };
-  }
-
-  const updatedItem = await toggleItemPinRecord(session.user.id, parsedItemId.data);
-
-  if (!updatedItem) {
-    return {
-      success: false,
-      data: null,
-      error: "Item not found.",
-    };
-  }
-
-  return {
-    success: true,
-    data: serializeItemDetail(updatedItem),
-    error: null,
-  };
+  return runOwnedMutation({
+    id: itemId,
+    idSchema: itemIdSchema,
+    unauthorizedError: "You need to be signed in to update items.",
+    notFoundError: "Item not found.",
+    mutate: toggleItemPinRecord,
+    serialize: (record) => serializeItemDetail(record),
+  });
 }
 
 export async function deleteItem(itemId: string): Promise<DeleteItemResult> {
-  const parsedItemId = z.string().trim().min(1).safeParse(itemId);
-
-  if (!parsedItemId.success) {
-    return {
-      success: false,
-      data: null,
-      error: "Item not found.",
-    };
-  }
-
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    return {
-      success: false,
-      data: null,
-      error: "You need to be signed in to delete items.",
-    };
-  }
-
-  const deletedItem = await deleteItemRecord(session.user.id, parsedItemId.data);
-
-  if (!deletedItem) {
-    return {
-      success: false,
-      data: null,
-      error: "Item not found.",
-    };
-  }
-
-  return {
-    success: true,
-    data: {
-      id: parsedItemId.data,
-    },
-    error: null,
-  };
+  return runOwnedMutation({
+    id: itemId,
+    idSchema: itemIdSchema,
+    unauthorizedError: "You need to be signed in to delete items.",
+    notFoundError: "Item not found.",
+    mutate: deleteItemRecord,
+    serialize: (_record, normalizedItemId) => ({
+      id: normalizedItemId,
+    }),
+  });
 }
 
 function normalizeCreateItemPayload(data: z.infer<typeof createItemSchema>, userId: string) {

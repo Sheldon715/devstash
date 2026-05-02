@@ -2,7 +2,15 @@
 
 import { z } from "zod";
 
-import { auth } from "@/auth";
+import {
+  actionFailure,
+  actionSuccess,
+  getActionUserId,
+  getZodErrorMessage,
+  nonEmptyIdSchema,
+  runOwnedMutation,
+  type ActionResult,
+} from "@/actions/_shared";
 import {
   deleteDashboardCollection,
   toggleDashboardCollectionFavorite,
@@ -16,39 +24,11 @@ type SerializedDashboardCollectionMetadataRecord = Omit<
 > & {
   updatedAt: string;
 };
+const collectionIdSchema = nonEmptyIdSchema("Collection not found.");
 
-interface UpdateCollectionSuccess {
-  success: true;
-  data: SerializedDashboardCollectionMetadataRecord;
-  error: null;
-}
-
-interface UpdateCollectionFailure {
-  success: false;
-  data: null;
-  error: string;
-}
-
-export type UpdateCollectionResult = UpdateCollectionSuccess | UpdateCollectionFailure;
+export type UpdateCollectionResult = ActionResult<SerializedDashboardCollectionMetadataRecord>;
 export type ToggleCollectionFavoriteResult = UpdateCollectionResult;
-
-interface DeleteCollectionSuccess {
-  success: true;
-  data: {
-    id: string;
-  };
-  error: null;
-}
-
-interface DeleteCollectionFailure {
-  success: false;
-  data: null;
-  error: string;
-}
-
-export type DeleteCollectionResult = DeleteCollectionSuccess | DeleteCollectionFailure;
-
-const collectionIdSchema = z.string().trim().min(1, "Collection not found.");
+export type DeleteCollectionResult = ActionResult<{ id: string }>;
 
 const collectionMetadataSchema = z.object({
   name: z
@@ -72,154 +52,66 @@ export async function updateCollection(
   const parsedCollectionId = collectionIdSchema.safeParse(collectionId);
 
   if (!parsedCollectionId.success) {
-    return {
-      success: false,
-      data: null,
-      error: "Collection not found.",
-    };
+    return actionFailure("Collection not found.");
   }
 
   const parsedData = collectionMetadataSchema.safeParse(data);
 
   if (!parsedData.success) {
-    return {
-      success: false,
-      data: null,
-      error: parsedData.error.issues.map((issue) => issue.message).join(" "),
-    };
+    return actionFailure(getZodErrorMessage(parsedData.error));
   }
 
-  const session = await auth();
+  const userId = await getActionUserId();
 
-  if (!session?.user?.id) {
-    return {
-      success: false,
-      data: null,
-      error: "You need to be signed in to update collections.",
-    };
+  if (!userId) {
+    return actionFailure("You need to be signed in to update collections.");
   }
 
   try {
     const updatedCollection = await updateDashboardCollection(
-      session.user.id,
+      userId,
       parsedCollectionId.data,
       parsedData.data,
     );
 
     if (!updatedCollection) {
-      return {
-        success: false,
-        data: null,
-        error: "Collection not found.",
-      };
+      return actionFailure("Collection not found.");
     }
 
-    return {
-      success: true,
-      data: serializeCollectionMetadata(updatedCollection),
-      error: null,
-    };
+    return actionSuccess(serializeCollectionMetadata(updatedCollection));
   } catch (error) {
     if (isUniqueConstraintError(error)) {
-      return {
-        success: false,
-        data: null,
-        error: "A collection with this name already exists.",
-      };
+      return actionFailure("A collection with this name already exists.");
     }
 
-    return {
-      success: false,
-      data: null,
-      error: "We couldn't save this collection right now.",
-    };
+    return actionFailure("We couldn't save this collection right now.");
   }
 }
 
 export async function toggleCollectionFavorite(
   collectionId: string,
 ): Promise<ToggleCollectionFavoriteResult> {
-  const parsedCollectionId = collectionIdSchema.safeParse(collectionId);
-
-  if (!parsedCollectionId.success) {
-    return {
-      success: false,
-      data: null,
-      error: "Collection not found.",
-    };
-  }
-
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    return {
-      success: false,
-      data: null,
-      error: "You need to be signed in to update collections.",
-    };
-  }
-
-  const updatedCollection = await toggleDashboardCollectionFavorite(
-    session.user.id,
-    parsedCollectionId.data,
-  );
-
-  if (!updatedCollection) {
-    return {
-      success: false,
-      data: null,
-      error: "Collection not found.",
-    };
-  }
-
-  return {
-    success: true,
-    data: serializeCollectionMetadata(updatedCollection),
-    error: null,
-  };
+  return runOwnedMutation({
+    id: collectionId,
+    idSchema: collectionIdSchema,
+    unauthorizedError: "You need to be signed in to update collections.",
+    notFoundError: "Collection not found.",
+    mutate: toggleDashboardCollectionFavorite,
+    serialize: (record) => serializeCollectionMetadata(record),
+  });
 }
 
 export async function deleteCollection(collectionId: string): Promise<DeleteCollectionResult> {
-  const parsedCollectionId = collectionIdSchema.safeParse(collectionId);
-
-  if (!parsedCollectionId.success) {
-    return {
-      success: false,
-      data: null,
-      error: "Collection not found.",
-    };
-  }
-
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    return {
-      success: false,
-      data: null,
-      error: "You need to be signed in to delete collections.",
-    };
-  }
-
-  const deletedCollection = await deleteDashboardCollection(
-    session.user.id,
-    parsedCollectionId.data,
-  );
-
-  if (!deletedCollection) {
-    return {
-      success: false,
-      data: null,
-      error: "Collection not found.",
-    };
-  }
-
-  return {
-    success: true,
-    data: {
-      id: parsedCollectionId.data,
-    },
-    error: null,
-  };
+  return runOwnedMutation({
+    id: collectionId,
+    idSchema: collectionIdSchema,
+    unauthorizedError: "You need to be signed in to delete collections.",
+    notFoundError: "Collection not found.",
+    mutate: deleteDashboardCollection,
+    serialize: (_record, normalizedCollectionId) => ({
+      id: normalizedCollectionId,
+    }),
+  });
 }
 
 function serializeCollectionMetadata(

@@ -2,8 +2,8 @@
 
 import { compare, hash } from "bcryptjs";
 
+import { getActionUserId } from "@/actions/_shared";
 import { signOut } from "@/auth";
-import { auth } from "@/auth";
 import {
   isValidPasswordResetPassword,
   PASSWORD_RESET_MIN_PASSWORD_LENGTH,
@@ -53,9 +53,9 @@ export async function changePasswordAction(
     };
   }
 
-  const session = await auth();
+  const userId = await getActionUserId();
 
-  if (!session?.user?.id) {
+  if (!userId) {
     return {
       error: "You need to be signed in to change your password.",
       success: null,
@@ -64,7 +64,7 @@ export async function changePasswordAction(
 
   const user = await prisma.user.findUnique({
     where: {
-      id: session.user.id,
+      id: userId,
     },
     select: {
       passwordHash: true,
@@ -100,7 +100,7 @@ export async function changePasswordAction(
 
   await prisma.user.update({
     where: {
-      id: session.user.id,
+      id: userId,
     },
     data: {
       passwordHash,
@@ -126,9 +126,9 @@ export async function deleteAccountAction(
     };
   }
 
-  const session = await auth();
+  const userId = await getActionUserId();
 
-  if (!session?.user?.id) {
+  if (!userId) {
     return {
       error: "You need to be signed in to delete your account.",
     };
@@ -136,7 +136,7 @@ export async function deleteAccountAction(
 
   await prisma.user.delete({
     where: {
-      id: session.user.id,
+      id: userId,
     },
   });
 

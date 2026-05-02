@@ -2,7 +2,13 @@
 
 import { z } from "zod";
 
-import { auth } from "@/auth";
+import {
+  actionFailure,
+  actionSuccess,
+  getActionUserId,
+  getZodErrorMessage,
+  type ActionResult,
+} from "@/actions/_shared";
 import { getOpenAIClient, AI_MODEL } from "@/lib/ai/openai";
 import { getUserBillingUsage } from "@/lib/billing/usage";
 import { checkAiRateLimit, getRateLimitErrorMessage } from "@/lib/rate-limit";
@@ -70,112 +76,46 @@ const promptOptimizationSchema = z
   })
   .refine((data) => Boolean(data.content), "Add a prompt before optimizing it.");
 
-interface GenerateAutoTagsSuccess {
-  success: true;
-  data: {
-    tags: string[];
-  };
-  error: null;
-}
+export type GenerateAutoTagsResult = ActionResult<{
+  tags: string[];
+}>;
 
-interface GenerateAutoTagsFailure {
-  success: false;
-  data: null;
-  error: string;
-}
+export type GenerateItemDescriptionResult = ActionResult<{
+  description: string;
+}>;
 
-export type GenerateAutoTagsResult = GenerateAutoTagsSuccess | GenerateAutoTagsFailure;
+export type ExplainCodeResult = ActionResult<{
+  explanation: string;
+}>;
 
-interface GenerateItemDescriptionSuccess {
-  success: true;
-  data: {
-    description: string;
-  };
-  error: null;
-}
-
-interface GenerateItemDescriptionFailure {
-  success: false;
-  data: null;
-  error: string;
-}
-
-export type GenerateItemDescriptionResult =
-  | GenerateItemDescriptionSuccess
-  | GenerateItemDescriptionFailure;
-
-interface ExplainCodeSuccess {
-  success: true;
-  data: {
-    explanation: string;
-  };
-  error: null;
-}
-
-interface ExplainCodeFailure {
-  success: false;
-  data: null;
-  error: string;
-}
-
-export type ExplainCodeResult = ExplainCodeSuccess | ExplainCodeFailure;
-
-interface OptimizePromptSuccess {
-  success: true;
-  data: {
-    optimizedPrompt: string;
-    changes: string[];
-  };
-  error: null;
-}
-
-interface OptimizePromptFailure {
-  success: false;
-  data: null;
-  error: string;
-}
-
-export type OptimizePromptResult = OptimizePromptSuccess | OptimizePromptFailure;
+export type OptimizePromptResult = ActionResult<{
+  optimizedPrompt: string;
+  changes: string[];
+}>;
 
 export async function generateAutoTags(data: unknown): Promise<GenerateAutoTagsResult> {
   const parsedData = autoTagSchema.safeParse(data);
 
   if (!parsedData.success) {
-    return {
-      success: false,
-      data: null,
-      error: parsedData.error.issues.map((issue) => issue.message).join(" "),
-    };
+    return actionFailure(getZodErrorMessage(parsedData.error));
   }
 
-  const session = await auth();
+  const userId = await getActionUserId();
 
-  if (!session?.user?.id) {
-    return {
-      success: false,
-      data: null,
-      error: "You need to be signed in to suggest tags.",
-    };
+  if (!userId) {
+    return actionFailure("You need to be signed in to suggest tags.");
   }
 
-  const usage = await getUserBillingUsage(session.user.id);
+  const usage = await getUserBillingUsage(userId);
 
   if (!usage.isPro) {
-    return {
-      success: false,
-      data: null,
-      error: "AI tag suggestions require DevStash Pro.",
-    };
+    return actionFailure("AI tag suggestions require DevStash Pro.");
   }
 
-  const rateLimitResult = await checkAiRateLimit("autoTag", session.user.id);
+  const rateLimitResult = await checkAiRateLimit("autoTag", userId);
 
   if (!rateLimitResult.success) {
-    return {
-      success: false,
-      data: null,
-      error: getRateLimitErrorMessage(rateLimitResult.reset),
-    };
+    return actionFailure(getRateLimitErrorMessage(rateLimitResult.reset));
   }
 
   try {
@@ -202,38 +142,22 @@ export async function generateAutoTags(data: unknown): Promise<GenerateAutoTagsR
     const outputText = response.choices[0]?.message?.content;
 
     if (!outputText) {
-      return {
-        success: false,
-        data: null,
-        error: "No useful tag suggestions were generated.",
-      };
+      return actionFailure("No useful tag suggestions were generated.");
     }
 
     const tags = parseAutoTagOutput(outputText);
 
     if (!tags.length) {
-      return {
-        success: false,
-        data: null,
-        error: "No useful tag suggestions were generated.",
-      };
+      return actionFailure("No useful tag suggestions were generated.");
     }
 
-    return {
-      success: true,
-      data: {
-        tags,
-      },
-      error: null,
-    };
+    return actionSuccess({
+      tags,
+    });
   } catch (error) {
     console.error("AI auto-tag generation failed.", error);
 
-    return {
-      success: false,
-      data: null,
-      error: "We couldn't suggest tags right now.",
-    };
+    return actionFailure("We couldn't suggest tags right now.");
   }
 }
 
@@ -243,41 +167,25 @@ export async function generateItemDescription(
   const parsedData = itemDescriptionSchema.safeParse(data);
 
   if (!parsedData.success) {
-    return {
-      success: false,
-      data: null,
-      error: parsedData.error.issues.map((issue) => issue.message).join(" "),
-    };
+    return actionFailure(getZodErrorMessage(parsedData.error));
   }
 
-  const session = await auth();
+  const userId = await getActionUserId();
 
-  if (!session?.user?.id) {
-    return {
-      success: false,
-      data: null,
-      error: "You need to be signed in to generate descriptions.",
-    };
+  if (!userId) {
+    return actionFailure("You need to be signed in to generate descriptions.");
   }
 
-  const usage = await getUserBillingUsage(session.user.id);
+  const usage = await getUserBillingUsage(userId);
 
   if (!usage.isPro) {
-    return {
-      success: false,
-      data: null,
-      error: "AI descriptions require DevStash Pro.",
-    };
+    return actionFailure("AI descriptions require DevStash Pro.");
   }
 
-  const rateLimitResult = await checkAiRateLimit("descriptionSummary", session.user.id);
+  const rateLimitResult = await checkAiRateLimit("descriptionSummary", userId);
 
   if (!rateLimitResult.success) {
-    return {
-      success: false,
-      data: null,
-      error: getRateLimitErrorMessage(rateLimitResult.reset),
-    };
+    return actionFailure(getRateLimitErrorMessage(rateLimitResult.reset));
   }
 
   try {
@@ -304,38 +212,22 @@ export async function generateItemDescription(
     const outputText = response.choices[0]?.message?.content;
 
     if (!outputText) {
-      return {
-        success: false,
-        data: null,
-        error: "No useful description was generated.",
-      };
+      return actionFailure("No useful description was generated.");
     }
 
     const description = parseItemDescriptionOutput(outputText);
 
     if (!description) {
-      return {
-        success: false,
-        data: null,
-        error: "No useful description was generated.",
-      };
+      return actionFailure("No useful description was generated.");
     }
 
-    return {
-      success: true,
-      data: {
-        description,
-      },
-      error: null,
-    };
+    return actionSuccess({
+      description,
+    });
   } catch (error) {
     console.error("AI description generation failed.", error);
 
-    return {
-      success: false,
-      data: null,
-      error: "We couldn't generate a description right now.",
-    };
+    return actionFailure("We couldn't generate a description right now.");
   }
 }
 
@@ -343,41 +235,25 @@ export async function explainCode(data: unknown): Promise<ExplainCodeResult> {
   const parsedData = codeExplanationSchema.safeParse(data);
 
   if (!parsedData.success) {
-    return {
-      success: false,
-      data: null,
-      error: parsedData.error.issues.map((issue) => issue.message).join(" "),
-    };
+    return actionFailure(getZodErrorMessage(parsedData.error));
   }
 
-  const session = await auth();
+  const userId = await getActionUserId();
 
-  if (!session?.user?.id) {
-    return {
-      success: false,
-      data: null,
-      error: "You need to be signed in to explain code.",
-    };
+  if (!userId) {
+    return actionFailure("You need to be signed in to explain code.");
   }
 
-  const usage = await getUserBillingUsage(session.user.id);
+  const usage = await getUserBillingUsage(userId);
 
   if (!usage.isPro) {
-    return {
-      success: false,
-      data: null,
-      error: "AI code explanations require DevStash Pro.",
-    };
+    return actionFailure("AI code explanations require DevStash Pro.");
   }
 
-  const rateLimitResult = await checkAiRateLimit("codeExplain", session.user.id);
+  const rateLimitResult = await checkAiRateLimit("codeExplain", userId);
 
   if (!rateLimitResult.success) {
-    return {
-      success: false,
-      data: null,
-      error: getRateLimitErrorMessage(rateLimitResult.reset),
-    };
+    return actionFailure(getRateLimitErrorMessage(rateLimitResult.reset));
   }
 
   try {
@@ -404,38 +280,22 @@ export async function explainCode(data: unknown): Promise<ExplainCodeResult> {
     const outputText = response.choices[0]?.message?.content;
 
     if (!outputText) {
-      return {
-        success: false,
-        data: null,
-        error: "No useful explanation was generated.",
-      };
+      return actionFailure("No useful explanation was generated.");
     }
 
     const explanation = parseCodeExplanationOutput(outputText);
 
     if (!explanation) {
-      return {
-        success: false,
-        data: null,
-        error: "No useful explanation was generated.",
-      };
+      return actionFailure("No useful explanation was generated.");
     }
 
-    return {
-      success: true,
-      data: {
-        explanation,
-      },
-      error: null,
-    };
+    return actionSuccess({
+      explanation,
+    });
   } catch (error) {
     console.error("AI code explanation failed.", error);
 
-    return {
-      success: false,
-      data: null,
-      error: "We couldn't explain this code right now.",
-    };
+    return actionFailure("We couldn't explain this code right now.");
   }
 }
 
@@ -443,41 +303,25 @@ export async function optimizePrompt(data: unknown): Promise<OptimizePromptResul
   const parsedData = promptOptimizationSchema.safeParse(data);
 
   if (!parsedData.success) {
-    return {
-      success: false,
-      data: null,
-      error: parsedData.error.issues.map((issue) => issue.message).join(" "),
-    };
+    return actionFailure(getZodErrorMessage(parsedData.error));
   }
 
-  const session = await auth();
+  const userId = await getActionUserId();
 
-  if (!session?.user?.id) {
-    return {
-      success: false,
-      data: null,
-      error: "You need to be signed in to optimize prompts.",
-    };
+  if (!userId) {
+    return actionFailure("You need to be signed in to optimize prompts.");
   }
 
-  const usage = await getUserBillingUsage(session.user.id);
+  const usage = await getUserBillingUsage(userId);
 
   if (!usage.isPro) {
-    return {
-      success: false,
-      data: null,
-      error: "AI prompt optimization requires DevStash Pro.",
-    };
+    return actionFailure("AI prompt optimization requires DevStash Pro.");
   }
 
-  const rateLimitResult = await checkAiRateLimit("promptOptimize", session.user.id);
+  const rateLimitResult = await checkAiRateLimit("promptOptimize", userId);
 
   if (!rateLimitResult.success) {
-    return {
-      success: false,
-      data: null,
-      error: getRateLimitErrorMessage(rateLimitResult.reset),
-    };
+    return actionFailure(getRateLimitErrorMessage(rateLimitResult.reset));
   }
 
   const initialResult = await requestPromptOptimization(parsedData.data);
@@ -573,36 +417,20 @@ async function requestPromptOptimization(
     const outputText = response.choices[0]?.message?.content;
 
     if (!outputText) {
-      return {
-        success: false,
-        data: null,
-        error: NO_USEFUL_PROMPT_UPDATE_ERROR,
-      };
+      return actionFailure(NO_USEFUL_PROMPT_UPDATE_ERROR);
     }
 
     const result = parsePromptOptimizationOutput(outputText);
 
     if (!result || !isMeaningfulPromptOptimization(data.content ?? "", result.optimizedPrompt)) {
-      return {
-        success: false,
-        data: null,
-        error: NO_USEFUL_PROMPT_UPDATE_ERROR,
-      };
+      return actionFailure(NO_USEFUL_PROMPT_UPDATE_ERROR);
     }
 
-    return {
-      success: true,
-      data: result,
-      error: null,
-    };
+    return actionSuccess(result);
   } catch (error) {
     console.error("AI prompt optimization failed.", error);
 
-    return {
-      success: false,
-      data: null,
-      error: "We couldn't optimize this prompt right now.",
-    };
+    return actionFailure("We couldn't optimize this prompt right now.");
   }
 }
 
