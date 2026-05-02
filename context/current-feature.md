@@ -1,47 +1,23 @@
-# Current Feature: AI Prompt Optimization
+# Current Feature
 
 ## Status
 
-Complete
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- [x] Add a prompt optimization AI flow for prompt items with authentication, Pro gating, Zod validation, AI rate limiting, and MiMo `mimo-v2-flash` integration.
-- [x] Place an Optimize control in the prompt editor header, matching the Explain button pattern used for snippets and commands.
-- [x] Review the current prompt, generate a refined version when needed, and ask the user whether to use the updated prompt.
-- [x] Show loading, Pro gating, rate limits, and AI service errors through existing UI patterns, spinner states, tooltips, and toasts.
-- [x] Keep generated prompt suggestions transient unless the user explicitly accepts the update.
-- [x] Add focused unit tests for the new AI action and prompt editor flow.
-- [x] Tighten prompt optimization so the model rewrites prompts into meaningfully different text and rejects no-op results that match the original prompt.
-- [x] Keep accepted optimized prompts visible through drawer refreshes until the persisted item content catches up.
-- [x] Make prompt optimization accept from the edit form update the editor text and leave final saving to the existing Save button.
-- [x] Make prompt optimization replace the prompt text in both preview and edit modes, with Use/Keep controls in the editor header.
-- [x] Require optimized prompts to be meaningfully different markdown prompts instead of near-identical paraphrases.
+<!-- Goals & requirements -->
 
 ## Todo List
 
-- [x] Review existing AI action, rate limit, Pro gating, drawer, and editor patterns.
-- [x] Implement the prompt optimization server action and unit tests.
-- [x] Add the prompt editor Optimize button, loading state, and suggestion review flow.
-- [x] Run `npm run lint` and `npm run build`.
+<!-- Feature-specific checklist -->
 
 ## Notes
 
-- Explanations apply only to snippet and command items.
-- Prompt optimization is available in the item drawer preview and edit form. Optimized markdown replaces the visible prompt text immediately, and Use/Keep controls appear in the editor header next to Optimize.
-- Prompt optimization output should improve structure using markdown sections and bullets when useful, not merely swap words in the original prompt.
-- Explanation length should be concise, roughly 200-300 words, covering what the code does and key concepts.
-- See `docs/ai-integration-plan.md` for the broader AI architecture context.
+<!-- Any extra notes -->
 
 ## History
 
-- AI Prompt Optimization completed with a Pro-only prompt optimizer, header Optimize controls for prompt editors, accept/reject review flow, and passing lint/build verification.
-- Prompt Optimization accept flow fixed so accepting from the prompt detail editor saves the optimized prompt to the item and refreshes the drawer content.
-- Prompt Optimization accept preview fixed so the prompt editor immediately displays the accepted optimized text while the saved item update completes.
-- Prompt Optimization output tightened so the optimized result must differ meaningfully from the original prompt instead of echoing it back.
-- Prompt Optimization accept persistence verified with Playwright: optimize, accept, reload dashboard, and reopen the prompt item shows the accepted prompt text.
-- Prompt Optimization confirmation UI moved from the prompt body to the editor header so optimized markdown is shown directly in the content area.
-- Prompt Optimization quality guard tightened so one-line paraphrases are rejected and retried in favor of structured markdown prompts.
 - Initial Next.js app scaffold created from Create Next App
 - Initial framework setup completed, including project context files and boilerplate cleanup
 - Dashboard UI Phase 1 completed with a `/dashboard` route, dark-mode dashboard shell, ShadCN-style UI primitives, and placeholder `Sidebar` and `Main` sections based on the phase 1 spec
@@ -104,3 +80,4 @@ Complete
 - AI Auto-Tagging completed with MiMo-backed Pro-only tag suggestions, user-scoped AI rate limiting, accept/reject suggestion badges in create and edit flows, focused server action coverage, and polished item drawer scrolling/header layout
 - AI Description Summary completed with a Pro-only MiMo-backed description generator, icon-only summary buttons in create/edit item forms, support for title/content/URL/file metadata inputs, focused AI action coverage, and passing test/lint/build verification
 - AI Explain Code completed with a Pro-only MiMo-backed code explanation action, drawer-only Explain flow with inline Code/Explain tabs, markdown rendering, focused unit coverage, and passing lint/build verification
+- AI Prompt Optimization completed with a Pro-only prompt optimizer, header Optimize controls for prompt editors, Use/Keep review controls in preview and edit modes, no-op quality guards, accepted-prompt refresh behavior, and passing test/lint/build verification
