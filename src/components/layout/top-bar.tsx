@@ -130,7 +130,7 @@ export function TopBar({
             </Link>
           ) : null}
 
-          <div ref={createMenuRef} className="relative shrink-0 md:hidden">
+          <div ref={createMenuRef} className="relative shrink-0 lg:hidden">
             <Button
               type="button"
               variant="outline"
@@ -173,7 +173,7 @@ export function TopBar({
           <Button
             type="button"
             variant="outline"
-            className="hidden rounded-xl border-border/80 bg-card text-foreground md:inline-flex"
+            className="hidden rounded-xl border-border/80 bg-card text-foreground lg:inline-flex"
             onClick={openCreateCollectionDialog}
           >
             <FolderPlus className="size-4" />
@@ -182,7 +182,7 @@ export function TopBar({
 
           <Button
             type="button"
-            className="hidden rounded-xl bg-foreground text-background hover:bg-foreground/90 md:inline-flex"
+            className="hidden rounded-xl bg-foreground text-background hover:bg-foreground/90 lg:inline-flex"
             onClick={openCreateItemDialog}
           >
             <Plus className="size-4" />
@@ -226,7 +226,7 @@ function CreateMenuAction({
       role="menuitem"
       tabIndex={tabIndex}
       onClick={onClick}
-      className="flex h-10 w-full items-center gap-2.5 rounded-lg px-2.5 text-left text-sm font-medium text-zinc-300 transition-colors hover:bg-white/[0.06] hover:text-zinc-50"
+      className="flex h-10 w-full items-center gap-2.5 rounded-lg px-2.5 text-left text-sm font-medium text-zinc-300 transition-colors hover:bg-white/[0.06] hover:text-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/45"
     >
       <Icon className="size-4 shrink-0 text-zinc-500" />
       <span>{label}</span>

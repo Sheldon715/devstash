@@ -5,6 +5,7 @@ import { startTransition, useState, type FormEvent } from "react";
 import { LoaderCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+import { GitHubAuthButton } from "@/components/auth/github-auth-button";
 import { RedirectLoadingOverlay } from "@/components/layout/redirect-loading-overlay";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -160,6 +161,17 @@ export function RegisterForm({ requiresEmailVerification }: RegisterFormProps) {
           {formState.error}
         </div>
       ) : null}
+
+      <GitHubAuthButton label="Continue with GitHub" />
+
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t border-white/10" />
+        </div>
+        <div className="relative flex justify-center text-[11px] font-medium tracking-[0.22em] text-zinc-500 uppercase">
+          <span className="bg-[#080b16] px-3">Or continue with email</span>
+        </div>
+      </div>
 
       <form className="space-y-4" onSubmit={handleSubmit}>
         <div className="space-y-2">

@@ -20,6 +20,7 @@ export default async function RegisterPage() {
   return (
     <AuthShell
       eyebrow="Create your space"
+      contentFirstOnMobile
       homeNavActions={{ primary: primaryAction, secondary: secondaryAction }}
       title="Turn scattered solutions into a dev library you can actually reuse."
       subtitle="Create an account to store the commands, prompts, notes, and snippets you want available on every project."

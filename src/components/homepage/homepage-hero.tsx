@@ -45,6 +45,9 @@ export function HomepageHero({ primaryAction }: HomepageHeroProps) {
             Explore Features
           </Link>
         </div>
+        <p className="mx-auto mt-4 max-w-xl text-xs font-semibold tracking-[0.16em] text-zinc-500 uppercase sm:text-[13px]">
+          Built for developers who reuse fixes, prompts, commands, and project context.
+        </p>
       </div>
 
       <ChaosFlow />

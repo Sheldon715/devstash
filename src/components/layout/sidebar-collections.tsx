@@ -91,8 +91,9 @@ export function SidebarCollections({
             >
               <Link
                 href="/collections"
+                aria-current={pathname === "/collections" ? "page" : undefined}
                 className={cn(
-                  "inline-flex rounded-lg px-2 py-1.5 text-[clamp(10px,1.3vh,12px)] font-medium text-muted-foreground transition-all duration-300 hover:bg-white/[0.045] hover:text-zinc-50",
+                  "inline-flex rounded-lg px-2 py-1.5 text-[clamp(10px,1.3vh,12px)] font-medium text-muted-foreground transition-all duration-300 hover:bg-white/[0.045] hover:text-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/45 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050507]",
                   pathname === "/collections" && "bg-white/[0.06] text-zinc-50",
                 )}
                 onClick={onCloseMobile}
@@ -204,15 +205,18 @@ function CollectionLink({
   showStar?: boolean;
 }) {
   const href = `/collections/${collectionId}`;
+  const isActive = pathname === href;
 
   return (
     <Link
       href={href}
+      aria-current={isActive ? "page" : undefined}
       onClick={onCloseMobile}
       className={cn(
-        "group flex items-center gap-2.5 rounded-xl border border-transparent px-2.5 py-[clamp(6px,0.85vh,9px)] transition-all duration-300 hover:border-white/8 hover:bg-white/[0.04] hover:text-white",
+        "group relative flex items-center gap-2.5 overflow-hidden rounded-xl border border-transparent px-2.5 py-[clamp(6px,0.85vh,9px)] transition-all duration-300 hover:border-white/8 hover:bg-white/[0.04] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/45 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050507]",
         isCollapsed && "justify-center",
-        pathname === href && "border-white/8 bg-white/[0.06] text-white",
+        isActive &&
+          "border-sky-300/20 bg-sky-300/[0.09] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] before:absolute before:left-0 before:top-1/2 before:h-5 before:w-0.5 before:-translate-y-1/2 before:rounded-full before:bg-sky-300",
       )}
     >
       <div className="flex size-[clamp(22px,2.8vh,28px)] shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-all duration-300 group-hover:bg-white/[0.04]">

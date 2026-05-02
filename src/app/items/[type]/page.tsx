@@ -9,6 +9,7 @@ import { ImageThumbnailCard } from "@/components/items/image-thumbnail-card";
 import { TypePageCreateButton } from "@/components/items/type-page-create-button";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { PaginationControls } from "@/components/layout/pagination-controls";
+import { Badge } from "@/components/ui/badge";
 import {
   DashboardNamedIcon,
   getDashboardItemTypeColor,
@@ -85,6 +86,7 @@ export default async function ItemTypePage({ params, searchParams }: ItemTypePag
   const { itemType, items, pagination } = itemTypePage;
   const isFileList = itemType.typeKey === "file";
   const isImageGallery = itemType.typeKey === "image";
+  const isProUploadType = isFileList || isImageGallery;
 
   return (
     <DashboardShell
@@ -123,9 +125,19 @@ export default async function ItemTypePage({ params, searchParams }: ItemTypePag
                 <p className="text-sm uppercase tracking-[0.22em] text-muted-foreground">
                   Item Type
                 </p>
-                <h1 className="mt-2 text-4xl font-semibold tracking-tight text-zinc-50">
-                  {itemType.name}
-                </h1>
+                <div className="mt-2 flex flex-wrap items-center gap-3">
+                  <h1 className="text-4xl font-semibold tracking-tight text-zinc-50">
+                    {itemType.name}
+                  </h1>
+                  {isProUploadType ? (
+                    <Badge
+                      variant="outline"
+                      className="border-violet-300/20 bg-violet-300/10 text-[10px] text-violet-100"
+                    >
+                      PRO
+                    </Badge>
+                  ) : null}
+                </div>
                 <p className="mt-2 text-base text-muted-foreground">
                   {itemType.totalItems} saved{" "}
                   {itemType.totalItems === 1 ? "item" : "items"} in this category
@@ -173,7 +185,9 @@ export default async function ItemTypePage({ params, searchParams }: ItemTypePag
               No {itemType.name.toLowerCase()} items yet
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-              Items of this type will appear here as soon as they are added to your workspace.
+              {isProUploadType
+                ? `Pro ${itemType.name.toLowerCase()} uploads will appear here as soon as they are added to your workspace.`
+                : "Items of this type will appear here as soon as they are added to your workspace."}
             </p>
           </section>
         )}

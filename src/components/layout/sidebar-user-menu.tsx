@@ -19,11 +19,17 @@ export interface SidebarCurrentUser {
 interface SidebarUserMenuProps {
   currentUser: SidebarCurrentUser;
   isCollapsed: boolean;
+  pathname: string;
 }
 
-export function SidebarUserMenu({ currentUser, isCollapsed }: SidebarUserMenuProps) {
+export function SidebarUserMenu({
+  currentUser,
+  isCollapsed,
+  pathname,
+}: SidebarUserMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const isAccountRoute = pathname === "/profile" || pathname === "/settings";
 
   useEffect(() => {
     function handlePointerDown(event: MouseEvent) {
@@ -60,7 +66,8 @@ export function SidebarUserMenu({ currentUser, isCollapsed }: SidebarUserMenuPro
           isCollapsed
             ? "flex w-full justify-center p-1.5"
             : "flex w-full items-center gap-[clamp(6px,0.9vh,10px)] px-1.5 py-1.5",
-          isOpen && "bg-white/[0.05]",
+          (isOpen || isAccountRoute) && "bg-white/[0.05]",
+          isAccountRoute && "ring-1 ring-sky-300/20",
         )}
         onClick={() => setIsOpen((current) => !current)}
       >
@@ -111,11 +118,13 @@ export function SidebarUserMenu({ currentUser, isCollapsed }: SidebarUserMenuPro
           <div className="space-y-1 pt-2">
             <Link
               href="/profile"
+              aria-current={pathname === "/profile" ? "page" : undefined}
               onClick={() => setIsOpen(false)}
               tabIndex={isOpen ? 0 : -1}
               className={cn(
                 buttonVariants({ variant: "outline" }),
-                "h-10 w-full justify-start rounded-xl border-transparent bg-transparent px-3 text-sm text-zinc-200 transition-all duration-200 hover:bg-white/[0.05] hover:text-white",
+                "h-10 w-full justify-start rounded-xl border-transparent bg-transparent px-3 text-sm text-zinc-200 transition-all duration-200 hover:bg-white/[0.05] hover:text-white focus-visible:ring-sky-300/45",
+                pathname === "/profile" && "bg-sky-300/10 text-white",
                 isOpen ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0",
               )}
               style={{ transitionDelay: isOpen ? "40ms" : "0ms" }}
@@ -126,11 +135,13 @@ export function SidebarUserMenu({ currentUser, isCollapsed }: SidebarUserMenuPro
 
             <Link
               href="/settings"
+              aria-current={pathname === "/settings" ? "page" : undefined}
               onClick={() => setIsOpen(false)}
               tabIndex={isOpen ? 0 : -1}
               className={cn(
                 buttonVariants({ variant: "outline" }),
-                "h-10 w-full justify-start rounded-xl border-transparent bg-transparent px-3 text-sm text-zinc-200 transition-all duration-200 hover:bg-white/[0.05] hover:text-white",
+                "h-10 w-full justify-start rounded-xl border-transparent bg-transparent px-3 text-sm text-zinc-200 transition-all duration-200 hover:bg-white/[0.05] hover:text-white focus-visible:ring-sky-300/45",
+                pathname === "/settings" && "bg-sky-300/10 text-white",
                 isOpen ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0",
               )}
               style={{ transitionDelay: isOpen ? "80ms" : "0ms" }}
@@ -145,7 +156,7 @@ export function SidebarUserMenu({ currentUser, isCollapsed }: SidebarUserMenuPro
                 variant="outline"
                 tabIndex={isOpen ? 0 : -1}
                 className={cn(
-                  "h-10 w-full justify-start rounded-xl border-transparent bg-transparent px-3 text-sm text-zinc-200 transition-all duration-200 hover:bg-white/[0.05] hover:text-white",
+                  "h-10 w-full justify-start rounded-xl border-transparent bg-transparent px-3 text-sm text-zinc-200 transition-all duration-200 hover:bg-white/[0.05] hover:text-white focus-visible:ring-sky-300/45",
                   isOpen ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0",
                 )}
                 style={{ transitionDelay: isOpen ? "120ms" : "0ms" }}

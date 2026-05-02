@@ -93,7 +93,7 @@ export function FavoritesList({ collections, items }: FavoritesListProps) {
   }
 
   return (
-    <div className="space-y-10 font-mono">
+    <div className="space-y-10">
       <FavoriteItemSection items={items} />
       <FavoriteCollectionSection collections={collections} />
     </div>
