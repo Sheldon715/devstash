@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 
 interface AuthShellProps {
   children: ReactNode;
+  contentFirstOnMobile?: boolean;
   eyebrow: string;
   homeNavActions?: {
     primary: HomepageAction;
@@ -32,6 +33,7 @@ const authPreviewItems: Array<{ accent: HomepageAccent; label: string }> = [
 
 export function AuthShell({
   children,
+  contentFirstOnMobile = false,
   eyebrow,
   homeNavActions,
   subtitle,
@@ -54,7 +56,7 @@ export function AuthShell({
           homeNavActions ? "pt-28" : "pt-12",
         )}
       >
-        <section className="space-y-8">
+        <section className={cn("space-y-8", contentFirstOnMobile && "order-2 lg:order-1")}>
           {!homeNavActions ? (
             <Link
               href="/"
@@ -110,7 +112,12 @@ export function AuthShell({
           </div>
         </section>
 
-        <section className="rounded-3xl border border-white/10 bg-[#080b16]/88 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.34)] backdrop-blur-xl sm:p-8">
+        <section
+          className={cn(
+            "rounded-3xl border border-white/10 bg-[#080b16]/88 p-6 shadow-[0_24px_70px_rgba(0,0,0,0.34)] backdrop-blur-xl sm:p-8",
+            contentFirstOnMobile && "order-1 lg:order-2",
+          )}
+        >
           {children}
         </section>
       </div>
