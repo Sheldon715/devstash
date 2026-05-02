@@ -106,7 +106,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
         callbackUrl={callbackUrl}
         defaultEmail={params.email}
         initialError={getAuthErrorMessage(params.error, params.verificationError)}
-        successAsToast={params.deleted === "1"}
+        successAsToast={params.deleted === "1" || params.verified === "1"}
         successMessage={successMessage}
         successTitle={successTitle}
       />

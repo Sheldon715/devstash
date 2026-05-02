@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { LoaderCircle, MailCheck } from "lucide-react";
+import { LoaderCircle, MailCheck, Send } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -82,40 +82,47 @@ export function ResendVerificationForm({ email }: ResendVerificationFormProps) {
   }
 
   return (
-    <div className="mt-6 w-full rounded-[1.5rem] border border-white/8 bg-white/[0.03] p-4 text-left">
-      <div className="flex items-start gap-3">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-[1rem] bg-sky-300/10 text-sky-200">
-          <MailCheck className="size-4" />
+    <div className="mt-5 w-full rounded-2xl border border-white/8 bg-[#10131a]/80 p-4 text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+      <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-center">
+        <div className="flex min-w-0 items-start gap-3">
+          <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-sky-300/10 text-sky-100">
+            <MailCheck className="size-4" aria-hidden="true" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-bold text-white">Need another link?</p>
+            <p className="mt-1 text-sm leading-6 text-zinc-400">
+              Send a fresh verification email to{" "}
+              <span className="font-semibold break-all text-zinc-100">{normalizedEmail}</span>.
+            </p>
+          </div>
         </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-white">Need another verification email?</p>
-          <p className="mt-1 text-sm leading-6 text-zinc-300">
-            We can send a fresh link to <span className="font-medium text-white">{normalizedEmail}</span>.
-          </p>
-        </div>
+
+        <Button
+          type="button"
+          onClick={handleSubmit}
+          className="h-11 rounded-xl border border-white/12 bg-white text-sm font-bold text-black hover:bg-zinc-200 sm:w-44"
+          disabled={formState.isPending}
+        >
+          {formState.isPending ? (
+            <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
+          ) : (
+            <Send className="size-4" aria-hidden="true" />
+          )}
+          Resend
+        </Button>
       </div>
 
       {formState.error ? (
-        <p className="mt-4 rounded-2xl border border-rose-400/25 bg-rose-400/10 px-4 py-3 text-sm text-rose-100">
+        <p className="mt-4 rounded-xl border border-rose-400/25 bg-rose-400/10 px-4 py-3 text-sm text-rose-100">
           {formState.error}
         </p>
       ) : null}
 
       {formState.successMessage ? (
-        <p className="mt-4 rounded-2xl border border-emerald-300/15 bg-emerald-400/8 px-4 py-3 text-sm text-emerald-100">
+        <p className="mt-4 rounded-xl border border-emerald-300/15 bg-emerald-400/8 px-4 py-3 text-sm text-emerald-100">
           {formState.successMessage}
         </p>
       ) : null}
-
-      <Button
-        type="button"
-        onClick={handleSubmit}
-        className="mt-4 h-11 w-full rounded-2xl border border-white/12 bg-white/[0.03] text-white hover:bg-white/[0.08]"
-        disabled={formState.isPending}
-      >
-        {formState.isPending ? <LoaderCircle className="size-4 animate-spin" /> : null}
-        Resend verification email
-      </Button>
     </div>
   );
 }

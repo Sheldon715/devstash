@@ -85,3 +85,4 @@
 - Refactor scanner agent completed with a repo-specific Codex subagent at `.codex/agents/refactor-scanner.toml`, shorthand scope support for common folders, folder-specific duplicate-code analysis instructions, and evidence-based refactor opportunity reporting
 - Server action refactor completed with shared action helpers for auth, validation, result shaping, and owned mutations, reduced duplication across AI/item/collection/profile/editor-preference actions, and passing lint, scoped action tests, and production build verification
 - Component Refactor Audit completed with shared item drawer hooks/panel components, unified collection and account dialog shells, consolidated action button/toast helpers, and passing lint/test/build verification
+- Email verification UI polish completed with a refined verification page layout, homepage-aligned brand icon, compact resend action, temporary verified success toast, and passing lint/build verification
