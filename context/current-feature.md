@@ -1,31 +1,20 @@
-# Current Feature: Refactor Server Actions
+# Current Feature
 
 ## Status
 
-In Progress
+<!-- Not Started|In Progress|Completed -->
 
 ## Goals
 
-- Reduce meaningful duplication across `src/actions`, especially in AI, item, and collection actions.
-- Extract small shared server-action helpers where they improve clarity without hiding domain intent.
-- Preserve current behavior, user-facing messages, and ownership/auth safety while refactoring.
+<!-- Goals & requirements -->
 
 ## Todo List
 
-- [x] Extract a shared authenticated action user helper for repeated `auth()` / `session.user.id` guards.
-- [x] Extract a shared Zod validation error formatter for repeated `safeParse` failure handling.
-- [x] Refactor repeated ownership-safe item and collection mutation flows into small shared helpers.
-- [x] Refactor the repeated AI action pipeline in `src/actions/ai.ts` while preserving `optimizePrompt` retry behavior.
-- [x] Run `npm run lint`, relevant tests, and `npm run build` after the refactor.
+<!-- Feature-specific checklist -->
 
 ## Notes
 
-- Primary refactor targets are `src/actions/ai.ts`, `src/actions/items.ts`, `src/actions/collections.ts`, `src/actions/editor-preferences.ts`, and `src/actions/profile.ts`.
-- Highest-confidence duplication from the scan:
-- AI actions repeat the same validate -> auth -> Pro gate -> rate limit -> OpenAI request -> parse -> error mapping flow.
-- Item and collection mutations repeat the same parse -> require user -> user-scoped DB call -> not-found handling -> serialize flow.
-- Auth/session guards and Zod error formatting repeat across most action files, but profile/auth state return shapes should remain explicit.
-- Not worth extracting unless the refactor naturally supports it: AI prompt builders, tiny serializers, and broader profile-specific action wrappers.
+<!-- Any extra notes -->
 
 ## History
 
@@ -94,3 +83,4 @@ In Progress
 - AI Prompt Optimization completed with a Pro-only prompt optimizer, header Optimize controls for prompt editors, Use/Keep review controls in preview and edit modes, no-op quality guards, accepted-prompt refresh behavior, and passing test/lint/build verification
 - UI Layout Polish completed with consistent sidebar active states, GitHub registration, mobile register-first layout, modal mobile drawer handling, tablet top-bar tuning, clearer Pro upload affordances, favorites typography polish, homepage trust copy, Playwright verification, and passing lint/build checks
 - Refactor scanner agent completed with a repo-specific Codex subagent at `.codex/agents/refactor-scanner.toml`, shorthand scope support for common folders, folder-specific duplicate-code analysis instructions, and evidence-based refactor opportunity reporting
+- Server action refactor completed with shared action helpers for auth, validation, result shaping, and owned mutations, reduced duplication across AI/item/collection/profile/editor-preference actions, and passing lint, scoped action tests, and production build verification
