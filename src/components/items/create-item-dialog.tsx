@@ -14,6 +14,7 @@ import {
 import { CodeLanguageSelect } from "@/components/items/code-language-select";
 import { FileUpload } from "@/components/items/file-upload";
 import { CreateItemTypePicker } from "@/components/items/create-item-type-picker";
+import { optimizePrompt } from "@/actions/ai";
 import {
   CreateCodeField,
   CreateItemSectionLabel,
@@ -348,6 +349,16 @@ export function CreateItemDialog({
                       placeholder={getContentPlaceholder(selectedType)}
                       value={formState.content}
                       onChange={(value) => updateFormField("content", value)}
+                      onOptimize={
+                        isPro && selectedType === "prompt"
+                          ? handleOptimizePrompt
+                          : undefined
+                      }
+                      onOptimizeError={handleAiPromptError}
+                      onOptimizeUnavailable={() =>
+                        handleAiPromptError("AI features require Pro subscription.")
+                      }
+                      showOptimize={selectedType === "prompt"}
                     />
                   ) : (
                     <CreateTextareaField
@@ -495,6 +506,28 @@ export function CreateItemDialog({
       description,
     }));
     setError(null);
+  }
+
+  async function handleOptimizePrompt() {
+    const result = await optimizePrompt({
+      title: formState.title,
+      description: formState.description,
+      content: formState.content,
+    });
+
+    if (!result.success) {
+      throw new Error(result.error);
+    }
+
+    return result.data;
+  }
+
+  function handleAiPromptError(message: string) {
+    setToastState({
+      message,
+      title: "Prompt optimization failed",
+      variant: "error",
+    });
   }
 
   function handleAcceptSuggestedTag(tag: string) {

@@ -4,7 +4,8 @@ import { useState, type ReactNode } from "react";
 import { Clock3, Download, FileText, ImageIcon } from "lucide-react";
 import Image from "next/image";
 
-import { explainCode } from "@/actions/ai";
+import { explainCode, optimizePrompt } from "@/actions/ai";
+import { updateItem } from "@/actions/items";
 import { CodeEditor } from "@/components/items/code-editor";
 import { MarkdownEditor } from "@/components/items/markdown-editor";
 import type { SerializedDashboardItemDetailRecord } from "@/components/items/item-drawer-types";
@@ -23,10 +24,14 @@ export function ItemDrawerBody({
   isPro,
   item,
   onAiExplainError,
+  onAiPromptError,
+  onItemUpdated,
 }: {
   isPro: boolean;
   item: SerializedDashboardItemDetailRecord;
   onAiExplainError: (message: string) => void;
+  onAiPromptError: (message: string) => void;
+  onItemUpdated: (item: SerializedDashboardItemDetailRecord) => void;
 }) {
   return (
     <div className="flex min-w-0 flex-col gap-4 pb-2">
@@ -35,6 +40,8 @@ export function ItemDrawerBody({
           isPro={isPro}
           item={item}
           onAiExplainError={onAiExplainError}
+          onAiPromptError={onAiPromptError}
+          onItemUpdated={onItemUpdated}
         />
       </DrawerMetaSection>
 
@@ -119,13 +126,62 @@ export function ItemDrawerFooterMeta({ item }: { item: SerializedDashboardItemDe
   );
 }
 
-function ReadonlyMarkdownContent({ value }: { value: string }) {
+function ReadonlyMarkdownContent({
+  isPro,
+  item,
+  onAiError,
+  onItemUpdated,
+  value,
+}: {
+  isPro: boolean;
+  item: SerializedDashboardItemDetailRecord;
+  onAiError: (message: string) => void;
+  onItemUpdated: (item: SerializedDashboardItemDetailRecord) => void;
+  value: string;
+}) {
+  async function handleOptimize() {
+    const result = await optimizePrompt({
+      title: item.title,
+      description: item.description,
+      content: value,
+    });
+
+    if (!result.success) {
+      throw new Error(result.error);
+    }
+
+    return result.data;
+  }
+
+  async function handleAcceptOptimized(optimizedPrompt: string) {
+    const result = await updateItem(item.id, {
+      title: item.title,
+      description: item.description === "No description yet." ? "" : item.description,
+      content: optimizedPrompt,
+      language: item.language ?? "",
+      url: item.url ?? "",
+      tags: item.tags.map((tag) => tag.name),
+      collectionIds: item.collectionIds,
+    });
+
+    if (!result.success) {
+      throw new Error(result.error);
+    }
+
+    onItemUpdated(result.data);
+  }
+
   return (
     <MarkdownEditor
       heightClassName="h-[clamp(14rem,36dvh,30rem)] min-[1400px]:h-[clamp(16rem,42dvh,34rem)]"
       maxHeight={480}
       minHeight={224}
+      onAcceptOptimized={handleAcceptOptimized}
+      onOptimize={isPro && item.typeKey === "prompt" ? handleOptimize : undefined}
+      onOptimizeError={onAiError}
+      onOptimizeUnavailable={() => onAiError("AI features require Pro subscription.")}
       readOnly
+      showOptimize={item.typeKey === "prompt"}
       value={value}
     />
   );
@@ -135,10 +191,14 @@ function PrimaryContentCard({
   isPro,
   item,
   onAiExplainError,
+  onAiPromptError,
+  onItemUpdated,
 }: {
   isPro: boolean;
   item: SerializedDashboardItemDetailRecord;
   onAiExplainError: (message: string) => void;
+  onAiPromptError: (message: string) => void;
+  onItemUpdated: (item: SerializedDashboardItemDetailRecord) => void;
 }) {
   if (item.contentMode === "URL") {
     if (!item.url) {
@@ -224,7 +284,15 @@ function PrimaryContentCard({
   }
 
   if (isMarkdownEditorItemType(item.typeKey)) {
-    return <ReadonlyMarkdownContent value={item.content} />;
+    return (
+      <ReadonlyMarkdownContent
+        isPro={isPro}
+        item={item}
+        onAiError={onAiPromptError}
+        onItemUpdated={onItemUpdated}
+        value={item.content}
+      />
+    );
   }
 
   return (

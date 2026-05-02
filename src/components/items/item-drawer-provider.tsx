@@ -530,7 +530,9 @@ export function ItemDrawerProvider({
                   item={selectedItem}
                   onAcceptSuggestedTag={handleAcceptSuggestedTag}
                   onAiDescriptionError={handleAiDescriptionError}
+                  onAiPromptError={handleAiPromptError}
                   onAiTagError={handleAiTagError}
+                  onAcceptOptimizedPrompt={handleAcceptOptimizedPromptFromEdit}
                   onCollectionIdsChange={updateEditCollectionIds}
                   onChange={updateEditFormField}
                   onGeneratedDescription={handleGeneratedDescription}
@@ -540,6 +542,8 @@ export function ItemDrawerProvider({
                   isPro={isPro}
                   item={selectedItem}
                   onAiExplainError={handleAiExplainError}
+                  onAiPromptError={handleAiPromptError}
+                  onItemUpdated={handleAiItemUpdated}
                 />
               ) : isLoadingSelectedItem ? (
                 <DrawerBodySkeleton />
@@ -674,12 +678,95 @@ export function ItemDrawerProvider({
     });
   }
 
+  function handleAiPromptError(message: string) {
+    setToastState({
+      message,
+      title: "Prompt optimization failed",
+      variant: "error",
+    });
+  }
+
   function handleAiExplainError(message: string) {
     setToastState({
       message,
       title: "Explain failed",
       variant: "error",
     });
+  }
+
+  function handleAiItemUpdated(item: SerializedDashboardItemDetailRecord) {
+    setDetailsById((current) => ({
+      ...current,
+      [item.id]: item,
+    }));
+    setEditFormState(createEditItemFormState(item));
+    setToastState({
+      message: "Prompt updated.",
+      title: "Saved",
+      variant: "success",
+    });
+    router.refresh();
+  }
+
+  async function handleAcceptOptimizedPromptFromEdit(optimizedPrompt: string) {
+    if (!selectedItem || !editFormState) {
+      return;
+    }
+
+    const nextFormState = {
+      ...editFormState,
+      content: optimizedPrompt,
+    };
+
+    setEditError(null);
+    setEditFormState(nextFormState);
+
+    let result: Awaited<ReturnType<typeof updateItem>>;
+
+    try {
+      result = await updateItem(selectedItem.id, {
+        title: nextFormState.title,
+        description: nextFormState.description,
+        content: nextFormState.content,
+        language: nextFormState.language,
+        url: nextFormState.url,
+        tags: parseTagsInput(nextFormState.tags),
+        collectionIds: nextFormState.collectionIds,
+      });
+    } catch {
+      const message = "We couldn't save the optimized prompt right now.";
+
+      setEditError(message);
+      setToastState({
+        message,
+        title: "Prompt update failed",
+        variant: "error",
+      });
+      throw new Error(message);
+    }
+
+    if (!result.success) {
+      setEditError(result.error);
+      setToastState({
+        message: result.error,
+        title: "Prompt update failed",
+        variant: "error",
+      });
+      throw new Error(result.error);
+    }
+
+    setDetailsById((current) => ({
+      ...current,
+      [result.data.id]: result.data,
+    }));
+    setEditFormState(createEditItemFormState(result.data));
+    setIsEditing(false);
+    setToastState({
+      message: "Prompt updated.",
+      title: "Saved",
+      variant: "success",
+    });
+    router.refresh();
   }
 
   function handleGeneratedDescription(description: string) {

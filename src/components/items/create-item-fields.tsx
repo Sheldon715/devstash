@@ -106,13 +106,21 @@ export function CreateMarkdownField({
   disabled = false,
   label,
   onChange,
+  onOptimize,
+  onOptimizeError,
+  onOptimizeUnavailable,
   placeholder,
+  showOptimize = false,
   value,
 }: {
   disabled?: boolean;
   label: string;
   onChange: (value: string) => void;
+  onOptimize?: () => Promise<{ optimizedPrompt: string; changes: string[] }>;
+  onOptimizeError?: (message: string) => void;
+  onOptimizeUnavailable?: () => void;
   placeholder?: string;
+  showOptimize?: boolean;
   value: string;
 }) {
   return (
@@ -125,6 +133,10 @@ export function CreateMarkdownField({
         placeholder={placeholder}
         value={value}
         onChange={onChange}
+        onOptimize={onOptimize}
+        onOptimizeError={onOptimizeError}
+        onOptimizeUnavailable={onOptimizeUnavailable}
+        showOptimize={showOptimize}
       />
     </div>
   );

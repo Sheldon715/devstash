@@ -9,6 +9,7 @@ import {
   type CollectionOption,
 } from "@/components/items/collection-multi-select";
 import { MarkdownEditor } from "@/components/items/markdown-editor";
+import { optimizePrompt } from "@/actions/ai";
 import type {
   EditItemFormState,
   SerializedDashboardItemDetailRecord,
@@ -33,7 +34,9 @@ interface ItemDrawerEditBodyProps {
   item: SerializedDashboardItemDetailRecord;
   onAcceptSuggestedTag: (tag: string) => void;
   onAiDescriptionError: (message: string) => void;
+  onAiPromptError: (message: string) => void;
   onAiTagError: (message: string) => void;
+  onAcceptOptimizedPrompt: (optimizedPrompt: string) => Promise<void> | void;
   onCollectionIdsChange: (collectionIds: string[]) => void;
   onChange: (field: EditItemTextField, value: string) => void;
   onGeneratedDescription: (description: string) => void;
@@ -48,7 +51,9 @@ export function ItemDrawerEditBody({
   item,
   onAcceptSuggestedTag,
   onAiDescriptionError,
+  onAiPromptError,
   onAiTagError,
+  onAcceptOptimizedPrompt,
   onCollectionIdsChange,
   onChange,
   onGeneratedDescription,
@@ -130,6 +135,12 @@ export function ItemDrawerEditBody({
             label="Content"
             value={formState.content}
             onChange={(value) => onChange("content", value)}
+            item={item}
+            disabled={disabled}
+            isPro={isPro}
+            onAiError={onAiPromptError}
+            onAcceptOptimized={onAcceptOptimizedPrompt}
+            showOptimize={item.typeKey === "prompt"}
           />
         ) : (
           <EditTextareaField
@@ -247,21 +258,53 @@ function EditCodeField({
 
 function EditMarkdownField({
   label,
+  disabled = false,
+  isPro,
+  item,
   onChange,
+  onAiError,
+  onAcceptOptimized,
+  showOptimize = false,
   value,
 }: {
   label: string;
+  disabled?: boolean;
+  isPro: boolean;
+  item: SerializedDashboardItemDetailRecord;
+  onAiError: (message: string) => void;
+  onAcceptOptimized?: (optimizedPrompt: string) => Promise<void> | void;
+  showOptimize?: boolean;
   onChange: (value: string) => void;
   value: string;
 }) {
+  async function handleOptimize() {
+    const result = await optimizePrompt({
+      title: item.title,
+      description: item.description,
+      content: value,
+    });
+
+    if (!result.success) {
+      throw new Error(result.error);
+    }
+
+    return result.data;
+  }
+
   return (
     <div className="space-y-2">
       <p className="text-xs font-medium uppercase tracking-[0.22em] text-zinc-500">{label}</p>
       <MarkdownEditor
+        disabled={disabled}
         maxHeight={400}
         minHeight={260}
         value={value}
         onChange={onChange}
+        onAcceptOptimized={showOptimize ? onAcceptOptimized : undefined}
+        onOptimize={showOptimize && isPro ? handleOptimize : undefined}
+        onOptimizeError={onAiError}
+        onOptimizeUnavailable={() => onAiError("AI features require Pro subscription.")}
+        showOptimize={showOptimize}
       />
     </div>
   );

@@ -32,7 +32,12 @@ vi.mock("@/lib/rate-limit", () => ({
   getRateLimitErrorMessage: (reset: number) => `Too many attempts. Reset at ${reset}.`,
 }));
 
-import { explainCode, generateAutoTags, generateItemDescription } from "@/actions/ai";
+import {
+  explainCode,
+  generateAutoTags,
+  generateItemDescription,
+  optimizePrompt,
+} from "@/actions/ai";
 
 describe("AI actions", () => {
   beforeEach(() => {
@@ -449,6 +454,213 @@ describe("AI actions", () => {
       success: false,
       data: null,
       error: "We couldn't explain this code right now.",
+    });
+  });
+
+  it("validates prompt optimization inputs before checking auth", async () => {
+    const result = await optimizePrompt({
+      title: "Prompt draft",
+      content: "   ",
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "Add a prompt before optimizing it.",
+    });
+    expect(authMock).not.toHaveBeenCalled();
+    expect(chatCompletionsCreateMock).not.toHaveBeenCalled();
+  });
+
+  it("blocks Free users before optimizing prompts", async () => {
+    getUserBillingUsageMock.mockResolvedValue({
+      plan: "FREE",
+      isPro: false,
+      totalItems: 0,
+      totalCollections: 0,
+    });
+
+    const result = await optimizePrompt({
+      title: "Prompt draft",
+      content: "Rewrite this prompt",
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "AI prompt optimization requires DevStash Pro.",
+    });
+    expect(checkAiRateLimitMock).not.toHaveBeenCalled();
+    expect(chatCompletionsCreateMock).not.toHaveBeenCalled();
+  });
+
+  it("optimizes prompts and returns a reviewable suggestion", async () => {
+    chatCompletionsCreateMock.mockResolvedValue({
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              optimizedPrompt: [
+                "## Role",
+                "Act as a helpful assistant.",
+                "",
+                "## Task",
+                "- Give concise, practical answers.",
+              ].join("\n"),
+              changes: ["Added structure", "Clarified the role"],
+            }),
+          },
+        },
+      ],
+    });
+
+    const result = await optimizePrompt({
+      title: "Assistant prompt",
+      description: "Internal workflow prompt",
+      content: "You are a helpful assistant that does many things.",
+    });
+    const request = chatCompletionsCreateMock.mock.calls[0]?.[0] as
+      | { messages?: Array<{ content?: string | Array<{ text?: string }> }> }
+      | undefined;
+
+    expect(checkAiRateLimitMock).toHaveBeenCalledWith("promptOptimize", "user-1");
+    expect(chatCompletionsCreateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        model: "mimo-v2-flash",
+        temperature: 0.3,
+        top_p: 0.9,
+        max_completion_tokens: 720,
+        response_format: { type: "json_object" },
+      }),
+    );
+    expect(request?.messages?.[1]?.content).toContain(
+      "Rewrite this prompt into a stronger, cleaner markdown prompt.",
+    );
+    expect(request?.messages?.[1]?.content).toContain("Title: Assistant prompt");
+    expect(result).toEqual({
+      success: true,
+      data: {
+        optimizedPrompt: [
+          "## Role",
+          "Act as a helpful assistant.",
+          "",
+          "## Task",
+          "- Give concise, practical answers.",
+        ].join("\n"),
+        changes: ["Added structure", "Clarified the role"],
+      },
+      error: null,
+    });
+  });
+
+  it("rejects prompt updates that do not actually change the prompt", async () => {
+    chatCompletionsCreateMock.mockResolvedValue({
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              optimizedPrompt: "You are a helpful assistant that does many things.",
+              changes: ["Kept the prompt unchanged"],
+            }),
+          },
+        },
+      ],
+    });
+
+    const result = await optimizePrompt({
+      title: "Assistant prompt",
+      content: "You are a helpful assistant that does many things.",
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "No useful prompt update was generated.",
+    });
+  });
+
+  it("retries prompt optimization when the first rewrite is too similar", async () => {
+    chatCompletionsCreateMock
+      .mockResolvedValueOnce({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                optimizedPrompt: "You are a helpful assistant that does many things.",
+                changes: ["Kept the prompt unchanged"],
+              }),
+            },
+          },
+        ],
+      })
+      .mockResolvedValueOnce({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                optimizedPrompt: [
+                  "## Role",
+                  "Act as a focused assistant.",
+                  "",
+                  "## Requirements",
+                  "- Give concise, practical help.",
+                  "- Avoid vague or generic responses.",
+                ].join("\n"),
+                changes: ["Added markdown sections", "Clarified requirements"],
+              }),
+            },
+          },
+        ],
+      });
+
+    const result = await optimizePrompt({
+      title: "Assistant prompt",
+      content: "You are a helpful assistant that does many things.",
+    });
+
+    expect(chatCompletionsCreateMock).toHaveBeenCalledTimes(2);
+    expect(result).toEqual({
+      success: true,
+      data: {
+        optimizedPrompt: [
+          "## Role",
+          "Act as a focused assistant.",
+          "",
+          "## Requirements",
+          "- Give concise, practical help.",
+          "- Avoid vague or generic responses.",
+        ].join("\n"),
+        changes: ["Added markdown sections", "Clarified requirements"],
+      },
+      error: null,
+    });
+  });
+
+  it("rejects prompt rewrites that only paraphrase the original", async () => {
+    chatCompletionsCreateMock.mockResolvedValue({
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              optimizedPrompt:
+                "Generate concise, developer-focused documentation for this feature. Include its purpose, functionality, key inputs and outputs, and operational considerations. Use a practical tone and avoid marketing language.",
+              changes: ["Changed one verb"],
+            }),
+          },
+        },
+      ],
+    });
+
+    const result = await optimizePrompt({
+      title: "Docs prompt",
+      content:
+        "Produce concise, developer-focused documentation for this feature. Cover its purpose, functionality, key inputs and outputs, and any operational considerations. Use a practical tone and avoid marketing language.",
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "No useful prompt update was generated.",
     });
   });
 });
