@@ -1,15 +1,159 @@
 # DevStash
 
-Developer knowledge hub for snippets, prompts, notes, commands, files, images, links, and custom item types.
+DevStash is a full-stack knowledge hub for developers to save, organize, and reuse snippets, prompts, commands, notes, files, images, and links in one place.
 
-## Stack
+It was built as a portfolio-grade product project: not just a UI mock, but a working Next.js application with authentication, billing gates, uploads, AI-assisted workflows, database-backed search/navigation, and a production-minded data model.
 
-- Next.js 16 App Router
+![DevStash dashboard](./docs/readme/dashboard-overview.png)
+
+## Why I Built It
+
+Developers collect useful things everywhere: shell history, chat threads, Markdown files, screenshots, gists, bookmarks, and half-finished notes. DevStash explores a simple product question:
+
+How do you turn scattered developer knowledge into a searchable personal workspace that feels fast, structured, and worth returning to?
+
+This project let me work through:
+
+- product design for a developer-focused SaaS workflow
+- full-stack feature delivery in Next.js App Router
+- authentication and account management flows
+- Prisma schema design on Neon Postgres
+- subscription-aware feature gating
+- file/image handling with Cloudflare R2
+- AI features that fit real user workflows instead of feeling bolted on
+
+## What It Does
+
+DevStash supports a mixed-content workspace where a user can:
+
+- save snippets, prompts, notes, commands, files, images, and URLs
+- organize items into collections with many-to-many membership
+- tag, favorite, pin, and browse content by type
+- open and edit items in a reusable right-side drawer
+- search items and collections from a global command palette
+- upload files and images with gated Free vs Pro behavior
+- manage account settings, editor preferences, and billing
+- use AI helpers for summaries, tags, code explanations, and prompt optimization
+
+## Highlights
+
+### Product features
+
+- Dashboard with live stats, pinned items, recent items, and collection summaries
+- Auth flows for GitHub and email/password sign-in
+- Email verification and forgot/reset password flows
+- Type-specific creation and editing flows
+- Monaco-powered code editor for snippets and commands
+- Markdown editor with preview for notes and prompts
+- File list and image gallery views
+- Favorites, collections, settings, profile, and upgrade flows
+- Stripe-based subscription management and feature limits
+
+### Engineering features
+
+- Next.js App Router with server-first data fetching
+- Prisma 7 + Neon PostgreSQL
+- Auth.js v5 with Prisma adapter
+- Zod validation in server actions
+- Upstash rate limiting on auth and AI-sensitive routes
+- Cloudflare R2 upload/download pipeline with cleanup handling
+- Vitest coverage focused on actions, DB helpers, and utilities
+- Responsive UI verified in-browser during implementation
+
+## Tech Stack
+
+- Next.js 16
 - React 19
 - TypeScript
 - Tailwind CSS v4
 - Prisma 7
-- PostgreSQL via Neon
+- Neon PostgreSQL
+- Auth.js v5
+- Stripe
+- Cloudflare R2
+- Upstash Redis / Ratelimit
+- Monaco Editor
+- Vitest
+
+## Architecture Notes
+
+Some decisions I made on purpose:
+
+- **Server components by default** for data-heavy routes, with client components reserved for editor interactions, dialogs, and command palette behavior.
+- **Join tables for tags and collections** so items can belong to multiple collections without bending the data model.
+- **Feature gating in application logic** for Free vs Pro limits on items, collections, uploads, and AI flows.
+- **A reusable item drawer** shared across dashboard and listing views to keep creation, inspection, and editing behavior consistent.
+- **Focused test coverage** around server actions and utility layers, where most of the business logic lives.
+
+## Screens
+
+- `Dashboard`: live workspace overview with collections, pinned items, and recent activity
+- `Items by Type`: dedicated listing views for snippets, prompts, notes, commands, files, images, and URLs
+- `Collections`: browse and manage grouped knowledge
+- `Favorites`: quick access to saved high-value items and collections
+- `Settings`: billing, editor preferences, and account-related controls
+- `Profile/Auth`: registration, sign-in, verification, password reset, and account management flows
+
+## Local Setup
+
+### Prerequisites
+
+- Node.js 20+
+- npm
+- A Neon Postgres database
+
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Configure environment variables
+
+Create a `.env` file with the app's required variables.
+
+Minimum local database setup:
+
+```env
+DATABASE_URL=postgres://...
+DIRECT_URL=postgres://...
+AUTH_SECRET=...
+```
+
+Depending on which features you want to run locally, you may also need:
+
+- GitHub OAuth credentials
+- Resend email settings
+- Stripe keys and price IDs
+- Cloudflare R2 credentials
+- Upstash Redis credentials
+- `MIMO_API_KEY` for AI features
+
+### 3. Generate Prisma client
+
+```bash
+npm run prisma:generate
+```
+
+### 4. Run migrations
+
+```bash
+npm run prisma:migrate:dev
+```
+
+### 5. Seed demo data
+
+```bash
+npm run db:seed
+```
+
+### 6. Start the app
+
+```bash
+npm run dev
+```
+
+Open `http://localhost:3000`.
 
 ## Scripts
 
@@ -29,59 +173,52 @@ npm run prisma:studio
 npm run prisma:validate
 ```
 
-## Local Setup
+## Data Model Snapshot
 
-1. Install dependencies:
+The core schema includes:
 
-```bash
-npm install
-```
+- `User`
+- `Item`
+- `ItemType`
+- `Collection`
+- `Tag`
+- `ItemTag`
+- `CollectionItem`
+- Auth.js adapter tables for sessions, accounts, and verification tokens
 
-2. Create `.env` with a valid `DATABASE_URL`.
-   For Neon deployments, also add a non-pooled `DIRECT_URL` for Prisma CLI commands like `prisma migrate deploy`.
-   Stripe billing routes also use:
+The project uses structured item types plus many-to-many relationships for both tags and collections, which keeps mixed-content retrieval flexible.
 
-```env
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_PRO_MONTHLY_PRICE_ID=price_...
-STRIPE_PRO_YEARLY_PRICE_ID=price_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-```
+## AI Features
 
-3. Generate the Prisma client:
+AI is treated as a workflow enhancement, not the whole product. Current AI-assisted actions include:
 
-```bash
-npm run prisma:generate
-```
+- auto-generating tag suggestions
+- generating concise item descriptions
+- explaining saved code snippets
+- optimizing prompt content
 
-4. Seed demo data if needed:
+These flows are gated to Pro usage and validated through server actions before write-back.
 
-```bash
-npm run db:seed
-```
+## Testing
 
-5. Start the app:
+This repo currently emphasizes:
 
-```bash
-npm run dev
-```
+- `npm run lint` for static checks
+- `npm run build` for production compilation safety
+- `npm run test` for Vitest coverage on server actions and utilities
 
-The development server runs at `http://localhost:3000`.
+Component tests are intentionally limited; the most important app logic here sits in actions, data helpers, validation, billing rules, and auth-sensitive flows.
 
-6. Run the unit tests:
+## What I'd Improve Next
 
-```bash
-npm run test
-```
+If I kept pushing this project, the next areas I would focus on are:
 
-## Project Notes
+- full-text search ranking beyond the current lightweight command-palette flow
+- richer import/export workflows
+- stronger automated coverage around billing and upload edge cases
+- collaboration or shared workspaces
+- a more formal deployment story and seeded demo environment
 
-- The dashboard UI is backed by Prisma queries against the demo user data.
-- System item types are seeded and used for dashboard filters and item-type pages.
-- Unit tests use Vitest and are currently limited to server actions and utilities.
-- Project context and workflow notes live under `context/` and `AGENTS.md`.
+## Repository Context
 
-## Prisma + Neon
-
-- `DATABASE_URL` is used at runtime by Prisma Client through the `@prisma/adapter-pg` adapter.
-- `DIRECT_URL` is used by Prisma CLI commands when present, which is recommended for Neon migrations and deploy-time Prisma commands.
+This repo also includes internal planning and workflow documentation under [`context/`](./context) and [`AGENTS.md`](./AGENTS.md), which I used to keep feature work scoped and traceable while building.

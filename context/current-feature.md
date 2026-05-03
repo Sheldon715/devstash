@@ -1,22 +1,30 @@
 # Current Feature
 
 ## Status
-
-<!-- Not Started|In Progress|Completed -->
+Completed
 
 ## Goals
 
-<!-- Goals & requirements -->
+- Research strong README patterns for portfolio/job-search use
+- Rewrite the project README in English to better present DevStash to recruiters and engineers
+- Include product proof, key engineering decisions, and clear local setup steps
+- Add or reference a product screenshot if it improves the README
 
 ## Todo List
 
-<!-- Feature-specific checklist -->
+- [x] Review project context and the current README
+- [x] Research README best practices for portfolio-style project presentation
+- [x] Rewrite `README.md` in English
+- [x] Add or select screenshot support for the README
+- [x] Verify the README against the current codebase
 
 ## Notes
 
-<!-- Any extra notes -->
+- Focus this pass on hiring/portfolio presentation rather than internal contributor docs.
 
 ## History
+
+- Portfolio README refresh completed with an English, hiring-oriented project overview, feature and architecture summary, realistic setup instructions, and a stable dashboard screenshot under `docs/readme/`
 
 - Initial Next.js app scaffold created from Create Next App
 - Initial framework setup completed, including project context files and boilerplate cleanup
