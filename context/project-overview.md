@@ -507,6 +507,11 @@ A clean REST or route-handler layout is enough for v1.
 - 🧱 consistent item editor across types
 - 🔎 search visible at all times on desktop
 
+### Screenshots
+Refer to the screenshots below as a base for the dashboard UI. It does not have to be exact. Use it as a reference:
+- @context/screenshots/dashboard-ui-main.png
+- @context/screenshots/dashboard-ui-drawer.png
+
 ## Recommended layout
 
 ### Left sidebar

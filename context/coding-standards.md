@@ -46,6 +46,7 @@ Example v4 configuration:
 @theme {
   --color-primary: oklch(50% 0.2 250);
 }
+```
 
 ## File Organization
 
@@ -54,6 +55,7 @@ Example v4 configuration:
 - Server Actions: `src/actions/[feature].ts`
 - Types: `src/types/[feature].ts`
 - Lib/Utils: `src/lib/[utility].ts`
+- Keep route files thin. If a page has multiple sections or cards, extract them into `src/components/[feature]/` instead of defining everything inside `page.tsx`.
 
 ## Naming
 
@@ -94,4 +96,11 @@ Example v4 configuration:
 - No commented-out code unless specified
 - No unused imports or variables
 - Keep functions under 50 lines when possible
-```
+
+## Testing
+
+- Use Vitest for unit tests
+- Unit tests should target `src/actions/*` and `src/lib/*`
+- Do not add component tests unless explicitly requested
+- Co-locate tests with implementation files using `*.test.ts`
+- Prefer mocking auth, Prisma, and other external boundaries in server action tests

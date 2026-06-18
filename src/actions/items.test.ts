@@ -1,0 +1,999 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const {
+  authMock,
+  createItemRecordMock,
+  deleteItemRecordMock,
+  getUserBillingUsageMock,
+  toggleItemFavoriteRecordMock,
+  toggleItemPinRecordMock,
+  updateItemRecordMock,
+} = vi.hoisted(() => ({
+  authMock: vi.fn(),
+  createItemRecordMock: vi.fn(),
+  deleteItemRecordMock: vi.fn(),
+  getUserBillingUsageMock: vi.fn(),
+  toggleItemFavoriteRecordMock: vi.fn(),
+  toggleItemPinRecordMock: vi.fn(),
+  updateItemRecordMock: vi.fn(),
+}));
+
+vi.mock("@/auth", () => ({
+  auth: authMock,
+}));
+
+vi.mock("@/lib/billing/usage", () => ({
+  getUserBillingUsage: getUserBillingUsageMock,
+}));
+
+vi.mock("@/lib/db/items", () => ({
+  createItem: createItemRecordMock,
+  deleteItem: deleteItemRecordMock,
+  toggleItemFavorite: toggleItemFavoriteRecordMock,
+  toggleItemPin: toggleItemPinRecordMock,
+  updateItem: updateItemRecordMock,
+}));
+
+import { createItem, deleteItem, toggleItemFavorite, toggleItemPin, updateItem } from "@/actions/items";
+
+describe("item actions", () => {
+  beforeEach(() => {
+    authMock.mockReset();
+    createItemRecordMock.mockReset();
+    deleteItemRecordMock.mockReset();
+    getUserBillingUsageMock.mockReset();
+    toggleItemFavoriteRecordMock.mockReset();
+    toggleItemPinRecordMock.mockReset();
+    updateItemRecordMock.mockReset();
+    getUserBillingUsageMock.mockResolvedValue({
+      plan: "FREE",
+      isPro: false,
+      totalItems: 0,
+      totalCollections: 0,
+    });
+  });
+
+  it("returns create validation errors before checking auth", async () => {
+    const result = await createItem({
+      typeKey: "snippet",
+      title: "   ",
+      description: null,
+      content: null,
+      url: null,
+      language: null,
+      tags: [],
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "Title is required.",
+    });
+    expect(authMock).not.toHaveBeenCalled();
+    expect(createItemRecordMock).not.toHaveBeenCalled();
+  });
+
+  it("requires a URL when creating link items", async () => {
+    const result = await createItem({
+      typeKey: "link",
+      title: "Docs",
+      description: null,
+      content: null,
+      url: "",
+      language: null,
+      tags: [],
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "URL is required for link items.",
+    });
+    expect(authMock).not.toHaveBeenCalled();
+    expect(createItemRecordMock).not.toHaveBeenCalled();
+  });
+
+  it("requires a signed-in user to create an item", async () => {
+    authMock.mockResolvedValue(null);
+
+    const result = await createItem({
+      typeKey: "command",
+      title: "Useful command",
+      description: "",
+      content: "npm run build",
+      url: "",
+      language: "shell",
+      tags: ["cli"],
+      collectionIds: [],
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "You need to be signed in to create items.",
+    });
+    expect(createItemRecordMock).not.toHaveBeenCalled();
+  });
+
+  it("trims and normalizes payloads before creating an item", async () => {
+    const createdAt = new Date("2026-04-22T03:12:00.000Z");
+    const updatedAt = new Date("2026-04-24T08:30:00.000Z");
+
+    authMock.mockResolvedValue({
+      user: {
+        id: "user-1",
+      },
+    });
+    createItemRecordMock.mockResolvedValue({
+      id: "item-1",
+      title: "Useful command",
+      description: "Runs the production build.",
+      contentMode: "TEXT",
+      content: "npm run build",
+      url: null,
+      fileName: null,
+      fileUrl: null,
+      fileMimeType: null,
+      fileSizeBytes: null,
+      language: "shell",
+      aiSummary: null,
+      collectionIds: ["collection-1", "collection-2"],
+      collectionNames: [],
+      tags: [
+        {
+          color: null,
+          name: "cli",
+        },
+      ],
+      isPinned: false,
+      isFavorite: false,
+      typeKey: "command",
+      typeLabel: "Command",
+      createdAt,
+      updatedAt,
+      lastAccessedAt: null,
+    });
+
+    const result = await createItem({
+      typeKey: "command",
+      title: "  Useful command  ",
+      description: "  Runs the production build. ",
+      content: " npm run build ",
+      url: "https://example.com/ignored",
+      language: " shell ",
+      tags: [" cli ", "cli"],
+      collectionIds: [" collection-1 ", "collection-1", "collection-2"],
+    });
+
+    expect(createItemRecordMock).toHaveBeenCalledWith("user-1", {
+      typeKey: "command",
+      title: "Useful command",
+      description: "Runs the production build.",
+      content: "npm run build",
+      file: null,
+      url: null,
+      language: "shell",
+      tags: ["cli"],
+      collectionIds: ["collection-1", "collection-2"],
+    });
+    expect(result).toEqual({
+      success: true,
+      data: {
+        id: "item-1",
+        title: "Useful command",
+        description: "Runs the production build.",
+        contentMode: "TEXT",
+        content: "npm run build",
+        url: null,
+        fileName: null,
+        fileUrl: null,
+        fileMimeType: null,
+        fileSizeBytes: null,
+        language: "shell",
+        aiSummary: null,
+        collectionIds: ["collection-1", "collection-2"],
+        collectionNames: [],
+        tags: [
+          {
+            color: null,
+            name: "cli",
+          },
+        ],
+        isPinned: false,
+        isFavorite: false,
+        typeKey: "command",
+        typeLabel: "Command",
+        createdAt: createdAt.toISOString(),
+        updatedAt: updatedAt.toISOString(),
+        lastAccessedAt: null,
+      },
+      error: null,
+    });
+  });
+
+  it("blocks Free users at the item limit", async () => {
+    authMock.mockResolvedValue({
+      user: {
+        id: "user-1",
+      },
+    });
+    getUserBillingUsageMock.mockResolvedValue({
+      plan: "FREE",
+      isPro: false,
+      totalItems: 50,
+      totalCollections: 0,
+    });
+
+    const result = await createItem({
+      typeKey: "note",
+      title: "Loose note",
+      description: "",
+      content: "Saved for later.",
+      url: "",
+      language: "",
+      tags: [],
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "Free workspaces can save up to 50 items. Upgrade to Pro to save more.",
+    });
+    expect(createItemRecordMock).not.toHaveBeenCalled();
+  });
+
+  it("allows Pro users to create items beyond the Free item limit", async () => {
+    const createdAt = new Date("2026-04-22T03:12:00.000Z");
+    const updatedAt = new Date("2026-04-24T08:30:00.000Z");
+
+    authMock.mockResolvedValue({
+      user: {
+        id: "user-1",
+      },
+    });
+    getUserBillingUsageMock.mockResolvedValue({
+      plan: "PRO",
+      isPro: true,
+      totalItems: 50,
+      totalCollections: 0,
+    });
+    createItemRecordMock.mockResolvedValue({
+      id: "item-1",
+      title: "Loose note",
+      description: null,
+      contentMode: "TEXT",
+      content: "Saved for later.",
+      url: null,
+      fileName: null,
+      fileUrl: null,
+      fileMimeType: null,
+      fileSizeBytes: null,
+      language: null,
+      aiSummary: null,
+      collectionIds: [],
+      collectionNames: [],
+      tags: [],
+      isPinned: false,
+      isFavorite: false,
+      typeKey: "note",
+      typeLabel: "Note",
+      createdAt,
+      updatedAt,
+      lastAccessedAt: null,
+    });
+
+    const result = await createItem({
+      typeKey: "note",
+      title: "Loose note",
+      description: "",
+      content: "Saved for later.",
+      url: "",
+      language: "",
+      tags: [],
+    });
+
+    expect(result.success).toBe(true);
+    expect(createItemRecordMock).toHaveBeenCalledWith("user-1", expect.objectContaining({
+      typeKey: "note",
+    }));
+  });
+
+  it("allows file and image items with uploaded file metadata", async () => {
+    const createdAt = new Date("2026-04-22T03:12:00.000Z");
+    const updatedAt = new Date("2026-04-24T08:30:00.000Z");
+
+    authMock.mockResolvedValue({
+      user: {
+        id: "user-1",
+      },
+    });
+    getUserBillingUsageMock.mockResolvedValue({
+      plan: "PRO",
+      isPro: true,
+      totalItems: 0,
+      totalCollections: 0,
+    });
+    createItemRecordMock
+      .mockResolvedValueOnce({
+        id: "item-file",
+        title: "Config archive",
+        description: null,
+        contentMode: "FILE",
+        content: null,
+        url: null,
+        fileName: null,
+        fileUrl: null,
+        fileMimeType: null,
+        fileSizeBytes: null,
+        language: null,
+        aiSummary: null,
+        collectionNames: [],
+        tags: [],
+        isPinned: false,
+        isFavorite: false,
+        typeKey: "file",
+        typeLabel: "File",
+        createdAt,
+        updatedAt,
+        lastAccessedAt: null,
+      })
+      .mockResolvedValueOnce({
+        id: "item-image",
+        title: "Architecture sketch",
+        description: null,
+        contentMode: "FILE",
+        content: null,
+        url: null,
+        fileName: null,
+        fileUrl: null,
+        fileMimeType: null,
+        fileSizeBytes: null,
+        language: null,
+        aiSummary: null,
+        collectionNames: [],
+        tags: [],
+        isPinned: false,
+        isFavorite: false,
+        typeKey: "image",
+        typeLabel: "Image",
+        createdAt,
+        updatedAt,
+        lastAccessedAt: null,
+      });
+
+    await expect(
+      createItem({
+        typeKey: "file",
+        title: "Config archive",
+        description: "",
+        content: "ignored file content",
+        file: {
+          fileKey: "users/user-1/file/config.json",
+          fileUrl: null,
+          fileName: "config.json",
+          fileMimeType: "application/json",
+          fileSizeBytes: 512,
+        },
+        url: "https://example.com/ignored",
+        language: "typescript",
+        tags: [],
+      }),
+    ).resolves.toMatchObject({
+      success: true,
+      data: {
+        content: null,
+        contentMode: "FILE",
+        language: null,
+        typeKey: "file",
+        url: null,
+      },
+    });
+    await expect(
+      createItem({
+        typeKey: "image",
+        title: "Architecture sketch",
+        description: "",
+        content: "ignored image content",
+        file: {
+          fileKey: "users/user-1/image/sketch.webp",
+          fileUrl: null,
+          fileName: "sketch.webp",
+          fileMimeType: "image/webp",
+          fileSizeBytes: 1024,
+        },
+        url: "https://example.com/ignored",
+        language: "typescript",
+        tags: [],
+      }),
+    ).resolves.toMatchObject({
+      success: true,
+      data: {
+        content: null,
+        contentMode: "FILE",
+        language: null,
+        typeKey: "image",
+        url: null,
+      },
+    });
+
+    expect(createItemRecordMock).toHaveBeenNthCalledWith(1, "user-1", {
+      typeKey: "file",
+      title: "Config archive",
+      description: null,
+      content: null,
+      file: {
+        fileKey: "users/user-1/file/config.json",
+        fileUrl: null,
+        fileName: "config.json",
+        fileMimeType: "application/json",
+        fileSizeBytes: 512,
+      },
+      url: null,
+      language: null,
+      tags: [],
+      collectionIds: [],
+    });
+    expect(createItemRecordMock).toHaveBeenNthCalledWith(2, "user-1", {
+      typeKey: "image",
+      title: "Architecture sketch",
+      description: null,
+      content: null,
+      file: {
+        fileKey: "users/user-1/image/sketch.webp",
+        fileUrl: null,
+        fileName: "sketch.webp",
+        fileMimeType: "image/webp",
+        fileSizeBytes: 1024,
+      },
+      url: null,
+      language: null,
+      tags: [],
+      collectionIds: [],
+    });
+  });
+
+  it("blocks Free users from creating file or image items", async () => {
+    authMock.mockResolvedValue({
+      user: {
+        id: "user-1",
+      },
+    });
+    getUserBillingUsageMock.mockResolvedValue({
+      plan: "FREE",
+      isPro: false,
+      totalItems: 0,
+      totalCollections: 0,
+    });
+
+    const result = await createItem({
+      typeKey: "file",
+      title: "Config archive",
+      description: "",
+      content: "",
+      file: {
+        fileKey: "users/user-1/file/config.json",
+        fileUrl: null,
+        fileName: "config.json",
+        fileMimeType: "application/json",
+        fileSizeBytes: 512,
+      },
+      url: "",
+      language: "",
+      tags: [],
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "File and image items require DevStash Pro.",
+    });
+    expect(createItemRecordMock).not.toHaveBeenCalled();
+  });
+
+  it("requires an uploaded file when creating file items", async () => {
+    const result = await createItem({
+      typeKey: "file",
+      title: "Config archive",
+      description: "",
+      content: "",
+      url: "",
+      language: "",
+      tags: [],
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "Upload a file first.",
+    });
+    expect(authMock).not.toHaveBeenCalled();
+    expect(createItemRecordMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects file metadata that does not match the selected upload type", async () => {
+    const result = await createItem({
+      typeKey: "image",
+      title: "Config archive",
+      description: "",
+      content: "",
+      file: {
+        fileKey: "users/user-1/file/config.json",
+        fileUrl: null,
+        fileName: "config.json",
+        fileMimeType: "application/json",
+        fileSizeBytes: 512,
+      },
+      url: "",
+      language: "",
+      tags: [],
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "Images must use one of these extensions: .png, .jpg, .jpeg, .gif, .webp.",
+    });
+    expect(authMock).not.toHaveBeenCalled();
+    expect(createItemRecordMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects uploaded file keys from the wrong upload type", async () => {
+    authMock.mockResolvedValue({
+      user: {
+        id: "user-1",
+      },
+    });
+    getUserBillingUsageMock.mockResolvedValue({
+      plan: "PRO",
+      isPro: true,
+      totalItems: 0,
+      totalCollections: 0,
+    });
+
+    const result = await createItem({
+      typeKey: "image",
+      title: "Architecture sketch",
+      description: "",
+      content: "",
+      file: {
+        fileKey: "users/user-1/file/sketch.webp",
+        fileUrl: null,
+        fileName: "sketch.webp",
+        fileMimeType: "image/webp",
+        fileSizeBytes: 1024,
+      },
+      url: "",
+      language: "",
+      tags: [],
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "Upload a file first.",
+    });
+    expect(createItemRecordMock).not.toHaveBeenCalled();
+  });
+
+  it("returns an error when the item type cannot be found", async () => {
+    authMock.mockResolvedValue({
+      user: {
+        id: "user-1",
+      },
+    });
+    createItemRecordMock.mockResolvedValue(null);
+
+    const result = await createItem({
+      typeKey: "note",
+      title: "Loose note",
+      description: null,
+      content: null,
+      url: null,
+      language: null,
+      tags: [],
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "Item type not found.",
+    });
+  });
+
+  it("returns validation errors before checking auth", async () => {
+    const result = await updateItem("item-1", {
+      title: "   ",
+      description: null,
+      content: null,
+      url: null,
+      language: null,
+      tags: [],
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "Title is required.",
+    });
+    expect(authMock).not.toHaveBeenCalled();
+    expect(updateItemRecordMock).not.toHaveBeenCalled();
+  });
+
+  it("returns a validation error for invalid URLs", async () => {
+    const result = await updateItem("item-1", {
+      title: "Reference link",
+      description: null,
+      content: null,
+      url: "not-a-url",
+      language: null,
+      tags: [],
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "Enter a valid URL.",
+    });
+    expect(authMock).not.toHaveBeenCalled();
+    expect(updateItemRecordMock).not.toHaveBeenCalled();
+  });
+
+  it("requires a signed-in user", async () => {
+    authMock.mockResolvedValue(null);
+
+    const result = await updateItem("item-1", {
+      title: "Useful command",
+      description: "",
+      content: "npm run build",
+      url: "",
+      language: "shell",
+      tags: ["cli"],
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "You need to be signed in to update items.",
+    });
+    expect(updateItemRecordMock).not.toHaveBeenCalled();
+  });
+
+  it("trims and normalizes payloads before updating the item", async () => {
+    const createdAt = new Date("2026-04-22T03:12:00.000Z");
+    const updatedAt = new Date("2026-04-24T08:30:00.000Z");
+
+    authMock.mockResolvedValue({
+      user: {
+        id: "user-1",
+      },
+    });
+    updateItemRecordMock.mockResolvedValue({
+      id: "item-1",
+      title: "Useful command",
+      description: "Runs the production build.",
+      contentMode: "TEXT",
+      content: "npm run build",
+      url: null,
+      fileName: null,
+      fileUrl: null,
+      fileMimeType: null,
+      fileSizeBytes: null,
+      language: "shell",
+      aiSummary: null,
+      collectionIds: ["collection-build"],
+      collectionNames: ["Build"],
+      tags: [
+        {
+          color: null,
+          name: "cli",
+        },
+      ],
+      isPinned: false,
+      isFavorite: false,
+      typeKey: "command",
+      typeLabel: "Command",
+      createdAt,
+      updatedAt,
+      lastAccessedAt: null,
+    });
+
+    const result = await updateItem("item-1", {
+      title: "  Useful command  ",
+      description: "  Runs the production build. ",
+      content: " npm run build ",
+      url: "",
+      language: " shell ",
+      tags: [" cli ", "cli"],
+      collectionIds: [" collection-build ", "collection-build"],
+    });
+
+    expect(updateItemRecordMock).toHaveBeenCalledWith("user-1", "item-1", {
+      title: "Useful command",
+      description: "Runs the production build.",
+      content: "npm run build",
+      url: null,
+      language: "shell",
+      tags: ["cli"],
+      collectionIds: ["collection-build"],
+    });
+    expect(result).toEqual({
+      success: true,
+      data: {
+        id: "item-1",
+        title: "Useful command",
+        description: "Runs the production build.",
+        contentMode: "TEXT",
+        content: "npm run build",
+        url: null,
+        fileName: null,
+        fileUrl: null,
+        fileMimeType: null,
+        fileSizeBytes: null,
+        language: "shell",
+        aiSummary: null,
+        collectionIds: ["collection-build"],
+        collectionNames: ["Build"],
+        tags: [
+          {
+            color: null,
+            name: "cli",
+          },
+        ],
+        isPinned: false,
+        isFavorite: false,
+        typeKey: "command",
+        typeLabel: "Command",
+        createdAt: createdAt.toISOString(),
+        updatedAt: updatedAt.toISOString(),
+        lastAccessedAt: null,
+      },
+      error: null,
+    });
+  });
+
+  it("returns not found when the item is not owned by the signed-in user", async () => {
+    authMock.mockResolvedValue({
+      user: {
+        id: "user-1",
+      },
+    });
+    updateItemRecordMock.mockResolvedValue(null);
+
+    const result = await updateItem("item-1", {
+      title: "Useful command",
+      description: null,
+      content: null,
+      url: null,
+      language: null,
+      tags: [],
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "Item not found.",
+    });
+  });
+
+  it("toggles an item favorite for the signed-in user", async () => {
+    const createdAt = new Date("2026-04-22T03:12:00.000Z");
+    const updatedAt = new Date("2026-04-24T08:30:00.000Z");
+
+    authMock.mockResolvedValue({
+      user: {
+        id: "user-1",
+      },
+    });
+    toggleItemFavoriteRecordMock.mockResolvedValue({
+      id: "item-1",
+      title: "Useful command",
+      description: "Runs the production build.",
+      contentMode: "TEXT",
+      content: "npm run build",
+      url: null,
+      fileName: null,
+      fileUrl: null,
+      fileMimeType: null,
+      fileSizeBytes: null,
+      language: "shell",
+      aiSummary: null,
+      collectionIds: [],
+      collectionNames: [],
+      tags: [],
+      isPinned: false,
+      isFavorite: true,
+      typeKey: "command",
+      typeLabel: "Command",
+      createdAt,
+      updatedAt,
+      lastAccessedAt: null,
+    });
+
+    const result = await toggleItemFavorite(" item-1 ");
+
+    expect(toggleItemFavoriteRecordMock).toHaveBeenCalledWith("user-1", "item-1");
+    expect(result).toEqual({
+      success: true,
+      data: {
+        id: "item-1",
+        title: "Useful command",
+        description: "Runs the production build.",
+        contentMode: "TEXT",
+        content: "npm run build",
+        url: null,
+        fileName: null,
+        fileUrl: null,
+        fileMimeType: null,
+        fileSizeBytes: null,
+        language: "shell",
+        aiSummary: null,
+        collectionIds: [],
+        collectionNames: [],
+        tags: [],
+        isPinned: false,
+        isFavorite: true,
+        typeKey: "command",
+        typeLabel: "Command",
+        createdAt: createdAt.toISOString(),
+        updatedAt: updatedAt.toISOString(),
+        lastAccessedAt: null,
+      },
+      error: null,
+    });
+  });
+
+  it("requires a signed-in user to toggle an item favorite", async () => {
+    authMock.mockResolvedValue(null);
+
+    const result = await toggleItemFavorite("item-1");
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "You need to be signed in to update items.",
+    });
+    expect(toggleItemFavoriteRecordMock).not.toHaveBeenCalled();
+  });
+
+  it("toggles an item pin for the signed-in user", async () => {
+    const createdAt = new Date("2026-04-22T03:12:00.000Z");
+    const updatedAt = new Date("2026-04-24T08:30:00.000Z");
+
+    authMock.mockResolvedValue({
+      user: {
+        id: "user-1",
+      },
+    });
+    toggleItemPinRecordMock.mockResolvedValue({
+      id: "item-1",
+      title: "Useful command",
+      description: "Runs the production build.",
+      contentMode: "TEXT",
+      content: "npm run build",
+      url: null,
+      fileName: null,
+      fileUrl: null,
+      fileMimeType: null,
+      fileSizeBytes: null,
+      language: "shell",
+      aiSummary: null,
+      collectionIds: [],
+      collectionNames: [],
+      tags: [],
+      isPinned: true,
+      isFavorite: false,
+      typeKey: "command",
+      typeLabel: "Command",
+      createdAt,
+      updatedAt,
+      lastAccessedAt: null,
+    });
+
+    const result = await toggleItemPin(" item-1 ");
+
+    expect(toggleItemPinRecordMock).toHaveBeenCalledWith("user-1", "item-1");
+    expect(result).toEqual({
+      success: true,
+      data: {
+        id: "item-1",
+        title: "Useful command",
+        description: "Runs the production build.",
+        contentMode: "TEXT",
+        content: "npm run build",
+        url: null,
+        fileName: null,
+        fileUrl: null,
+        fileMimeType: null,
+        fileSizeBytes: null,
+        language: "shell",
+        aiSummary: null,
+        collectionIds: [],
+        collectionNames: [],
+        tags: [],
+        isPinned: true,
+        isFavorite: false,
+        typeKey: "command",
+        typeLabel: "Command",
+        createdAt: createdAt.toISOString(),
+        updatedAt: updatedAt.toISOString(),
+        lastAccessedAt: null,
+      },
+      error: null,
+    });
+  });
+
+  it("requires a signed-in user to toggle an item pin", async () => {
+    authMock.mockResolvedValue(null);
+
+    const result = await toggleItemPin("item-1");
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "You need to be signed in to update items.",
+    });
+    expect(toggleItemPinRecordMock).not.toHaveBeenCalled();
+  });
+
+  it("returns delete validation errors before checking auth", async () => {
+    const result = await deleteItem("   ");
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "Item not found.",
+    });
+    expect(authMock).not.toHaveBeenCalled();
+    expect(deleteItemRecordMock).not.toHaveBeenCalled();
+  });
+
+  it("requires a signed-in user to delete an item", async () => {
+    authMock.mockResolvedValue(null);
+
+    const result = await deleteItem("item-1");
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "You need to be signed in to delete items.",
+    });
+    expect(deleteItemRecordMock).not.toHaveBeenCalled();
+  });
+
+  it("deletes an item owned by the signed-in user", async () => {
+    authMock.mockResolvedValue({
+      user: {
+        id: "user-1",
+      },
+    });
+    deleteItemRecordMock.mockResolvedValue(true);
+
+    const result = await deleteItem(" item-1 ");
+
+    expect(deleteItemRecordMock).toHaveBeenCalledWith("user-1", "item-1");
+    expect(result).toEqual({
+      success: true,
+      data: {
+        id: "item-1",
+      },
+      error: null,
+    });
+  });
+
+  it("returns not found when deleting an item outside the signed-in user's account", async () => {
+    authMock.mockResolvedValue({
+      user: {
+        id: "user-1",
+      },
+    });
+    deleteItemRecordMock.mockResolvedValue(false);
+
+    const result = await deleteItem("item-1");
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "Item not found.",
+    });
+  });
+});
